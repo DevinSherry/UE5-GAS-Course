@@ -72,3 +72,10 @@ Plugins/*/Intermediate/*
 
 # Cache files for the editor to use
 DerivedDataCache/*
+
+# Unnecessary Plugins
+Plugins/Developer/RiderLink*
+
+# Unnecessary Content
+Content/__ExternalActors__*
+Content/__ExternalObjects__*
