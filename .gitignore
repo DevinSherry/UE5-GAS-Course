@@ -79,3 +79,4 @@ Plugins/Developer/RiderLink*
 # Unnecessary Content
 Content/__ExternalActors__*
 Content/__ExternalObjects__*
+Content/StarterContent/*
