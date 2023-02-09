@@ -3,6 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "AbilitySystemInterface.h"
+#include "Game/GameplayAbilitySystem/GASCourseAbilitySystemComponent.h"
 #include "GameFramework/PlayerState.h"
 #include "GASCoursePlayerState.generated.h"
 
@@ -10,8 +12,18 @@
  * 
  */
 UCLASS()
-class GASCOURSE_API AGASCoursePlayerState : public APlayerState
+class GASCOURSE_API AGASCoursePlayerState : public APlayerState, public IAbilitySystemInterface
 {
 	GENERATED_BODY()
+
+public:
+
+	AGASCoursePlayerState();
+	
+	virtual UGASCourseAbilitySystemComponent* GetAbilitySystemComponent() const override;
+
+protected:
+	
+	UGASCourseAbilitySystemComponent* AbilitySystemComponent = nullptr;
 	
 };

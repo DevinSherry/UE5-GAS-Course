@@ -3,3 +3,13 @@
 
 #include "Game/Character/Player/GASCoursePlayerState.h"
 
+AGASCoursePlayerState::AGASCoursePlayerState()
+{
+	AbilitySystemComponent = CreateDefaultSubobject<UGASCourseAbilitySystemComponent>(TEXT("AbilitySystemComponent"));
+	AbilitySystemComponent->SetIsReplicated(true);
+}
+
+UGASCourseAbilitySystemComponent* AGASCoursePlayerState::GetAbilitySystemComponent() const
+{
+	return AbilitySystemComponent;
+}

@@ -9,6 +9,7 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "Game/Character/Player/GASCoursePlayerState.h"
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -49,6 +50,10 @@ AGASCourseCharacter::AGASCourseCharacter()
 
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
+
+	//Initialize AbilitySystemComponent
+	AbilitySystemComponent = CreateDefaultSubobject<UGASCourseAbilitySystemComponent>(TEXT("AbilitySystemComponent"));
+	AbilitySystemComponent->SetIsReplicated(true);
 }
 
 void AGASCourseCharacter::BeginPlay()
@@ -64,6 +69,33 @@ void AGASCourseCharacter::BeginPlay()
 			Subsystem->AddMappingContext(DefaultMappingContext, 0);
 		}
 	}
+}
+
+void AGASCourseCharacter::PossessedBy(AController* NewController)
+{
+	Super::PossessedBy(NewController);
+	
+	if(AGASCoursePlayerState* PS = GetPlayerState<AGASCoursePlayerState>())
+	{
+		AbilitySystemComponent = Cast<UGASCourseAbilitySystemComponent>(PS->GetAbilitySystemComponent());
+		PS->GetAbilitySystemComponent()->InitAbilityActorInfo(PS, this);
+	}
+}
+
+void AGASCourseCharacter::OnRep_PlayerState()
+{
+	Super::OnRep_PlayerState();
+
+	if(AGASCoursePlayerState* PS = GetPlayerState<AGASCoursePlayerState>())
+	{
+		AbilitySystemComponent = Cast<UGASCourseAbilitySystemComponent>(PS->GetAbilitySystemComponent());
+		PS->GetAbilitySystemComponent()->InitAbilityActorInfo(PS, this);
+	}
+}
+
+UGASCourseAbilitySystemComponent* AGASCourseCharacter::GetAbilitySystemComponent() const
+{
+	return AbilitySystemComponent;
 }
 
 //////////////////////////////////////////////////////////////////////////

@@ -3,13 +3,15 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "AbilitySystemInterface.h"
 #include "GameFramework/Character.h"
 #include "InputActionValue.h"
+#include "Game/GameplayAbilitySystem/GASCourseAbilitySystemComponent.h"
 #include "GASCourseCharacter.generated.h"
 
 
 UCLASS(config=Game)
-class AGASCourseCharacter : public ACharacter
+class AGASCourseCharacter : public ACharacter, public IAbilitySystemInterface
 {
 	GENERATED_BODY()
 
@@ -57,10 +59,19 @@ protected:
 	// To add mapping context
 	virtual void BeginPlay();
 
+	//Add GASCourseAbilitySystemComponent on PossessedBy
+	virtual void PossessedBy(AController* NewController) override;
+
+	virtual void OnRep_PlayerState() override;
+	
+	UGASCourseAbilitySystemComponent* AbilitySystemComponent = nullptr;
+
 public:
 	/** Returns CameraBoom subobject **/
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
+
+	virtual UGASCourseAbilitySystemComponent* GetAbilitySystemComponent() const override;
 };
 
