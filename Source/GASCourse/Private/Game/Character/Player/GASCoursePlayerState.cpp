@@ -3,6 +3,8 @@
 
 #include "Game/Character/Player/GASCoursePlayerState.h"
 
+#include "GameplayAbilitySet.h"
+
 AGASCoursePlayerState::AGASCoursePlayerState()
 {
 	AbilitySystemComponent = CreateDefaultSubobject<UGASCourseAbilitySystemComponent>(TEXT("AbilitySystemComponent"));

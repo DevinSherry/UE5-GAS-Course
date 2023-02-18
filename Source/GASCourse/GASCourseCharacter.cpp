@@ -9,6 +9,7 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "GameplayAbilitySet.h"
 #include "Game/Character/Player/GASCoursePlayerState.h"
 
 
@@ -79,6 +80,7 @@ void AGASCourseCharacter::PossessedBy(AController* NewController)
 	{
 		AbilitySystemComponent = Cast<UGASCourseAbilitySystemComponent>(PS->GetAbilitySystemComponent());
 		PS->GetAbilitySystemComponent()->InitAbilityActorInfo(PS, this);
+		GrantDefaultAbilitySet();
 	}
 }
 
@@ -90,6 +92,15 @@ void AGASCourseCharacter::OnRep_PlayerState()
 	{
 		AbilitySystemComponent = Cast<UGASCourseAbilitySystemComponent>(PS->GetAbilitySystemComponent());
 		PS->GetAbilitySystemComponent()->InitAbilityActorInfo(PS, this);
+		GrantDefaultAbilitySet();
+	}
+}
+
+void AGASCourseCharacter::GrantDefaultAbilitySet() const
+{
+	if(DefaultAbilities && GetAbilitySystemComponent())
+	{
+		DefaultAbilities->GiveAbilities(GetAbilitySystemComponent());
 	}
 }
 

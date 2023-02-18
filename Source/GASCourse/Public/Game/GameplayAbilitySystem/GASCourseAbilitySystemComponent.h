@@ -9,6 +9,8 @@
 /**
  * 
  */
+
+
 UCLASS()
 class GASCOURSE_API UGASCourseAbilitySystemComponent : public UAbilitySystemComponent
 {
@@ -16,6 +18,6 @@ class GASCOURSE_API UGASCourseAbilitySystemComponent : public UAbilitySystemComp
 
 public:
 
-	UGASCourseAbilitySystemComponent(class FObjectInitializer const &);
+	UGASCourseAbilitySystemComponent(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 	
 };

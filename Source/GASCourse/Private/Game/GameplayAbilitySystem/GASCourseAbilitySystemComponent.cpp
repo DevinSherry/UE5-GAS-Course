@@ -3,7 +3,8 @@
 
 #include "Game/GameplayAbilitySystem/GASCourseAbilitySystemComponent.h"
 
-UGASCourseAbilitySystemComponent::UGASCourseAbilitySystemComponent(FObjectInitializer const&)
+UGASCourseAbilitySystemComponent::UGASCourseAbilitySystemComponent(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
 {
 	ReplicationMode = EGameplayEffectReplicationMode::Mixed;
 }

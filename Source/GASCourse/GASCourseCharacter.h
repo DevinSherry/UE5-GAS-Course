@@ -65,6 +65,11 @@ protected:
 	virtual void OnRep_PlayerState() override;
 	
 	UGASCourseAbilitySystemComponent* AbilitySystemComponent = nullptr;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Abilities")
+	UGameplayAbilitySet* DefaultAbilities;
+	
+	void GrantDefaultAbilitySet() const;
 
 public:
 	/** Returns CameraBoom subobject **/
@@ -73,5 +78,6 @@ public:
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 
 	virtual UGASCourseAbilitySystemComponent* GetAbilitySystemComponent() const override;
+	
 };
 
