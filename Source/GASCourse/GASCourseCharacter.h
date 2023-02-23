@@ -25,23 +25,16 @@ class AGASCourseCharacter : public ACharacter, public IAbilitySystemInterface
 	
 	/** MappingContext */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	class UInputMappingContext* DefaultMappingContext;
+	class UInputMappingContext* DefaultMappingContextKBM;
 
-	/** Jump Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	class UInputAction* JumpAction;
+	class UInputMappingContext* DefaultMappingContextGamepad;
 
-	/** Move Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	class UInputAction* MoveAction;
-
-	/** Look Input Action */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	class UInputAction* LookAction;
+	class UGASCourseInputConfig* DefaultInputConfig;
 
 public:
 	AGASCourseCharacter();
-	
 
 protected:
 
@@ -49,8 +42,7 @@ protected:
 	void Move(const FInputActionValue& Value);
 
 	/** Called for looking input */
-	void Look(const FInputActionValue& Value);
-			
+	void Look(const FInputActionValue& Value);			
 
 protected:
 	// APawn interface

@@ -11,6 +11,8 @@
 #include "EnhancedInputSubsystems.h"
 #include "GameplayAbilitySet.h"
 #include "Game/Character/Player/GASCoursePlayerState.h"
+#include "Game/GameplayAbilitySystem/GASCourseNativeGameplayTags.h"
+#include "Game/Input/GASCourseEnhancedInputComponent.h"
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -61,15 +63,6 @@ void AGASCourseCharacter::BeginPlay()
 {
 	// Call the base class  
 	Super::BeginPlay();
-
-	//Add Input Mapping Context
-	if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
-	{
-		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
-		{
-			Subsystem->AddMappingContext(DefaultMappingContext, 0);
-		}
-	}
 }
 
 void AGASCourseCharacter::PossessedBy(AController* NewController)
@@ -81,6 +74,15 @@ void AGASCourseCharacter::PossessedBy(AController* NewController)
 		AbilitySystemComponent = Cast<UGASCourseAbilitySystemComponent>(PS->GetAbilitySystemComponent());
 		PS->GetAbilitySystemComponent()->InitAbilityActorInfo(PS, this);
 		GrantDefaultAbilitySet();
+
+		if (const APlayerController* PlayerController = Cast<APlayerController>(Controller))
+		{
+			if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
+			{
+				Subsystem->AddMappingContext(DefaultMappingContextKBM, 0);
+				Subsystem->AddMappingContext(DefaultMappingContextGamepad, 0);
+			}
+		}
 	}
 }
 
@@ -93,6 +95,15 @@ void AGASCourseCharacter::OnRep_PlayerState()
 		AbilitySystemComponent = Cast<UGASCourseAbilitySystemComponent>(PS->GetAbilitySystemComponent());
 		PS->GetAbilitySystemComponent()->InitAbilityActorInfo(PS, this);
 		GrantDefaultAbilitySet();
+
+		if (const APlayerController* PlayerController = Cast<APlayerController>(Controller))
+		{
+			if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
+			{
+				Subsystem->AddMappingContext(DefaultMappingContextKBM, 0);
+				Subsystem->AddMappingContext(DefaultMappingContextGamepad, 0);
+			}
+		}
 	}
 }
 
@@ -115,26 +126,32 @@ UGASCourseAbilitySystemComponent* AGASCourseCharacter::GetAbilitySystemComponent
 void AGASCourseCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
 {
 	// Set up action bindings
-	if (UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(PlayerInputComponent)) {
-		
-		//Jumping
-		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &ACharacter::Jump);
-		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
+	if (UGASCourseEnhancedInputComponent* EnhancedInputComponent = CastChecked<UGASCourseEnhancedInputComponent>(PlayerInputComponent))
+	{
+		check(EnhancedInputComponent);
+		const FGASCourseNativeGameplayTags& GameplayTags = FGASCourseNativeGameplayTags::Get();
+		if(DefaultInputConfig)
+		{
+			check(DefaultInputConfig);
+			//Jumping
+			EnhancedInputComponent->BindActionByTag(DefaultInputConfig, GameplayTags.InputTag_Jump, ETriggerEvent::Triggered, this, &ThisClass::Jump);
+			EnhancedInputComponent->BindActionByTag(DefaultInputConfig, GameplayTags.InputTag_Jump, ETriggerEvent::Completed, this, &ThisClass::StopJumping);
 
-		//Moving
-		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AGASCourseCharacter::Move);
+			//Moving
+			EnhancedInputComponent->BindActionByTag(DefaultInputConfig, GameplayTags.InputTag_Move, ETriggerEvent::Triggered, this, &ThisClass::Move);
 
-		//Looking
-		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AGASCourseCharacter::Look);
-
+			//Looking
+			EnhancedInputComponent->BindActionByTag(DefaultInputConfig, GameplayTags.InputTag_Look_Mouse, ETriggerEvent::Triggered, this, &ThisClass::Look);
+			EnhancedInputComponent->BindActionByTag(DefaultInputConfig, GameplayTags.InputTag_Look_Stick, ETriggerEvent::Triggered, this, &ThisClass::Look);
+			//EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AGASCourseCharacter::Look);
+		}
 	}
-
 }
 
 void AGASCourseCharacter::Move(const FInputActionValue& Value)
 {
 	// input is a Vector2D
-	FVector2D MovementVector = Value.Get<FVector2D>();
+	const FVector2D MovementVector = Value.Get<FVector2D>();
 
 	if (Controller != nullptr)
 	{
@@ -157,7 +174,7 @@ void AGASCourseCharacter::Move(const FInputActionValue& Value)
 void AGASCourseCharacter::Look(const FInputActionValue& Value)
 {
 	// input is a Vector2D
-	FVector2D LookAxisVector = Value.Get<FVector2D>();
+	const FVector2D LookAxisVector = Value.Get<FVector2D>();
 
 	if (Controller != nullptr)
 	{

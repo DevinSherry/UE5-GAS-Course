@@ -17,11 +17,11 @@ void FGASCourseNativeGameplayTags::InitializeNativeTags()
 
 void FGASCourseNativeGameplayTags::AddAllTags(UGameplayTagsManager& Manager)
 {
-	AddTag(InputTag_Move, "InputTag.Move", "Move input.");
-	AddTag(InputTag_Look_Mouse, "InputTag.Look.Mouse", "Look (mouse) input.");
-	AddTag(InputTag_Look_Stick, "InputTag.Look.Stick", "Look (stick) input.");
-	AddTag(InputTag_Jump, "InputTag.Jump", "Jump input");
-	AddTag(InputTag_Fire, "InputTag.Fire", "Fire input.");
+	AddTag(InputTag_Move, "Input.NativeAction.Move", "Move input.");
+	AddTag(InputTag_Look_Mouse, "Input.NativeAction.MouseLook", "Look (mouse) input.");
+	AddTag(InputTag_Look_Stick, "Input.NativeAction.GamepadLook", "Look (stick) input.");
+	AddTag(InputTag_Jump, "Input.NativeAction.Jump", "Jump input");
+	AddTag(InputTag_Fire, "Input.NativeAction.WeaponFire", "Fire input.");
 }
 
 void FGASCourseNativeGameplayTags::AddTag(FGameplayTag& OutTag, const ANSICHAR* TagName, const ANSICHAR* TagComment)

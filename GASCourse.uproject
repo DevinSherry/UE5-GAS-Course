@@ -43,6 +43,10 @@
 		{
 			"Name": "EnhancedInput",
 			"Enabled": true
+		},
+		{
+			"Name": "Iris",
+			"Enabled": false
 		}
 	]
 }
