@@ -24,6 +24,9 @@ public:
 	FGameplayTag InputTag_Look_Stick;
 	FGameplayTag InputTag_Jump;
 	FGameplayTag InputTag_Fire;
+	FGameplayTag InputTag_Crouch;
+	
+	FGameplayTag Status_Crouching;
 
 protected:
 

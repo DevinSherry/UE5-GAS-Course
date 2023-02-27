@@ -22,6 +22,9 @@ void FGASCourseNativeGameplayTags::AddAllTags(UGameplayTagsManager& Manager)
 	AddTag(InputTag_Look_Stick, "Input.NativeAction.GamepadLook", "Look (stick) input.");
 	AddTag(InputTag_Jump, "Input.NativeAction.Jump", "Jump input");
 	AddTag(InputTag_Fire, "Input.NativeAction.WeaponFire", "Fire input.");
+	AddTag(InputTag_Crouch, "Input.NativeAction.Crouch", "Crouch input");
+
+	AddTag(Status_Crouching, "Status.Crouching", "Character is crouching");
 }
 
 void FGASCourseNativeGameplayTags::AddTag(FGameplayTag& OutTag, const ANSICHAR* TagName, const ANSICHAR* TagComment)

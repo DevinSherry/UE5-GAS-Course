@@ -13,5 +13,28 @@ UCLASS()
 class GASCOURSE_API AGASCoursePlayerCharacter : public AGASCourseCharacter
 {
 	GENERATED_BODY()
+
+	/** MappingContext */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	class UInputMappingContext* DefaultMappingContextKBM;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	class UInputMappingContext* DefaultMappingContextGamepad;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	class UGASCourseInputConfig* DefaultInputConfig;
+
+public:
+
+	AGASCoursePlayerCharacter();
+
+protected:
+
+	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+	//Add GASCourseAbilitySystemComponent on PossessedBy
+	virtual void PossessedBy(AController* NewController) override;
+
+	virtual void OnRep_PlayerState() override;
 	
 };
