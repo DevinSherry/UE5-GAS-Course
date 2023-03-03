@@ -28,6 +28,8 @@ public:
 	
 	FGameplayTag Status_Crouching;
 
+	FGameplayTag Status_AbilityInputBlocked;
+
 protected:
 
 	//Registers all of the tags with the GameplayTags Manager

@@ -25,6 +25,8 @@ void FGASCourseNativeGameplayTags::AddAllTags(UGameplayTagsManager& Manager)
 	AddTag(InputTag_Crouch, "Input.NativeAction.Crouch", "Crouch input");
 
 	AddTag(Status_Crouching, "Status.Crouching", "Character is crouching");
+
+	AddTag(Status_AbilityInputBlocked, "Status.AbilityInputBlocked", "Character cannot use any abilities");
 }
 
 void FGASCourseNativeGameplayTags::AddTag(FGameplayTag& OutTag, const ANSICHAR* TagName, const ANSICHAR* TagComment)

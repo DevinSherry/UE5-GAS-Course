@@ -9,6 +9,7 @@
 #include "Game/GameplayAbilitySystem/GASCourseAbilitySystemComponent.h"
 #include "GASCourseCharacter.generated.h"
 
+class UGASCourseGameplayAbilitySet;
 
 UCLASS(config=Game)
 class AGASCourseCharacter : public ACharacter, public IAbilitySystemInterface
@@ -48,7 +49,7 @@ protected:
 	UGASCourseAbilitySystemComponent* AbilitySystemComponent = nullptr;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Abilities")
-	UGameplayAbilitySet* DefaultAbilities;
+	UGASCourseGameplayAbilitySet* DefaultAbilities;
 	
 	void GrantDefaultAbilitySet() const;
 

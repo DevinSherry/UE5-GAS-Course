@@ -26,22 +26,25 @@ void AGASCoursePlayerCharacter::SetupPlayerInputComponent(UInputComponent* Playe
 	{
 		check(EnhancedInputComponent);
 		const FGASCourseNativeGameplayTags& GameplayTags = FGASCourseNativeGameplayTags::Get();
-		if(DefaultInputConfig)
+		if(InputConfig)
 		{
-			check(DefaultInputConfig);
+			check(InputConfig);
 			//Jumping
-			EnhancedInputComponent->BindActionByTag(DefaultInputConfig, GameplayTags.InputTag_Jump, ETriggerEvent::Triggered, this, &ThisClass::Jump);
-			EnhancedInputComponent->BindActionByTag(DefaultInputConfig, GameplayTags.InputTag_Jump, ETriggerEvent::Completed, this, &ThisClass::StopJumping);
+			EnhancedInputComponent->BindActionByTag(InputConfig, GameplayTags.InputTag_Jump, ETriggerEvent::Triggered, this, &ThisClass::Jump);
+			EnhancedInputComponent->BindActionByTag(InputConfig, GameplayTags.InputTag_Jump, ETriggerEvent::Completed, this, &ThisClass::StopJumping);
 
 			//Moving
-			EnhancedInputComponent->BindActionByTag(DefaultInputConfig, GameplayTags.InputTag_Move, ETriggerEvent::Triggered, this, &ThisClass::Move);
+			EnhancedInputComponent->BindActionByTag(InputConfig, GameplayTags.InputTag_Move, ETriggerEvent::Triggered, this, &ThisClass::Move);
 
 			//Looking
-			EnhancedInputComponent->BindActionByTag(DefaultInputConfig, GameplayTags.InputTag_Look_Mouse, ETriggerEvent::Triggered, this, &ThisClass::Look);
-			EnhancedInputComponent->BindActionByTag(DefaultInputConfig, GameplayTags.InputTag_Look_Stick, ETriggerEvent::Triggered, this, &ThisClass::Look);
+			EnhancedInputComponent->BindActionByTag(InputConfig, GameplayTags.InputTag_Look_Mouse, ETriggerEvent::Triggered, this, &ThisClass::Look);
+			EnhancedInputComponent->BindActionByTag(InputConfig, GameplayTags.InputTag_Look_Stick, ETriggerEvent::Triggered, this, &ThisClass::Look);
 
 			//Crouching
-			EnhancedInputComponent->BindActionByTag(DefaultInputConfig, GameplayTags.InputTag_Crouch, ETriggerEvent::Triggered, this, &ThisClass::Input_Crouch);
+			EnhancedInputComponent->BindActionByTag(InputConfig, GameplayTags.InputTag_Crouch, ETriggerEvent::Triggered, this, &ThisClass::Input_Crouch);
+
+			TArray<uint32> BindHandles;
+			EnhancedInputComponent->BindAbilityActions(InputConfig, this, &ThisClass::Input_AbilityInputTagPressed, &ThisClass::Input_AbilityInputTagReleased, /*out*/ BindHandles);
 		}
 	}
 }
@@ -85,5 +88,29 @@ void AGASCoursePlayerCharacter::OnRep_PlayerState()
 				Subsystem->AddMappingContext(DefaultMappingContextGamepad, 0);
 			}
 		}
+	}
+}
+
+void AGASCoursePlayerCharacter::Input_AbilityInputTagPressed(FGameplayTag InputTag)
+{
+	if(UGASCourseAbilitySystemComponent* ASC = GetAbilitySystemComponent())
+	{
+		if(ASC->HasMatchingGameplayTag(FGASCourseNativeGameplayTags::Get().Status_AbilityInputBlocked))
+		{
+			return;
+		}
+		ASC->AbilityInputTagPressed(InputTag);
+	}
+}
+
+void AGASCoursePlayerCharacter::Input_AbilityInputTagReleased(FGameplayTag InputTag)
+{
+	if(UGASCourseAbilitySystemComponent* ASC = GetAbilitySystemComponent())
+	{
+		if(ASC->HasMatchingGameplayTag(FGASCourseNativeGameplayTags::Get().Status_AbilityInputBlocked))
+		{
+			return;
+		}
+		ASC->AbilityInputTagReleased(InputTag);
 	}
 }

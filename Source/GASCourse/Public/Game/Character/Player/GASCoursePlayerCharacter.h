@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Game/Input/GASCourseInputConfig.h"
 #include "GASCourse/GASCourseCharacter.h"
 #include "GASCoursePlayerCharacter.generated.h"
 
@@ -21,12 +22,12 @@ class GASCOURSE_API AGASCoursePlayerCharacter : public AGASCourseCharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	class UInputMappingContext* DefaultMappingContextGamepad;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	class UGASCourseInputConfig* DefaultInputConfig;
-
 public:
 
 	AGASCoursePlayerCharacter();
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input")
+	TObjectPtr<UGASCourseInputConfig> InputConfig;
 
 protected:
 
@@ -36,5 +37,8 @@ protected:
 	virtual void PossessedBy(AController* NewController) override;
 
 	virtual void OnRep_PlayerState() override;
+	
+	void Input_AbilityInputTagPressed(FGameplayTag InputTag);
+	void Input_AbilityInputTagReleased(FGameplayTag InputTag);
 	
 };

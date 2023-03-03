@@ -6,7 +6,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
 #include "GameFramework/SpringArmComponent.h"
-#include "GameplayAbilitySet.h"
+#include "Game/GameplayAbilitySystem/GASCourseGameplayAbilitySet.h"
 #include "Game/GameplayAbilitySystem/GASCourseNativeGameplayTags.h"
 
 
@@ -66,7 +66,7 @@ void AGASCourseCharacter::GrantDefaultAbilitySet() const
 	{
 		return;
 	}
-	DefaultAbilities->GiveAbilities(GetAbilitySystemComponent());
+	DefaultAbilities->GiveToAbilitySystem(GetAbilitySystemComponent(), nullptr);
 }
 
 UGASCourseAbilitySystemComponent* AGASCourseCharacter::GetAbilitySystemComponent() const
