@@ -24,7 +24,7 @@ class GASCOURSE_API AGASCoursePlayerCharacter : public AGASCourseCharacter
 
 public:
 
-	AGASCoursePlayerCharacter();
+	AGASCoursePlayerCharacter(const FObjectInitializer& ObjectInitializer);
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input")
 	TObjectPtr<UGASCourseInputConfig> InputConfig;

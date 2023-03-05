@@ -8,12 +8,14 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Game/GameplayAbilitySystem/GASCourseGameplayAbilitySet.h"
 #include "Game/GameplayAbilitySystem/GASCourseNativeGameplayTags.h"
+#include "Game/Character/Components/GASCourseMovementComponent.h"
 
 
 //////////////////////////////////////////////////////////////////////////
 // AGASCourseCharacter
 
-AGASCourseCharacter::AGASCourseCharacter()
+AGASCourseCharacter::AGASCourseCharacter(const class FObjectInitializer& ObjectInitializer) :
+	Super(ObjectInitializer.SetDefaultSubobjectClass<UGASCourseMovementComponent>(ACharacter::CharacterMovementComponentName))
 {
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
@@ -112,7 +114,6 @@ void AGASCourseCharacter::Look(const FInputActionValue& Value)
 
 void AGASCourseCharacter::Input_Crouch(const FInputActionValue& Value)
 {
-	//TODO: Make custom movement component
 	const UCharacterMovementComponent* GASCharacterMovementComponent = CastChecked<UCharacterMovementComponent>(GetCharacterMovement());
 
 	if (bIsCrouched || GASCharacterMovementComponent->bWantsToCrouch)
@@ -143,6 +144,27 @@ void AGASCourseCharacter::OnEndCrouch(float HalfHeightAdjust, float ScaledHalfHe
 	}
 
 	Super::OnEndCrouch(HalfHeightAdjust, ScaledHalfHeightAdjust);
+}
+
+bool AGASCourseCharacter::CanJumpInternal_Implementation() const
+{
+	const UGASCourseMovementComponent* GASCharacterMovementComponent = CastChecked<UGASCourseMovementComponent>(GetCharacterMovement());
+	if(GASCharacterMovementComponent->bAllowJumpFromCrouch)
+	{
+		return JumpIsAllowedInternal();
+	}
+	
+	return Super::CanJumpInternal_Implementation();
+}
+
+void AGASCourseCharacter::Jump()
+{
+	const UGASCourseMovementComponent* GASCharacterMovementComponent = CastChecked<UGASCourseMovementComponent>(GetCharacterMovement());
+	if(GASCharacterMovementComponent->bAllowJumpFromCrouch)
+	{
+		UnCrouch();
+	}
+	Super::Jump();
 }
 
 

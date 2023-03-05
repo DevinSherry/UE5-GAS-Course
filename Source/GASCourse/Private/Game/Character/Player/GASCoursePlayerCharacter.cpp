@@ -11,7 +11,8 @@
 //////////////////////////////////////////////////////////////////////////
 // AGASCourseCharacter
 
-AGASCoursePlayerCharacter::AGASCoursePlayerCharacter()
+AGASCoursePlayerCharacter::AGASCoursePlayerCharacter(const FObjectInitializer& ObjectInitializer) :
+Super(ObjectInitializer)
 {
 }
 

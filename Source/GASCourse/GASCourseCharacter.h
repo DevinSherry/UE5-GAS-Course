@@ -25,7 +25,7 @@ class AGASCourseCharacter : public ACharacter, public IAbilitySystemInterface
 	class UCameraComponent* FollowCamera;
 
 public:
-	AGASCourseCharacter();
+	AGASCourseCharacter(const class FObjectInitializer& ObjectInitializer);
 
 protected:
 
@@ -37,9 +37,14 @@ protected:
 
 	/** Called for crouch input */
 	void Input_Crouch(const FInputActionValue& Value);
-	
+
+	//Override these functions to add loose gameplay tag for status.crouching
 	virtual void OnStartCrouch(float HalfHeightAdjust, float ScaledHalfHeightAdjust) override;
 	virtual void OnEndCrouch(float HalfHeightAdjust, float ScaledHalfHeightAdjust) override;
+
+	//Override these functions in order to jump while crouched, if movement component allows for it.
+	virtual bool CanJumpInternal_Implementation() const override;
+	virtual void Jump() override;
 	
 protected:
 	
