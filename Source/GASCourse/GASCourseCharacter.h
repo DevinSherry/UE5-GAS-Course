@@ -7,6 +7,7 @@
 #include "GameFramework/Character.h"
 #include "InputActionValue.h"
 #include "Game/GameplayAbilitySystem/GASCourseAbilitySystemComponent.h"
+#include "Game/GameplayAbilitySystem/AttributeSets/GASCourseCharBaseAttributeSet.h"
 #include "GASCourseCharacter.generated.h"
 
 class UGASCourseGameplayAbilitySet;
@@ -50,13 +51,16 @@ protected:
 	
 	// To add mapping context
 	virtual void BeginPlay() override;
-	
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Getter=GetAbilitySystemComponent)
 	UGASCourseAbilitySystemComponent* AbilitySystemComponent = nullptr;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Abilities")
 	UGASCourseGameplayAbilitySet* DefaultAbilities;
 	
 	void GrantDefaultAbilitySet() const;
+
+	TWeakObjectPtr<UGASCourseCharBaseAttributeSet> BaseAttributeSet;
 
 public:
 	/** Returns CameraBoom subobject **/
@@ -65,6 +69,9 @@ public:
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 
 	virtual UGASCourseAbilitySystemComponent* GetAbilitySystemComponent() const override;
+
+	UFUNCTION(BlueprintCallable, Category = "GASCourse|Character|Attributes")
+	float GetMovementSpeed() const; 
 	
 };
 

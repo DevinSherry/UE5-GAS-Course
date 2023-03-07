@@ -10,7 +10,7 @@
  * 
  */
 
-UCLASS()
+UCLASS(ClassGroup=AbilitySystem, hidecategories=(Object,LOD,Lighting,Transform,Sockets,TextureStreaming), editinlinenew, meta=(BlueprintSpawnableComponent))
 class GASCOURSE_API UGASCourseAbilitySystemComponent : public UAbilitySystemComponent
 {
 	GENERATED_BODY()

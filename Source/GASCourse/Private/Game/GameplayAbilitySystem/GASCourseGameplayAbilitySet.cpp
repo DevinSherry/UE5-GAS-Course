@@ -74,6 +74,25 @@ void UGASCourseGameplayAbilitySet::GiveToAbilitySystem(UGASCourseAbilitySystemCo
 		// Must be authoritative to give or take ability sets.
 		return;
 	}
+	
+	// Grant the attribute sets.
+	for (int32 SetIndex = 0; SetIndex < GrantedAttributes.Num(); ++SetIndex)
+	{
+		const FGASCourseAbilitySet_AttributeSet& SetToGrant = GrantedAttributes[SetIndex];
+
+		if (!IsValid(SetToGrant.AttributeSet))
+		{
+			continue;
+		}
+
+		UAttributeSet* NewSet = NewObject<UAttributeSet>(ASC->GetOwner(), SetToGrant.AttributeSet);
+		ASC->AddAttributeSetSubobject(NewSet);
+
+		if (OutGrantedHandles)
+		{
+			OutGrantedHandles->AddAttributeSet(NewSet);
+		}
+	}
 
 	// Grant the gameplay abilities.
 	for (int32 AbilityIndex = 0; AbilityIndex < GrantedGameplayAbilities.Num(); ++AbilityIndex)
@@ -115,25 +134,6 @@ void UGASCourseGameplayAbilitySet::GiveToAbilitySystem(UGASCourseAbilitySystemCo
 		if (OutGrantedHandles)
 		{
 			OutGrantedHandles->AddGameplayEffectHandle(GameplayEffectHandle);
-		}
-	}
-
-	// Grant the attribute sets.
-	for (int32 SetIndex = 0; SetIndex < GrantedAttributes.Num(); ++SetIndex)
-	{
-		const FGASCourseAbilitySet_AttributeSet& SetToGrant = GrantedAttributes[SetIndex];
-
-		if (!IsValid(SetToGrant.AttributeSet))
-		{
-			continue;
-		}
-
-		UAttributeSet* NewSet = NewObject<UAttributeSet>(ASC->GetOwner(), SetToGrant.AttributeSet);
-		ASC->AddAttributeSetSubobject(NewSet);
-
-		if (OutGrantedHandles)
-		{
-			OutGrantedHandles->AddAttributeSet(NewSet);
 		}
 	}
 }

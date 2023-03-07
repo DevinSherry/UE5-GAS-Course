@@ -19,5 +19,9 @@ public:
 	/*Can this character perform a jump action while in crouch state?*/
 	UPROPERTY(Category="Character Movement (General Settings)", EditAnywhere, BlueprintReadWrite)
 	bool bAllowJumpFromCrouch;
+
+protected:
+
+	virtual float GetMaxSpeed() const override;
 	
 };

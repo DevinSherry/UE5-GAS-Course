@@ -9,6 +9,7 @@
 #include "Game/GameplayAbilitySystem/GASCourseGameplayAbilitySet.h"
 #include "Game/GameplayAbilitySystem/GASCourseNativeGameplayTags.h"
 #include "Game/Character/Components/GASCourseMovementComponent.h"
+#include "Game/GameplayAbilitySystem/AttributeSets/GASCourseCharBaseAttributeSet.h"
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -74,6 +75,17 @@ void AGASCourseCharacter::GrantDefaultAbilitySet() const
 UGASCourseAbilitySystemComponent* AGASCourseCharacter::GetAbilitySystemComponent() const
 {
 	return AbilitySystemComponent;
+}
+
+float AGASCourseCharacter::GetMovementSpeed() const
+{
+	if (BaseAttributeSet.IsValid())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Movement Speed Attribute Value: %f"), BaseAttributeSet->GetMovementSpeed());
+		return BaseAttributeSet->GetMovementSpeed();
+	}
+
+	return 0.0f;
 }
 
 void AGASCourseCharacter::Move(const FInputActionValue& Value)
