@@ -68,7 +68,7 @@ struct FGASCourseAbilitySet_AttributeSet
 public:
 	// Gameplay effect to grant.
 	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<UAttributeSet> AttributeSet;
+	TSubclassOf<UGASCourseAttributeSet> AttributeSet;
 
 };
 
@@ -78,7 +78,7 @@ public:
  *	Data used to store handles to what has been granted by the ability set.
  */
 USTRUCT(BlueprintType)
-struct FFGASCourseAbilitySet_GrantedHandles
+struct FGASCourseAbilitySet_GrantedHandles
 {
 	GENERATED_BODY()
 
@@ -86,7 +86,7 @@ public:
 
 	void AddAbilitySpecHandle(const FGameplayAbilitySpecHandle& Handle);
 	void AddGameplayEffectHandle(const FActiveGameplayEffectHandle& Handle);
-	void AddAttributeSet(UAttributeSet* Set);
+	void AddAttributeSet(UGASCourseAttributeSet* Set);
 
 	void TakeFromAbilitySystem(UGASCourseAbilitySystemComponent* ASC);
 
@@ -102,9 +102,8 @@ protected:
 
 	// Pointers to the granted attribute sets
 	UPROPERTY()
-	TArray<TObjectPtr<UAttributeSet>> GrantedAttributeSets;
+	TArray<TObjectPtr<UGASCourseAttributeSet>> GrantedAttributeSets;
 };
-
 
 
 /**
@@ -123,7 +122,7 @@ public:
 
 	// Grants the ability set to the specified ability system component.
 	// The returned handles can be used later to take away anything that was granted.
-	void GiveToAbilitySystem(UGASCourseAbilitySystemComponent* ASC, FFGASCourseAbilitySet_GrantedHandles* OutGrantedHandles, UObject* SourceObject = nullptr) const;
+	void GiveToAbilitySystem(UGASCourseAbilitySystemComponent* ASC, FGASCourseAbilitySet_GrantedHandles* OutGrantedHandles, UObject* SourceObject = nullptr) const;
 
 public:
 

@@ -60,8 +60,6 @@ protected:
 	
 	void GrantDefaultAbilitySet() const;
 
-	TWeakObjectPtr<UGASCourseCharBaseAttributeSet> BaseAttributeSet;
-
 public:
 	/** Returns CameraBoom subobject **/
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
@@ -71,7 +69,10 @@ public:
 	virtual UGASCourseAbilitySystemComponent* GetAbilitySystemComponent() const override;
 
 	UFUNCTION(BlueprintCallable, Category = "GASCourse|Character|Attributes")
-	float GetMovementSpeed() const; 
+	float GetMovementSpeed() const;
+	
+	UFUNCTION(BlueprintCallable, Category = "GASCourse|Character|Attributes")
+	float GetCrouchSpeed() const; 
 	
 };
 

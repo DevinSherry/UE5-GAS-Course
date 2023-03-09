@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "AttributeSet.h"
+#include "GASCourseAttributeSet.h"
 #include "AbilitySystemComponent.h"
 #include "GASCourseCharBaseAttributeSet.generated.h"
 
@@ -18,7 +18,7 @@ GAMEPLAYATTRIBUTE_VALUE_INITTER(PropertyName)
  * 
  */
 UCLASS()
-class GASCOURSE_API UGASCourseCharBaseAttributeSet : public UAttributeSet
+class GASCOURSE_API UGASCourseCharBaseAttributeSet : public UGASCourseAttributeSet
 {
 	GENERATED_BODY()
 
@@ -38,13 +38,21 @@ public:
 	FGameplayAttributeData MovementSpeed;
 	ATTRIBUTE_ACCESSORS(UGASCourseCharBaseAttributeSet, MovementSpeed)
 
+	UPROPERTY(BlueprintReadOnly, Category = "Character Base Attributes", ReplicatedUsing=OnRep_CrouchSpeed)
+	FGameplayAttributeData CrouchSpeed;
+	ATTRIBUTE_ACCESSORS(UGASCourseCharBaseAttributeSet, CrouchSpeed)
+
 protected:
 	
 	// Helper function to proportionally adjust the value of an attribute when it's associated max attribute changes.
 	// (i.e. When MaxHealth increases, Health increases by an amount that maintains the same percentage as before)
 	void AdjustAttributeForMaxChange(FGameplayAttributeData& AffectedAttribute, const FGameplayAttributeData& MaxAttribute,
 		float NewMaxValue, const FGameplayAttribute& AffectedAttributeProperty);
+	
 	UFUNCTION()
 	virtual void OnRep_MovementSpeed(const FGameplayAttributeData& OldMovementSpeed);
+	
+	UFUNCTION()
+	virtual void OnRep_CrouchSpeed(const FGameplayAttributeData& OldCrouchSpeed);
 	
 };

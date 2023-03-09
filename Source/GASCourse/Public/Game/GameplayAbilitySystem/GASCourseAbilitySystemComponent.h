@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "AbilitySystemComponent.h"
+#include "AttributeSets/GASCourseCharBaseAttributeSet.h"
 #include "GASCourseAbilitySystemComponent.generated.h"
 
 /**

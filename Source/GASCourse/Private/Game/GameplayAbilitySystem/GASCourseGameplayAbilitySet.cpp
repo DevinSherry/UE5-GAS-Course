@@ -3,7 +3,7 @@
 
 #include "Game/GameplayAbilitySystem/GASCourseGameplayAbilitySet.h"
 
-void FFGASCourseAbilitySet_GrantedHandles::AddAbilitySpecHandle(const FGameplayAbilitySpecHandle& Handle)
+void FGASCourseAbilitySet_GrantedHandles::AddAbilitySpecHandle(const FGameplayAbilitySpecHandle& Handle)
 {
 	if (Handle.IsValid())
 	{
@@ -11,7 +11,7 @@ void FFGASCourseAbilitySet_GrantedHandles::AddAbilitySpecHandle(const FGameplayA
 	}
 }
 
-void FFGASCourseAbilitySet_GrantedHandles::AddGameplayEffectHandle(const FActiveGameplayEffectHandle& Handle)
+void FGASCourseAbilitySet_GrantedHandles::AddGameplayEffectHandle(const FActiveGameplayEffectHandle& Handle)
 {
 	if (Handle.IsValid())
 	{
@@ -19,12 +19,12 @@ void FFGASCourseAbilitySet_GrantedHandles::AddGameplayEffectHandle(const FActive
 	}
 }
 
-void FFGASCourseAbilitySet_GrantedHandles::AddAttributeSet(UAttributeSet* Set)
+void FGASCourseAbilitySet_GrantedHandles::AddAttributeSet(UGASCourseAttributeSet* Set)
 {
 	GrantedAttributeSets.Add(Set);
 }
 
-void FFGASCourseAbilitySet_GrantedHandles::TakeFromAbilitySystem(UGASCourseAbilitySystemComponent* LyraASC)
+void FGASCourseAbilitySet_GrantedHandles::TakeFromAbilitySystem(UGASCourseAbilitySystemComponent* LyraASC)
 {
 	check(LyraASC);
 
@@ -65,7 +65,7 @@ UGASCourseGameplayAbilitySet::UGASCourseGameplayAbilitySet(const FObjectInitiali
 {
 }
 
-void UGASCourseGameplayAbilitySet::GiveToAbilitySystem(UGASCourseAbilitySystemComponent* ASC, FFGASCourseAbilitySet_GrantedHandles* OutGrantedHandles, UObject* SourceObject) const
+void UGASCourseGameplayAbilitySet::GiveToAbilitySystem(UGASCourseAbilitySystemComponent* ASC, FGASCourseAbilitySet_GrantedHandles* OutGrantedHandles, UObject* SourceObject) const
 {
 	check(ASC);
 
@@ -85,7 +85,7 @@ void UGASCourseGameplayAbilitySet::GiveToAbilitySystem(UGASCourseAbilitySystemCo
 			continue;
 		}
 
-		UAttributeSet* NewSet = NewObject<UAttributeSet>(ASC->GetOwner(), SetToGrant.AttributeSet);
+		UGASCourseAttributeSet* NewSet = NewObject<UGASCourseAttributeSet>(ASC->GetOwner(), SetToGrant.AttributeSet);
 		ASC->AddAttributeSetSubobject(NewSet);
 
 		if (OutGrantedHandles)

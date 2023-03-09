@@ -9,7 +9,7 @@
 #include "Game/GameplayAbilitySystem/GASCourseGameplayAbilitySet.h"
 #include "Game/GameplayAbilitySystem/GASCourseNativeGameplayTags.h"
 #include "Game/Character/Components/GASCourseMovementComponent.h"
-#include "Game/GameplayAbilitySystem/AttributeSets/GASCourseCharBaseAttributeSet.h"
+#include "Game/GameplayAbilitySystem/AttributeSets/GASCourseAttributeSet.h"
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -70,6 +70,7 @@ void AGASCourseCharacter::GrantDefaultAbilitySet() const
 		return;
 	}
 	DefaultAbilities->GiveToAbilitySystem(GetAbilitySystemComponent(), nullptr);
+	
 }
 
 UGASCourseAbilitySystemComponent* AGASCourseCharacter::GetAbilitySystemComponent() const
@@ -79,12 +80,21 @@ UGASCourseAbilitySystemComponent* AGASCourseCharacter::GetAbilitySystemComponent
 
 float AGASCourseCharacter::GetMovementSpeed() const
 {
-	if (BaseAttributeSet.IsValid())
+	if (const UGASCourseCharBaseAttributeSet* BaseAttributeSet = GetAbilitySystemComponent()->GetSetChecked<UGASCourseCharBaseAttributeSet>())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Movement Speed Attribute Value: %f"), BaseAttributeSet->GetMovementSpeed());
 		return BaseAttributeSet->GetMovementSpeed();
 	}
+	UE_LOG(LogTemp, Warning, TEXT("NO VALID ATTRIBUTE SET FOUND"));
+	return 0.0f;
+}
 
+float AGASCourseCharacter::GetCrouchSpeed() const
+{
+	if (const UGASCourseCharBaseAttributeSet* BaseAttributeSet = GetAbilitySystemComponent()->GetSetChecked<UGASCourseCharBaseAttributeSet>())
+	{
+		return BaseAttributeSet->GetCrouchSpeed();
+	}
+	UE_LOG(LogTemp, Warning, TEXT("NO VALID ATTRIBUTE SET FOUND"));
 	return 0.0f;
 }
 

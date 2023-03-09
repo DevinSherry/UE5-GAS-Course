@@ -7,23 +7,18 @@
 
 float UGASCourseMovementComponent::GetMaxSpeed() const
 {
-	AGASCourseCharacter* Owner = Cast<AGASCourseCharacter>(GetOwner());
+	const AGASCourseCharacter* Owner = Cast<AGASCourseCharacter>(GetOwner());
 	if (!Owner)
 	{
 		UE_LOG(LogTemp, Error, TEXT("%s() No Owner"), *FString(__FUNCTION__));
 		return Super::GetMaxSpeed();
 	}
-
-	return Owner->GetMovementSpeed();
-
-	//TODO: Implement better via movement mode switch
-
-	/*
-	*	switch(MovementMode)
+	
+	switch(MovementMode)
 	{
 	case MOVE_Walking:
 	case MOVE_NavWalking:
-	return IsCrouching() ? MaxWalkSpeedCrouched : MaxWalkSpeed;
+	return IsCrouching() ? Owner->GetCrouchSpeed() : Owner->GetMovementSpeed();
 	case MOVE_Falling:
 	return MaxWalkSpeed;
 	case MOVE_Swimming:
@@ -36,5 +31,5 @@ float UGASCourseMovementComponent::GetMaxSpeed() const
 	default:
 	return 0.f;
 	}
-	*/
+
 }
