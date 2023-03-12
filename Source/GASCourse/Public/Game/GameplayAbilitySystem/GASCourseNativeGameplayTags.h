@@ -27,7 +27,9 @@ public:
 	FGameplayTag InputTag_Crouch;
 	
 	FGameplayTag Status_Crouching;
-
+	FGameplayTag Status_Falling;
+	FGameplayTag Status_IsMoving;
+	FGameplayTag Status_BlockMovementInput;
 	FGameplayTag Status_AbilityInputBlocked;
 
 protected:

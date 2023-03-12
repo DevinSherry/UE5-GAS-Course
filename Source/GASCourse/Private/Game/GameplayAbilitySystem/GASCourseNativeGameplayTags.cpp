@@ -25,7 +25,9 @@ void FGASCourseNativeGameplayTags::AddAllTags(UGameplayTagsManager& Manager)
 	AddTag(InputTag_Crouch, "Input.NativeAction.Crouch", "Crouch input");
 
 	AddTag(Status_Crouching, "Status.Crouching", "Character is crouching");
-
+	AddTag(Status_Falling, "Status.Falling", "Character is falling");
+	AddTag(Status_IsMoving, "Status.IsMoving", "Character is moving, via input methods");
+	AddTag(Status_BlockMovementInput, "Status.MovementInputBlocked", "Character cannot move, via input");
 	AddTag(Status_AbilityInputBlocked, "Status.AbilityInputBlocked", "Character cannot use any abilities");
 }
 

@@ -52,3 +52,8 @@ void UGASCourseCharBaseAttributeSet::OnRep_CrouchSpeed(const FGameplayAttributeD
 {
 	GAMEPLAYATTRIBUTE_REPNOTIFY(UGASCourseCharBaseAttributeSet, CrouchSpeed, OldCrouchSpeed)
 }
+
+void UGASCourseCharBaseAttributeSet::OnRep_JumpZVelocityOverride(const FGameplayAttributeData& OldJumpZVelocityOverride)
+{
+	GAMEPLAYATTRIBUTE_REPNOTIFY(UGASCourseCharBaseAttributeSet, JumpZVelocityOverride, OldJumpZVelocityOverride);
+}

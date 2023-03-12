@@ -32,6 +32,7 @@ protected:
 
 	/** Called for movement input */
 	void Move(const FInputActionValue& Value);
+	void StopMove(const FInputActionValue& Value);
 
 	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
@@ -72,7 +73,9 @@ public:
 	float GetMovementSpeed() const;
 	
 	UFUNCTION(BlueprintCallable, Category = "GASCourse|Character|Attributes")
-	float GetCrouchSpeed() const; 
-	
+	float GetCrouchSpeed() const;
+
+	UFUNCTION(BlueprintCallable, Category = "GASCiyrse|Character|Attributes")
+	float GetJumpZVelocityOverride() const;
 };
 

@@ -42,6 +42,10 @@ public:
 	FGameplayAttributeData CrouchSpeed;
 	ATTRIBUTE_ACCESSORS(UGASCourseCharBaseAttributeSet, CrouchSpeed)
 
+	UPROPERTY(BlueprintReadOnly, Category = "Character Base Attributes", ReplicatedUsing=OnRep_JumpZVelocityOverride)
+	FGameplayAttributeData JumpZVelocityOverride;
+	ATTRIBUTE_ACCESSORS(UGASCourseCharBaseAttributeSet, JumpZVelocityOverride)
+	
 protected:
 	
 	// Helper function to proportionally adjust the value of an attribute when it's associated max attribute changes.
@@ -54,5 +58,8 @@ protected:
 	
 	UFUNCTION()
 	virtual void OnRep_CrouchSpeed(const FGameplayAttributeData& OldCrouchSpeed);
+	
+	UFUNCTION()
+	virtual void OnRep_JumpZVelocityOverride(const FGameplayAttributeData& OldJumpZVelocityOverride);
 	
 };
