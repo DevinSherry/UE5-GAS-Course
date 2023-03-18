@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "AbilitySystemComponent.h"
-#include "AttributeSets/GASCourseCharBaseAttributeSet.h"
+#include "Game/GameplayAbilitySystem/GASAbilityTagRelationshipMapping.h"
 #include "GASCourseAbilitySystemComponent.generated.h"
 
 /**
@@ -33,6 +33,12 @@ public:
 		FGameplayAbilityTargetDataHandle& OutTargetDataHandle) const;
 
 	virtual void OnRegister() override;
+	
+	/** Sets the current tag relationship mapping, if null it will clear it out */
+	void SetTagRelationshipMapping(UGASAbilityTagRelationshipMapping* NewMapping);
+	
+	/** Looks at ability tags and gathers additional required and blocking tags */
+	void GetAdditionalActivationTagRequirements(const FGameplayTagContainer& AbilityTags, FGameplayTagContainer& OutActivationRequired, FGameplayTagContainer& OutActivationBlocked) const;
 
 protected:
 
@@ -45,6 +51,14 @@ protected:
 	// Handles to abilities that have their input held.
 	TArray<FGameplayAbilitySpecHandle> InputHeldSpecHandles;
 	
+	// If set, this table is used to look up tag relationships for activate and cancel
+	UPROPERTY()
+	TObjectPtr<UGASAbilityTagRelationshipMapping> AbilityTagRelationshipMapping;
+	
 	void TryActivateAbilitiesOnSpawn();
+	
+	virtual void ApplyAbilityBlockAndCancelTags(const FGameplayTagContainer& AbilityTags, UGameplayAbility* RequestingAbility, bool bEnableBlockTags, const FGameplayTagContainer& BlockTags, bool bExecuteCancelTags, const FGameplayTagContainer& CancelTags) override;
+	virtual void HandleChangeAbilityCanBeCanceled(const FGameplayTagContainer& AbilityTags, UGameplayAbility* RequestingAbility, bool bCanBeCanceled) override;
+	
 	
 };

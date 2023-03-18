@@ -66,14 +66,18 @@ void AGASCourseCharacter::BeginPlay()
 	Super::BeginPlay();
 }
 
-void AGASCourseCharacter::GrantDefaultAbilitySet() const
+void AGASCourseCharacter::InitializeAbilitySystem(UGASCourseAbilitySystemComponent* InASC)
 {
-	if(GetLocalRole() != ROLE_Authority || !GetAbilitySystemComponent() || !DefaultAbilities)
+	if(GetLocalRole() != ROLE_Authority || !InASC)
 	{
 		return;
 	}
-	DefaultAbilities->GiveToAbilitySystem(GetAbilitySystemComponent(), nullptr);
-	
+	if(DefaultAbilitySet)
+	{
+		DefaultAbilitySet->GiveToAbilitySystem(InASC, nullptr);
+	}
+
+	InASC->SetTagRelationshipMapping(AbilityTagRelationshipMapping);
 }
 
 UGASCourseAbilitySystemComponent* AGASCourseCharacter::GetAbilitySystemComponent() const

@@ -29,6 +29,7 @@ void FGASCourseNativeGameplayTags::AddAllTags(UGameplayTagsManager& Manager)
 	AddTag(Status_IsMoving, "Status.IsMoving", "Character is moving, via input methods");
 	AddTag(Status_BlockMovementInput, "Status.MovementInputBlocked", "Character cannot move, via input");
 	AddTag(Status_AbilityInputBlocked, "Status.AbilityInputBlocked", "Character cannot use any abilities");
+	AddTag(Status_Death, "Status.Death", "Character is dead.");
 }
 
 void FGASCourseNativeGameplayTags::AddTag(FGameplayTag& OutTag, const ANSICHAR* TagName, const ANSICHAR* TagComment)

@@ -7,6 +7,7 @@
 #include "GameFramework/Character.h"
 #include "InputActionValue.h"
 #include "Game/GameplayAbilitySystem/GASCourseAbilitySystemComponent.h"
+#include "Game/GameplayAbilitySystem/GASAbilityTagRelationshipMapping.h"
 #include "Game/GameplayAbilitySystem/AttributeSets/GASCourseCharBaseAttributeSet.h"
 #include "GASCourseCharacter.generated.h"
 
@@ -55,11 +56,16 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Getter=GetAbilitySystemComponent)
 	UGASCourseAbilitySystemComponent* AbilitySystemComponent = nullptr;
+
+	void InitializeAbilitySystem(UGASCourseAbilitySystemComponent* InASC);
 	
+		
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Abilities")
-	UGASCourseGameplayAbilitySet* DefaultAbilities;
-	
-	void GrantDefaultAbilitySet() const;
+	UGASCourseGameplayAbilitySet* DefaultAbilitySet;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Abilities")
+	TObjectPtr<UGASAbilityTagRelationshipMapping> AbilityTagRelationshipMapping;
+
 
 public:
 	/** Returns CameraBoom subobject **/
@@ -77,5 +83,18 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "GASCiyrse|Character|Attributes")
 	float GetJumpZVelocityOverride() const;
+
+	UFUNCTION()
+	FORCEINLINE UGASCourseGameplayAbilitySet* GetDefaultAbilitySet() const
+	{
+		return (DefaultAbilitySet) ? DefaultAbilitySet : nullptr;
+	}
+	
+	UFUNCTION()
+	FORCEINLINE UGASAbilityTagRelationshipMapping* GetAbilityTagRelationshipMapping() const
+	{
+		return (AbilityTagRelationshipMapping) ? AbilityTagRelationshipMapping : nullptr;
+	}
 };
+
 

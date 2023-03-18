@@ -59,7 +59,7 @@ void AGASCoursePlayerCharacter::PossessedBy(AController* NewController)
 	{
 		AbilitySystemComponent = Cast<UGASCourseAbilitySystemComponent>(PS->GetAbilitySystemComponent());
 		PS->GetAbilitySystemComponent()->InitAbilityActorInfo(PS, this);
-		GrantDefaultAbilitySet();
+		InitializeAbilitySystem(AbilitySystemComponent);
 
 		if (const APlayerController* PlayerController = Cast<APlayerController>(Controller))
 		{
@@ -80,7 +80,7 @@ void AGASCoursePlayerCharacter::OnRep_PlayerState()
 	{
 		AbilitySystemComponent = Cast<UGASCourseAbilitySystemComponent>(PS->GetAbilitySystemComponent());
 		PS->GetAbilitySystemComponent()->InitAbilityActorInfo(PS, this);
-		GrantDefaultAbilitySet();
+		InitializeAbilitySystem(AbilitySystemComponent);
 
 		if (const APlayerController* PlayerController = Cast<APlayerController>(Controller))
 		{

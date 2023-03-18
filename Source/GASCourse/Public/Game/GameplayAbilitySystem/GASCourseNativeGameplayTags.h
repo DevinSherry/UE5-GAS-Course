@@ -31,6 +31,7 @@ public:
 	FGameplayTag Status_IsMoving;
 	FGameplayTag Status_BlockMovementInput;
 	FGameplayTag Status_AbilityInputBlocked;
+	FGameplayTag Status_Death;
 
 protected:
 

@@ -2,6 +2,8 @@
 
 
 #include "Game/GameplayAbilitySystem/GASCourseAbilitySystemComponent.h"
+
+#include "GASAbilityTagRelationshipMapping.h"
 #include "Game/GameplayAbilitySystem/GASCourseGameplayAbility.h"
 #include "Game/GameplayAbilitySystem/GASCourseNativeGameplayTags.h"
 
@@ -57,8 +59,30 @@ void UGASCourseAbilitySystemComponent::TryActivateAbilitiesOnSpawn()
 	}
 }
 
-void UGASCourseAbilitySystemComponent::GetAbilityTargetData (const FGameplayAbilitySpecHandle AbilityHandle,
-	FGameplayAbilityActivationInfo ActivationInfo, FGameplayAbilityTargetDataHandle& OutTargetDataHandle) const
+void UGASCourseAbilitySystemComponent::ApplyAbilityBlockAndCancelTags(const FGameplayTagContainer& AbilityTags, UGameplayAbility* RequestingAbility, bool bEnableBlockTags, const FGameplayTagContainer& BlockTags, bool bExecuteCancelTags, const FGameplayTagContainer& CancelTags)
+{
+	FGameplayTagContainer ModifiedBlockTags = BlockTags;
+	FGameplayTagContainer ModifiedCancelTags = CancelTags;
+
+	if (AbilityTagRelationshipMapping)
+	{
+		// Use the mapping to expand the ability tags into block and cancel tag
+		AbilityTagRelationshipMapping->GetAbilityTagsToBlockAndCancel(AbilityTags, &ModifiedBlockTags, &ModifiedCancelTags);
+	}
+
+	Super::ApplyAbilityBlockAndCancelTags(AbilityTags, RequestingAbility, bEnableBlockTags, ModifiedBlockTags, bExecuteCancelTags, ModifiedCancelTags);
+
+	//@TODO: Apply any special logic like blocking input or movement
+}
+
+void UGASCourseAbilitySystemComponent::HandleChangeAbilityCanBeCanceled(const FGameplayTagContainer& AbilityTags, UGameplayAbility* RequestingAbility, bool bCanBeCanceled)
+{
+	Super::HandleChangeAbilityCanBeCanceled(AbilityTags, RequestingAbility, bCanBeCanceled);
+
+	//@TODO: Apply any special logic like blocking input or movement
+}
+
+void UGASCourseAbilitySystemComponent::GetAbilityTargetData (const FGameplayAbilitySpecHandle AbilityHandle, FGameplayAbilityActivationInfo ActivationInfo, FGameplayAbilityTargetDataHandle& OutTargetDataHandle) const
 {
 	const TSharedPtr<FAbilityReplicatedDataCache> ReplicatedData = AbilityTargetDataMap.Find(FGameplayAbilitySpecHandleAndPredictionKey(AbilityHandle, ActivationInfo.GetActivationPredictionKey()));
 	if (ReplicatedData.IsValid())
@@ -70,6 +94,20 @@ void UGASCourseAbilitySystemComponent::GetAbilityTargetData (const FGameplayAbil
 void UGASCourseAbilitySystemComponent::OnRegister()
 {
 	Super::OnRegister();
+}
+
+void UGASCourseAbilitySystemComponent::SetTagRelationshipMapping(UGASAbilityTagRelationshipMapping* NewMapping)
+{
+	AbilityTagRelationshipMapping = NewMapping;
+}
+
+void UGASCourseAbilitySystemComponent::GetAdditionalActivationTagRequirements(const FGameplayTagContainer& AbilityTags,
+	FGameplayTagContainer& OutActivationRequired, FGameplayTagContainer& OutActivationBlocked) const
+{
+	if (AbilityTagRelationshipMapping)
+	{
+		AbilityTagRelationshipMapping->GetRequiredAndBlockedActivationTags(AbilityTags, &OutActivationRequired, &OutActivationBlocked);
+	}
 }
 
 void UGASCourseAbilitySystemComponent::AbilityInputTagPressed(const FGameplayTag& InputTag)
