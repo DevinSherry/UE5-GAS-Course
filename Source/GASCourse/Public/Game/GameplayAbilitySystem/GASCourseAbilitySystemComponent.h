@@ -11,6 +11,25 @@
  * 
  */
 
+UINTERFACE(meta = (CannotImplementInterfaceInBlueprint))
+class GASCOURSE_API UGCAbilitySystemReplicationProxyInterface : public UAbilitySystemReplicationProxyInterface
+{
+	GENERATED_BODY()
+};
+
+struct FGameplayAbilityRepAnimMontage;
+
+class GASCOURSE_API IGCAbilitySystemReplicationProxyInterface : public IAbilitySystemReplicationProxyInterface
+{
+	GENERATED_BODY()
+
+public:
+
+	virtual FGameplayAbilityRepAnimMontage& Call_GetRepAnimMontageInfo_Mutable() = 0;
+
+	virtual void Call_OnRep_ReplicatedAnimMontage() = 0;
+};
+
 UCLASS(ClassGroup=AbilitySystem, hidecategories=(Object,LOD,Lighting,Transform,Sockets,TextureStreaming), editinlinenew, meta=(BlueprintSpawnableComponent))
 class GASCOURSE_API UGASCourseAbilitySystemComponent : public UAbilitySystemComponent
 {
@@ -40,6 +59,17 @@ public:
 	/** Looks at ability tags and gathers additional required and blocking tags */
 	void GetAdditionalActivationTagRequirements(const FGameplayTagContainer& AbilityTags, FGameplayTagContainer& OutActivationRequired, FGameplayTagContainer& OutActivationBlocked) const;
 
+	// Replication proxy helpers and accesors - CRITICAL TO KEEP UPDATED ON MAJOR REVISIONS
+	IGCAbilitySystemReplicationProxyInterface* GetExtendedReplicationInterface();
+
+	void ReplicatedAnimMontageOnRepAccesor();
+
+	void SetRepAnimMontageInfoAccessor(const FGameplayAbilityRepAnimMontage& NewRepAnimMontageInfo);
+
+	virtual float PlayMontage(UGameplayAbility* AnimatingAbility, FGameplayAbilityActivationInfo ActivationInfo, UAnimMontage* Montage, float InPlayRate, FName StartSectionName = NAME_None, float StartTimeSeconds = 0.0f) override;
+
+	virtual void CurrentMontageStop(float OverrideBlendOutTime /*= -1.0f*/) override;
+
 protected:
 
 	// Handles to abilities that had their input pressed this frame.
@@ -59,6 +89,5 @@ protected:
 	
 	virtual void ApplyAbilityBlockAndCancelTags(const FGameplayTagContainer& AbilityTags, UGameplayAbility* RequestingAbility, bool bEnableBlockTags, const FGameplayTagContainer& BlockTags, bool bExecuteCancelTags, const FGameplayTagContainer& CancelTags) override;
 	virtual void HandleChangeAbilityCanBeCanceled(const FGameplayTagContainer& AbilityTags, UGameplayAbility* RequestingAbility, bool bCanBeCanceled) override;
-	
 	
 };

@@ -2,7 +2,6 @@
 
 
 #include "Managers/GASCourseAssetManager.h"
-#include "Game/GameplayAbilitySystem/GASCourseNativeGameplayTags.h"
 
 UGASCourseAssetManager::UGASCourseAssetManager()
 {
@@ -20,7 +19,4 @@ UGASCourseAssetManager& UGASCourseAssetManager::Get()
 void UGASCourseAssetManager::StartInitialLoading()
 {
 	Super::StartInitialLoading();
-
-	//Load Native Tags
-	FGASCourseNativeGameplayTags::InitializeNativeTags();
 }

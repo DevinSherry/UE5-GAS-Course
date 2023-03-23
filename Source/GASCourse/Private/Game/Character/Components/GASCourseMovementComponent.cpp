@@ -2,6 +2,8 @@
 
 
 #include "Game/Character/Components/GASCourseMovementComponent.h"
+
+#include "Game/Character/Player/GASCoursePlayerState.h"
 #include "Game/GameplayAbilitySystem/GASCourseNativeGameplayTags.h"
 #include "GASCourse/GASCourseCharacter.h"
 
@@ -20,11 +22,11 @@ void UGASCourseMovementComponent::SetMovementMode(EMovementMode NewMovementMode,
 	}
 	if(NewMovementMode == EMovementMode::MOVE_Falling)
 	{
-		GASCourseASC->SetLooseGameplayTagCount(FGASCourseNativeGameplayTags::Get().Status_Falling, 1);	
+		GASCourseASC->SetLooseGameplayTagCount(Status_Falling, 1);	
 	}
 	else
 	{
-		GASCourseASC->SetLooseGameplayTagCount(FGASCourseNativeGameplayTags::Get().Status_Falling, 0);
+		GASCourseASC->SetLooseGameplayTagCount(Status_Falling, 0);
 	}
 
 	Super::SetMovementMode(NewMovementMode, NewCustomMode);
@@ -33,7 +35,8 @@ void UGASCourseMovementComponent::SetMovementMode(EMovementMode NewMovementMode,
 float UGASCourseMovementComponent::GetMaxSpeed() const
 {
 	const AGASCourseCharacter* Owner = Cast<AGASCourseCharacter>(GetOwner());
-	if (!Owner)
+	const AGASCoursePlayerState* PS = Cast<AGASCoursePlayerState>(Owner->GetPlayerState());
+	if (!Owner || !PS)
 	{
 		UE_LOG(LogTemp, Error, TEXT("%s() No Owner"), *FString(__FUNCTION__));
 		return Super::GetMaxSpeed();
@@ -43,7 +46,7 @@ float UGASCourseMovementComponent::GetMaxSpeed() const
 	{
 	case MOVE_Walking:
 	case MOVE_NavWalking:
-	return IsCrouching() ? Owner->GetCrouchSpeed() : Owner->GetMovementSpeed();
+	return IsCrouching() ? Owner->GetCrouchSpeed() : MaxWalkSpeed;
 	case MOVE_Falling:
 	return MaxWalkSpeed;
 	case MOVE_Swimming:

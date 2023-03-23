@@ -21,6 +21,7 @@ public:
 	AGASCoursePlayerState();
 	
 	virtual UGASCourseAbilitySystemComponent* GetAbilitySystemComponent() const override;
+	virtual bool ReplicateSubobjects(class UActorChannel *Channel, class FOutBunch *Bunch, FReplicationFlags *RepFlags) override;
 
 protected:
 	

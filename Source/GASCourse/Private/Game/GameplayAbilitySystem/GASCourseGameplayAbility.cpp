@@ -75,9 +75,6 @@ bool UGASCourseGameplayAbility::CanActivateAbility(const FGameplayAbilitySpecHan
 		return false;
 	}
 
-	UGASCourseAbilitySystemComponent* ASC = CastChecked<UGASCourseAbilitySystemComponent>(ActorInfo->AbilitySystemComponent.Get());
-	const FGASCourseNativeGameplayTags& GameplayTags = FGASCourseNativeGameplayTags::Get();
-
 	if (!Super::CanActivateAbility(Handle, ActorInfo, SourceTags, TargetTags, OptionalRelevantTags))
 	{
 		return false;
@@ -212,8 +209,7 @@ bool UGASCourseGameplayAbility::DoesAbilitySatisfyTagRequirements(const UAbility
 
 		if (AbilitySystemComponentTags.HasAny(AllBlockedTags))
 		{
-			const FGASCourseNativeGameplayTags& GameplayTags = FGASCourseNativeGameplayTags::Get();
-			if (OptionalRelevantTags && AbilitySystemComponentTags.HasTag(GameplayTags.Status_Death))
+			if (OptionalRelevantTags && AbilitySystemComponentTags.HasTag(Status_Death))
 			{
 				// If player is dead and was rejected due to blocking tags, give that feedback
 			}

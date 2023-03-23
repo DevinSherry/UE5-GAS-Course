@@ -9,12 +9,47 @@
 #include "Game/GameplayAbilitySystem/GASCourseAbilitySystemComponent.h"
 #include "Game/GameplayAbilitySystem/GASAbilityTagRelationshipMapping.h"
 #include "Game/GameplayAbilitySystem/AttributeSets/GASCourseCharBaseAttributeSet.h"
+#include "Net/UnrealNetwork.h"
 #include "GASCourseCharacter.generated.h"
 
 class UGASCourseGameplayAbilitySet;
 
+USTRUCT(BlueprintType)
+struct GASCOURSE_API FReplicationProxyVarList
+{
+	GENERATED_BODY()
+
+public:
+
+	FReplicationProxyVarList() :
+		GameplayTagsBitMask(0),
+		AttributeOne(0.0f),
+		AttributeTwo(0.0f)
+	{
+		
+	}
+
+	void Copy(uint8 inGameplayTagsBitMask, float inAttributeOne, float inAttributeTwo)
+	{
+		GameplayTagsBitMask = inGameplayTagsBitMask;
+		AttributeOne = inAttributeOne;
+		AttributeTwo = inAttributeTwo;
+	}
+	
+public:
+
+	UPROPERTY()
+	uint8 GameplayTagsBitMask;
+	
+	UPROPERTY()
+	float AttributeOne;
+	
+	UPROPERTY()
+	float AttributeTwo;
+};
+
 UCLASS(config=Game)
-class AGASCourseCharacter : public ACharacter, public IAbilitySystemInterface
+class AGASCourseCharacter : public ACharacter, public IAbilitySystemInterface, public IGCAbilitySystemReplicationProxyInterface
 {
 	GENERATED_BODY()
 
@@ -25,9 +60,18 @@ class AGASCourseCharacter : public ACharacter, public IAbilitySystemInterface
 	/** Follow camera */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* FollowCamera;
+	
+	/** Follow camera */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Champion, meta = (AllowPrivateAccess = "true"))
+	class UGASCourseChampionComponent* ChampionComponent;
 
 public:
+	
 	AGASCourseCharacter(const class FObjectInitializer& ObjectInitializer);
+	
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	
+	FReplicationProxyVarList& Call_GetReplicationProxyVarList_Mutable();
 
 protected:
 
@@ -48,6 +92,13 @@ protected:
 	//Override these functions in order to jump while crouched, if movement component allows for it.
 	virtual bool CanJumpInternal_Implementation() const override;
 	virtual void Jump() override;
+
+	UFUNCTION()
+	void OnRep_ReplicationVarList();
+	
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_ReplicationVarList)
+	FReplicationProxyVarList ReplicationVarList;
+
 	
 protected:
 	
@@ -58,10 +109,9 @@ protected:
 	UGASCourseAbilitySystemComponent* AbilitySystemComponent = nullptr;
 
 	void InitializeAbilitySystem(UGASCourseAbilitySystemComponent* InASC);
-	
 		
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Abilities")
-	UGASCourseGameplayAbilitySet* DefaultAbilitySet;
+	TObjectPtr<UGASCourseGameplayAbilitySet> DefaultAbilitySet;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Abilities")
 	TObjectPtr<UGASAbilityTagRelationshipMapping> AbilityTagRelationshipMapping;
@@ -72,18 +122,17 @@ public:
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
-
+	
+	//FORCEINLINE class UGASCourseChampionComponent* GetChampionComponent() const { return ChampionComponent; }
+	
 	virtual UGASCourseAbilitySystemComponent* GetAbilitySystemComponent() const override;
-
-	UFUNCTION(BlueprintCallable, Category = "GASCourse|Character|Attributes")
-	float GetMovementSpeed() const;
 	
 	UFUNCTION(BlueprintCallable, Category = "GASCourse|Character|Attributes")
 	float GetCrouchSpeed() const;
 
 	UFUNCTION(BlueprintCallable, Category = "GASCiyrse|Character|Attributes")
 	float GetJumpZVelocityOverride() const;
-
+	
 	UFUNCTION()
 	FORCEINLINE UGASCourseGameplayAbilitySet* GetDefaultAbilitySet() const
 	{
@@ -95,6 +144,47 @@ public:
 	{
 		return (AbilityTagRelationshipMapping) ? AbilityTagRelationshipMapping : nullptr;
 	}
+
+		UPROPERTY(ReplicatedUsing = Call_OnRep_ReplicatedAnimMontage)
+	FGameplayAbilityRepAnimMontage RepAnimMontageInfo;
+
+	void ForceReplication() override;
+
+	UFUNCTION(NetMulticast, unreliable)
+	void NetMulticast_InvokeGameplayCueExecuted_FromSpec(const FGameplayEffectSpecForRPC Spec, FPredictionKey PredictionKey) override;
+
+	UFUNCTION(NetMulticast, unreliable)
+	void NetMulticast_InvokeGameplayCueExecuted(const FGameplayTag GameplayCueTag, FPredictionKey PredictionKey, FGameplayEffectContextHandle EffectContext) override;
+
+	UFUNCTION(NetMulticast, unreliable)
+	void NetMulticast_InvokeGameplayCuesExecuted(const FGameplayTagContainer GameplayCueTags, FPredictionKey PredictionKey, FGameplayEffectContextHandle EffectContext) override;
+
+	UFUNCTION(NetMulticast, unreliable)
+	void NetMulticast_InvokeGameplayCueExecuted_WithParams(const FGameplayTag GameplayCueTag, FPredictionKey PredictionKey, FGameplayCueParameters GameplayCueParameters) override;
+
+	UFUNCTION(NetMulticast, unreliable)
+	void NetMulticast_InvokeGameplayCuesExecuted_WithParams(const FGameplayTagContainer GameplayCueTags, FPredictionKey PredictionKey, FGameplayCueParameters GameplayCueParameters) override;
+
+	UFUNCTION(NetMulticast, unreliable)
+	void NetMulticast_InvokeGameplayCueAdded(const FGameplayTag GameplayCueTag, FPredictionKey PredictionKey, FGameplayEffectContextHandle EffectContext) override;
+
+	UFUNCTION(NetMulticast, unreliable)
+	void NetMulticast_InvokeGameplayCueAdded_WithParams(const FGameplayTag GameplayCueTag, FPredictionKey PredictionKey, FGameplayCueParameters Parameters) override;
+
+	UFUNCTION(NetMulticast, unreliable)
+	void NetMulticast_InvokeGameplayCueAddedAndWhileActive_FromSpec(const FGameplayEffectSpecForRPC& Spec, FPredictionKey PredictionKey) override;
+
+	UFUNCTION(NetMulticast, unreliable)
+	void NetMulticast_InvokeGameplayCueAddedAndWhileActive_WithParams(const FGameplayTag GameplayCueTag, FPredictionKey PredictionKey, FGameplayCueParameters GameplayCueParameters) override;
+
+	UFUNCTION(NetMulticast, unreliable)
+	void NetMulticast_InvokeGameplayCuesAddedAndWhileActive_WithParams(const FGameplayTagContainer GameplayCueTags, FPredictionKey PredictionKey, FGameplayCueParameters GameplayCueParameters) override;
+	  
+	FGameplayAbilityRepAnimMontage& Call_GetRepAnimMontageInfo_Mutable() override;
+
+	UFUNCTION()
+	void Call_OnRep_ReplicatedAnimMontage() override;
+	// End: IAbilitySystemReplicationProxyInterface ~~ 
 };
 
 

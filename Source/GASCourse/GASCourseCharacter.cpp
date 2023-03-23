@@ -3,6 +3,7 @@
 #include "GASCourseCharacter.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "Game/Character/Components/GASCourseChampionComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
 #include "GameFramework/SpringArmComponent.h"
@@ -17,6 +18,14 @@
 AGASCourseCharacter::AGASCourseCharacter(const class FObjectInitializer& ObjectInitializer) :
 	Super(ObjectInitializer.SetDefaultSubobjectClass<UGASCourseMovementComponent>(ACharacter::CharacterMovementComponentName))
 {
+	//Initialize Champion Component
+	/*
+	ChampionComponent = CreateDefaultSubobject<UGASCourseChampionComponent>(TEXT("Champion Component"));
+	ChampionComponent->SetIsReplicated(true);
+	*/
+
+	SetReplicates(true);
+	
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
 		
@@ -60,6 +69,13 @@ AGASCourseCharacter::AGASCourseCharacter(const class FObjectInitializer& ObjectI
 	AbilitySystemComponent->SetIsReplicated(true);
 }
 
+void AGASCourseCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(AGASCourseCharacter, ReplicationVarList);
+	DOREPLIFETIME(AGASCourseCharacter, RepAnimMontageInfo);
+}
+
 void AGASCourseCharacter::BeginPlay()
 {
 	// Call the base class  
@@ -83,16 +99,6 @@ void AGASCourseCharacter::InitializeAbilitySystem(UGASCourseAbilitySystemCompone
 UGASCourseAbilitySystemComponent* AGASCourseCharacter::GetAbilitySystemComponent() const
 {
 	return AbilitySystemComponent;
-}
-
-float AGASCourseCharacter::GetMovementSpeed() const
-{
-	if (const UGASCourseCharBaseAttributeSet* BaseAttributeSet = GetAbilitySystemComponent()->GetSetChecked<UGASCourseCharBaseAttributeSet>())
-	{
-		return BaseAttributeSet->GetMovementSpeed();
-	}
-	UE_LOG(LogTemp, Warning, TEXT("NO VALID ATTRIBUTE SET FOUND"));
-	return 0.0f;
 }
 
 float AGASCourseCharacter::GetCrouchSpeed() const
@@ -125,13 +131,13 @@ void AGASCourseCharacter::Move(const FInputActionValue& Value)
 		if (UGASCourseAbilitySystemComponent* GASCourseASC = GetAbilitySystemComponent())
 		{
 			//Block any type of movement if character has tag Status.MovementInputBlocked
-			if(GASCourseASC->HasMatchingGameplayTag(FGASCourseNativeGameplayTags::Get().Status_BlockMovementInput))
+			if(GASCourseASC->HasMatchingGameplayTag(Status_BlockMovementInput))
 			{
 				return;
 			}
 			if(MovementVector.Length() > 0.0f)
 			{
-				GASCourseASC->SetLooseGameplayTagCount(FGASCourseNativeGameplayTags::Get().Status_IsMoving, 1);
+				GASCourseASC->SetLooseGameplayTagCount(Status_IsMoving, 1);
 			}
 			// find out which way is forward
 			const FRotator Rotation = Controller->GetControlRotation();
@@ -160,13 +166,13 @@ void AGASCourseCharacter::StopMove(const FInputActionValue& Value)
 		if (UGASCourseAbilitySystemComponent* GASCourseASC = GetAbilitySystemComponent())
 		{
 			//Block any type of movement if character has tag Status.MovementInputBlocked
-			if(GASCourseASC->HasMatchingGameplayTag(FGASCourseNativeGameplayTags::Get().Status_BlockMovementInput))
+			if(GASCourseASC->HasMatchingGameplayTag(Status_BlockMovementInput))
 			{
 				return;
 			}
 			if(FMath::IsNearlyZero(MovementVector.Length()))
 			{
-				GASCourseASC->SetLooseGameplayTagCount(FGASCourseNativeGameplayTags::Get().Status_IsMoving, 0);
+				GASCourseASC->SetLooseGameplayTagCount(Status_IsMoving, 0);
 			}
 		}
 	}
@@ -189,7 +195,7 @@ void AGASCourseCharacter::Input_Crouch(const FInputActionValue& Value)
 {
 	const UGASCourseAbilitySystemComponent* GASCourseASC = GetAbilitySystemComponent();
 	//Block any type of movement if character has tag Status.MovementInputBlocked
-	if(GASCourseASC->HasMatchingGameplayTag(FGASCourseNativeGameplayTags::Get().Status_BlockMovementInput))
+	if(GASCourseASC->HasMatchingGameplayTag(Status_BlockMovementInput))
 	{
 		return;
 	}
@@ -209,12 +215,12 @@ void AGASCourseCharacter::OnStartCrouch(float HalfHeightAdjust, float ScaledHalf
 {
 	UGASCourseAbilitySystemComponent* GASCourseASC = GetAbilitySystemComponent();
 	//Block any type of movement if character has tag Status.MovementInputBlocked
-	if(GASCourseASC->HasMatchingGameplayTag(FGASCourseNativeGameplayTags::Get().Status_BlockMovementInput))
+	if(GASCourseASC->HasMatchingGameplayTag(Status_BlockMovementInput))
 	{
 		return;
 	}
 	
-	GASCourseASC->SetLooseGameplayTagCount(FGASCourseNativeGameplayTags::Get().Status_Crouching, 1);
+	GASCourseASC->SetLooseGameplayTagCount(Status_Crouching, 1);
 	Super::OnStartCrouch(HalfHeightAdjust, ScaledHalfHeightAdjust);
 }
 
@@ -222,19 +228,19 @@ void AGASCourseCharacter::OnEndCrouch(float HalfHeightAdjust, float ScaledHalfHe
 {
 	UGASCourseAbilitySystemComponent* GASCourseASC = GetAbilitySystemComponent();
 	//Block any type of movement if character has tag Status.MovementInputBlocked
-	if(GASCourseASC->HasMatchingGameplayTag(FGASCourseNativeGameplayTags::Get().Status_BlockMovementInput))
+	if(GASCourseASC->HasMatchingGameplayTag(Status_BlockMovementInput))
 	{
 		return;
 	}
 	
-	GASCourseASC->SetLooseGameplayTagCount(FGASCourseNativeGameplayTags::Get().Status_Crouching, 0);
+	GASCourseASC->SetLooseGameplayTagCount(Status_Crouching, 0);
 	Super::OnEndCrouch(HalfHeightAdjust, ScaledHalfHeightAdjust);
 }
 
 bool AGASCourseCharacter::CanJumpInternal_Implementation() const
 {
 	const UGASCourseAbilitySystemComponent* GASCourseASC = GetAbilitySystemComponent();
-	if(GASCourseASC->HasMatchingGameplayTag(FGASCourseNativeGameplayTags::Get().Status_BlockMovementInput))
+	if(GASCourseASC->HasMatchingGameplayTag(Status_BlockMovementInput))
 	{
 		return false;
 	}
@@ -256,6 +262,155 @@ void AGASCourseCharacter::Jump()
 	}
 	
 	Super::Jump();
+}
+
+FReplicationProxyVarList& AGASCourseCharacter::Call_GetReplicationProxyVarList_Mutable()
+{
+	MARK_PROPERTY_DIRTY_FROM_NAME(AGASCourseCharacter, ReplicationVarList, this);
+	return ReplicationVarList;
+}
+
+void AGASCourseCharacter::OnRep_ReplicationVarList()
+{
+	UGASCourseAbilitySystemComponent* ASC = GetAbilitySystemComponent();
+	if (ASC)
+	{
+		// Update ASC client version of RepAnimMontageInfo
+		ASC->SetNumericAttributeBase(UGASCourseCharBaseAttributeSet::GetMovementSpeedAttribute(), ReplicationVarList.AttributeOne);
+		ASC->SetNumericAttributeBase(UGASCourseCharBaseAttributeSet::GetCrouchSpeedAttribute(), ReplicationVarList.AttributeTwo);
+
+		// Here you should add the tags to the simulated proxies ie.:
+		if(bool bFirstTagExists = ((ReplicationVarList.GameplayTagsBitMask & 0x01) != 0))
+		{
+			ASC->AddLooseGameplayTag(FGameplayTag::RequestGameplayTag("Data.Sample"));
+		}
+		else
+		{
+			ASC->RemoveLooseGameplayTag(FGameplayTag::RequestGameplayTag("Data.Sample"));
+		}
+	}
+}
+
+void AGASCourseCharacter::ForceReplication()
+{
+	ForceNetUpdate();
+}
+
+void AGASCourseCharacter::NetMulticast_InvokeGameplayCueExecuted_FromSpec_Implementation(const FGameplayEffectSpecForRPC Spec, FPredictionKey PredictionKey)
+{
+	if (HasAuthority() || PredictionKey.IsLocalClientKey() == false)
+	{
+		GetAbilitySystemComponent()->InvokeGameplayCueEvent(Spec, EGameplayCueEvent::Executed);
+	}
+}
+
+void AGASCourseCharacter::NetMulticast_InvokeGameplayCueExecuted_Implementation(const FGameplayTag GameplayCueTag, FPredictionKey PredictionKey, FGameplayEffectContextHandle EffectContext)
+{
+	if (HasAuthority() || PredictionKey.IsLocalClientKey() == false)
+	{
+		GetAbilitySystemComponent()->InvokeGameplayCueEvent(GameplayCueTag, EGameplayCueEvent::Executed, EffectContext);
+	}
+}
+
+void AGASCourseCharacter::NetMulticast_InvokeGameplayCuesExecuted_Implementation(const FGameplayTagContainer GameplayCueTags, FPredictionKey PredictionKey, FGameplayEffectContextHandle EffectContext)
+{
+	if (HasAuthority() || PredictionKey.IsLocalClientKey() == false)
+	{
+		for (const FGameplayTag& GameplayCueTag : GameplayCueTags)
+		{
+			GetAbilitySystemComponent()->InvokeGameplayCueEvent(GameplayCueTag, EGameplayCueEvent::Executed, EffectContext);
+		}
+	}
+}
+
+void AGASCourseCharacter::NetMulticast_InvokeGameplayCueExecuted_WithParams_Implementation(const FGameplayTag GameplayCueTag, FPredictionKey PredictionKey, FGameplayCueParameters GameplayCueParameters)
+{
+	if (HasAuthority() || PredictionKey.IsLocalClientKey() == false)
+	{
+		GetAbilitySystemComponent()->InvokeGameplayCueEvent(GameplayCueTag, EGameplayCueEvent::Executed, GameplayCueParameters);
+	}
+}
+
+void AGASCourseCharacter::NetMulticast_InvokeGameplayCuesExecuted_WithParams_Implementation(const FGameplayTagContainer GameplayCueTags, FPredictionKey PredictionKey, FGameplayCueParameters GameplayCueParameters)
+{
+	if (HasAuthority() || PredictionKey.IsLocalClientKey() == false)
+	{
+		for (const FGameplayTag& GameplayCueTag : GameplayCueTags)
+		{
+			GetAbilitySystemComponent()->InvokeGameplayCueEvent(GameplayCueTag, EGameplayCueEvent::Executed, GameplayCueParameters);
+		}
+	}
+}
+
+void AGASCourseCharacter::NetMulticast_InvokeGameplayCueAdded_Implementation(const FGameplayTag GameplayCueTag, FPredictionKey PredictionKey, FGameplayEffectContextHandle EffectContext)
+{
+	if (HasAuthority() || PredictionKey.IsLocalClientKey() == false)
+	{
+		GetAbilitySystemComponent()->InvokeGameplayCueEvent(GameplayCueTag, EGameplayCueEvent::OnActive, EffectContext);
+	}
+}
+
+void AGASCourseCharacter::NetMulticast_InvokeGameplayCueAdded_WithParams_Implementation(const FGameplayTag GameplayCueTag, FPredictionKey PredictionKey, FGameplayCueParameters Parameters)
+{
+	// If server generated prediction key and auto proxy, skip this message. 
+	// This is an RPC from mixed replication mode code, we will get the "real" message from our OnRep on the autonomous proxy
+	// See UAbilitySystemComponent::AddGameplayCue_Internal for more info.
+	
+	bool bIsMixedReplicationFromServer = (GetAbilitySystemComponent()->ReplicationMode == EGameplayEffectReplicationMode::Mixed && PredictionKey.IsServerInitiatedKey() && IsLocallyControlled());
+
+	if (HasAuthority() || (PredictionKey.IsLocalClientKey() == false && !bIsMixedReplicationFromServer))
+	{
+		GetAbilitySystemComponent()->InvokeGameplayCueEvent(GameplayCueTag, EGameplayCueEvent::OnActive, Parameters);
+	}
+}
+
+
+void AGASCourseCharacter::NetMulticast_InvokeGameplayCueAddedAndWhileActive_FromSpec_Implementation(const FGameplayEffectSpecForRPC& Spec, FPredictionKey PredictionKey)
+{
+	if (HasAuthority() || PredictionKey.IsLocalClientKey() == false)
+	{
+		GetAbilitySystemComponent()->InvokeGameplayCueEvent(Spec, EGameplayCueEvent::OnActive);
+		GetAbilitySystemComponent()->InvokeGameplayCueEvent(Spec, EGameplayCueEvent::WhileActive);
+	}
+}
+
+void AGASCourseCharacter::NetMulticast_InvokeGameplayCueAddedAndWhileActive_WithParams_Implementation(const FGameplayTag GameplayCueTag, FPredictionKey PredictionKey, FGameplayCueParameters GameplayCueParameters)
+{
+	if (HasAuthority() || PredictionKey.IsLocalClientKey() == false)
+	{
+		GetAbilitySystemComponent()->InvokeGameplayCueEvent(GameplayCueTag, EGameplayCueEvent::OnActive, GameplayCueParameters);
+		GetAbilitySystemComponent()->InvokeGameplayCueEvent(GameplayCueTag, EGameplayCueEvent::WhileActive, GameplayCueParameters);
+	}
+}
+
+void AGASCourseCharacter::NetMulticast_InvokeGameplayCuesAddedAndWhileActive_WithParams_Implementation(const FGameplayTagContainer GameplayCueTags, FPredictionKey PredictionKey, FGameplayCueParameters GameplayCueParameters)
+{
+	if (HasAuthority() || PredictionKey.IsLocalClientKey() == false)
+	{
+		for (const FGameplayTag& GameplayCueTag : GameplayCueTags)
+		{
+			GetAbilitySystemComponent()->InvokeGameplayCueEvent(GameplayCueTag, EGameplayCueEvent::OnActive, GameplayCueParameters);
+			GetAbilitySystemComponent()->InvokeGameplayCueEvent(GameplayCueTag, EGameplayCueEvent::WhileActive, GameplayCueParameters);
+		}
+	}
+}
+
+FGameplayAbilityRepAnimMontage& AGASCourseCharacter::Call_GetRepAnimMontageInfo_Mutable()
+{
+	MARK_PROPERTY_DIRTY_FROM_NAME(AGASCourseCharacter, RepAnimMontageInfo, this);
+	return RepAnimMontageInfo;
+}
+
+void AGASCourseCharacter::Call_OnRep_ReplicatedAnimMontage()
+{
+	UGASCourseAbilitySystemComponent* ASC = GetAbilitySystemComponent();
+	if (ASC)
+	{
+		// Update ASC client version of RepAnimMontageInfo
+		ASC->SetRepAnimMontageInfoAccessor(RepAnimMontageInfo);
+		// Call OnRep of AnimMontageInfo
+		ASC->ReplicatedAnimMontageOnRepAccesor();
+	}
 }
 
 

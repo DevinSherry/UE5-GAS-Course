@@ -7,10 +7,8 @@
 #include "InputAction.h"
 #include "GASCourseInputConfig.h"
 #include "GameplayTagContainer.h"
-#include "Game/GameplayAbilitySystem/GASCourseGameplayAbilitySet.h"
 #include "Misc/AssertionMacros.h"
 #include "HAL/Platform.h"
-#include "UObject/UObjectGlobals.h"
 #include "GASCourseEnhancedInputComponent.generated.h"
 
 class UEnhancedInputLocalPlayerSubsystem;

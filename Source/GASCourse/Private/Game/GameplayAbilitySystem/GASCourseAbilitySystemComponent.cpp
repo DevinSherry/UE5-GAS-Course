@@ -11,6 +11,7 @@ UGASCourseAbilitySystemComponent::UGASCourseAbilitySystemComponent(const FObject
 	: Super(ObjectInitializer)
 {
 	ReplicationMode = EGameplayEffectReplicationMode::Mixed;
+	ReplicationProxyEnabled = true;
 }
 
 void UGASCourseAbilitySystemComponent::InitAbilityActorInfo(AActor* InOwnerActor, AActor* InAvatarActor)
@@ -142,9 +143,7 @@ void UGASCourseAbilitySystemComponent::AbilityInputTagReleased(const FGameplayTa
 
 void UGASCourseAbilitySystemComponent::ProcessAbilityInput(float DeltaTime, bool bGamePaused)
 {
-	const FGASCourseNativeGameplayTags& NativeGameplayTags = FGASCourseNativeGameplayTags::Get();
-	
-	if (HasMatchingGameplayTag(NativeGameplayTags.Status_AbilityInputBlocked))
+	if (HasMatchingGameplayTag(Status_AbilityInputBlocked))
 	{
 		ClearAbilityInput();
 		return;
@@ -243,4 +242,128 @@ void UGASCourseAbilitySystemComponent::ClearAbilityInput()
 	InputPressedSpecHandles.Reset();
 	InputReleasedSpecHandles.Reset();
 	InputHeldSpecHandles.Reset();
+}
+
+IGCAbilitySystemReplicationProxyInterface* UGASCourseAbilitySystemComponent::GetExtendedReplicationInterface()
+{
+	if (ReplicationProxyEnabled)
+	{
+		// Note the expectation is that when the avatar actor is null (e.g during a respawn) that we do return null and calling code handles this (by probably not replicating whatever it was going to)
+		return Cast<IGCAbilitySystemReplicationProxyInterface>(GetAvatarActor_Direct());
+	}
+
+	return nullptr;
+}
+
+void UGASCourseAbilitySystemComponent::ReplicatedAnimMontageOnRepAccesor()
+{
+	OnRep_ReplicatedAnimMontage();
+}
+
+void UGASCourseAbilitySystemComponent::SetRepAnimMontageInfoAccessor(const FGameplayAbilityRepAnimMontage& NewRepAnimMontageInfo)
+{
+	SetRepAnimMontageInfo(NewRepAnimMontageInfo);
+}
+
+float UGASCourseAbilitySystemComponent::PlayMontage(UGameplayAbility* InAnimatingAbility, FGameplayAbilityActivationInfo ActivationInfo, UAnimMontage* NewAnimMontage, float InPlayRate, FName StartSectionName, float StartTimeSeconds)
+{
+	float Duration = -1.f;
+
+	UAnimInstance* AnimInstance = AbilityActorInfo.IsValid() ? AbilityActorInfo->GetAnimInstance() : nullptr;
+	if (AnimInstance && NewAnimMontage)
+	{
+		Duration = AnimInstance->Montage_Play(NewAnimMontage, InPlayRate, EMontagePlayReturnType::MontageLength, StartTimeSeconds);
+		if (Duration > 0.f)
+		{
+			if (LocalAnimMontageInfo.AnimatingAbility && LocalAnimMontageInfo.AnimatingAbility != InAnimatingAbility)
+			{
+				// The ability that was previously animating will have already gotten the 'interrupted' callback.
+				// It may be a good idea to make this a global policy and 'cancel' the ability.
+				// 
+				// For now, we expect it to end itself when this happens.
+			}
+
+			if (NewAnimMontage->HasRootMotion() && AnimInstance->GetOwningActor())
+			{
+				UE_LOG(LogRootMotion, Log, TEXT("UAbilitySystemComponent::PlayMontage %s, Role: %s")
+					, *GetNameSafe(NewAnimMontage)
+					, *UEnum::GetValueAsString(TEXT("Engine.ENetRole"), AnimInstance->GetOwningActor()->GetLocalRole())
+				);
+			}
+
+			LocalAnimMontageInfo.AnimMontage = NewAnimMontage;
+			LocalAnimMontageInfo.AnimatingAbility = InAnimatingAbility;
+			LocalAnimMontageInfo.PlayInstanceId = (LocalAnimMontageInfo.PlayInstanceId < UINT8_MAX ? LocalAnimMontageInfo.PlayInstanceId + 1 : 0);
+
+			if (InAnimatingAbility)
+			{
+				InAnimatingAbility->SetCurrentMontage(NewAnimMontage);
+			}
+
+			// Start at a given Section.
+			if (StartSectionName != NAME_None)
+			{
+				AnimInstance->Montage_JumpToSection(StartSectionName, NewAnimMontage);
+			}
+
+			// Replicate to non owners
+			if (IsOwnerActorAuthoritative())
+			{
+				IGCAbilitySystemReplicationProxyInterface* ReplicationInterface = GetExtendedReplicationInterface();
+				FGameplayAbilityRepAnimMontage& MutableRepAnimMontageInfo = ReplicationInterface ? ReplicationInterface->Call_GetRepAnimMontageInfo_Mutable() : GetRepAnimMontageInfo_Mutable();
+
+				// Those are static parameters, they are only set when the montage is played. They are not changed after that.
+				MutableRepAnimMontageInfo.AnimMontage = NewAnimMontage;
+				MutableRepAnimMontageInfo.PlayInstanceId = (MutableRepAnimMontageInfo.PlayInstanceId < UINT8_MAX ? MutableRepAnimMontageInfo.PlayInstanceId + 1 : 0);
+
+				MutableRepAnimMontageInfo.SectionIdToPlay = 0;
+				if (MutableRepAnimMontageInfo.AnimMontage && StartSectionName != NAME_None)
+				{
+					// we add one so INDEX_NONE can be used in the on rep
+					MutableRepAnimMontageInfo.SectionIdToPlay = MutableRepAnimMontageInfo.AnimMontage->GetSectionIndex(StartSectionName) + 1;
+				}
+
+				// Update parameters that change during Montage life time.
+				AnimMontage_UpdateReplicatedData(MutableRepAnimMontageInfo);
+
+				// Force net update on our avatar actor
+				if (AbilityActorInfo->AvatarActor != nullptr)
+				{
+					AbilityActorInfo->AvatarActor->ForceNetUpdate();
+				}
+			}
+			else
+			{
+				// If this prediction key is rejected, we need to end the preview
+				FPredictionKey PredictionKey = GetPredictionKeyForNewAction();
+				if (PredictionKey.IsValidKey())
+				{
+					PredictionKey.NewRejectedDelegate().BindUObject(this, &UGASCourseAbilitySystemComponent::OnPredictiveMontageRejected, NewAnimMontage);
+				}
+			}
+		}
+	}
+
+	return Duration;
+}
+
+void UGASCourseAbilitySystemComponent::CurrentMontageStop(float OverrideBlendOutTime /*= -1.0f*/)
+{
+	UAnimInstance* AnimInstance = AbilityActorInfo.IsValid() ? AbilityActorInfo->GetAnimInstance() : nullptr;
+	UAnimMontage* MontageToStop = LocalAnimMontageInfo.AnimMontage;
+	bool bShouldStopMontage = AnimInstance && MontageToStop && !AnimInstance->Montage_GetIsStopped(MontageToStop);
+
+	if (bShouldStopMontage)
+	{
+		const float BlendOutTime = (OverrideBlendOutTime >= 0.0f ? OverrideBlendOutTime : MontageToStop->BlendOut.GetBlendTime());
+
+		AnimInstance->Montage_Stop(BlendOutTime, MontageToStop);
+
+		if (IsOwnerActorAuthoritative())
+		{
+			IGCAbilitySystemReplicationProxyInterface* ReplicationInterface = GetExtendedReplicationInterface();
+			FGameplayAbilityRepAnimMontage& MutableRepAnimMontageInfo = ReplicationInterface ? ReplicationInterface->Call_GetRepAnimMontageInfo_Mutable() : GetRepAnimMontageInfo_Mutable();
+			AnimMontage_UpdateReplicatedData(MutableRepAnimMontageInfo);
+		}
+	}
 }

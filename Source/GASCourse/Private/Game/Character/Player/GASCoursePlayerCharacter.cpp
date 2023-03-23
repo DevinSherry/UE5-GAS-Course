@@ -6,6 +6,7 @@
 #include "Game/Input/GASCourseEnhancedInputComponent.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "Game/Character/Components/GASCourseChampionComponent.h"
 #include "Game/GameplayAbilitySystem/GASCourseNativeGameplayTags.h"
 
 //////////////////////////////////////////////////////////////////////////
@@ -26,24 +27,24 @@ void AGASCoursePlayerCharacter::SetupPlayerInputComponent(UInputComponent* Playe
 	if (UGASCourseEnhancedInputComponent* EnhancedInputComponent = CastChecked<UGASCourseEnhancedInputComponent>(PlayerInputComponent))
 	{
 		check(EnhancedInputComponent);
-		const FGASCourseNativeGameplayTags& GameplayTags = FGASCourseNativeGameplayTags::Get();
+		
 		if(InputConfig)
 		{
 			check(InputConfig);
 			//Jumping
-			EnhancedInputComponent->BindActionByTag(InputConfig, GameplayTags.InputTag_Jump, ETriggerEvent::Triggered, this, &ThisClass::Jump);
-			EnhancedInputComponent->BindActionByTag(InputConfig, GameplayTags.InputTag_Jump, ETriggerEvent::Completed, this, &ThisClass::StopJumping);
+			EnhancedInputComponent->BindActionByTag(InputConfig, InputTag_Jump, ETriggerEvent::Triggered, this, &ThisClass::Jump);
+			EnhancedInputComponent->BindActionByTag(InputConfig, InputTag_Jump, ETriggerEvent::Completed, this, &ThisClass::StopJumping);
 
 			//Moving
-			EnhancedInputComponent->BindActionByTag(InputConfig, GameplayTags.InputTag_Move, ETriggerEvent::Triggered, this, &ThisClass::Move);
-			EnhancedInputComponent->BindActionByTag(InputConfig, GameplayTags.InputTag_Move, ETriggerEvent::Completed, this, &ThisClass::StopMove);
+			EnhancedInputComponent->BindActionByTag(InputConfig, InputTag_Move, ETriggerEvent::Triggered, this, &ThisClass::Move);
+			EnhancedInputComponent->BindActionByTag(InputConfig, InputTag_Move, ETriggerEvent::Completed, this, &ThisClass::StopMove);
 
 			//Looking
-			EnhancedInputComponent->BindActionByTag(InputConfig, GameplayTags.InputTag_Look_Mouse, ETriggerEvent::Triggered, this, &ThisClass::Look);
-			EnhancedInputComponent->BindActionByTag(InputConfig, GameplayTags.InputTag_Look_Stick, ETriggerEvent::Triggered, this, &ThisClass::Look);
+			EnhancedInputComponent->BindActionByTag(InputConfig, InputTag_Look_Mouse, ETriggerEvent::Triggered, this, &ThisClass::Look);
+			EnhancedInputComponent->BindActionByTag(InputConfig, InputTag_Look_Stick, ETriggerEvent::Triggered, this, &ThisClass::Look);
 
 			//Crouching
-			EnhancedInputComponent->BindActionByTag(InputConfig, GameplayTags.InputTag_Crouch, ETriggerEvent::Triggered, this, &ThisClass::Input_Crouch);
+			EnhancedInputComponent->BindActionByTag(InputConfig, InputTag_Crouch, ETriggerEvent::Triggered, this, &ThisClass::Input_Crouch);
 
 			TArray<uint32> BindHandles;
 			EnhancedInputComponent->BindAbilityActions(InputConfig, this, &ThisClass::Input_AbilityInputTagPressed, &ThisClass::Input_AbilityInputTagReleased, /*out*/ BindHandles);
@@ -57,6 +58,8 @@ void AGASCoursePlayerCharacter::PossessedBy(AController* NewController)
 	
 	if(AGASCoursePlayerState* PS = GetPlayerState<AGASCoursePlayerState>())
 	{
+		//GetChampionComponent()->InitializeChampionComponent(AbilitySystemComponent);
+
 		AbilitySystemComponent = Cast<UGASCourseAbilitySystemComponent>(PS->GetAbilitySystemComponent());
 		PS->GetAbilitySystemComponent()->InitAbilityActorInfo(PS, this);
 		InitializeAbilitySystem(AbilitySystemComponent);
@@ -75,7 +78,7 @@ void AGASCoursePlayerCharacter::PossessedBy(AController* NewController)
 void AGASCoursePlayerCharacter::OnRep_PlayerState()
 {
 	Super::OnRep_PlayerState();
-
+	
 	if(AGASCoursePlayerState* PS = GetPlayerState<AGASCoursePlayerState>())
 	{
 		AbilitySystemComponent = Cast<UGASCourseAbilitySystemComponent>(PS->GetAbilitySystemComponent());
@@ -93,11 +96,21 @@ void AGASCoursePlayerCharacter::OnRep_PlayerState()
 	}
 }
 
+void AGASCoursePlayerCharacter::OnRep_Controller()
+{
+	Super::OnRep_Controller();
+	// Needed in case the PC wasn't valid when we Init-ed the ASC.
+	if (const AGASCoursePlayerState* PS = GetPlayerState<AGASCoursePlayerState>())
+	{
+		PS->GetAbilitySystemComponent()->RefreshAbilityActorInfo();
+	}
+}
+
 void AGASCoursePlayerCharacter::Input_AbilityInputTagPressed(FGameplayTag InputTag)
 {
 	if(UGASCourseAbilitySystemComponent* ASC = GetAbilitySystemComponent())
 	{
-		if(ASC->HasMatchingGameplayTag(FGASCourseNativeGameplayTags::Get().Status_AbilityInputBlocked))
+		if(ASC->HasMatchingGameplayTag(Status_AbilityInputBlocked))
 		{
 			return;
 		}
@@ -109,7 +122,7 @@ void AGASCoursePlayerCharacter::Input_AbilityInputTagReleased(FGameplayTag Input
 {
 	if(UGASCourseAbilitySystemComponent* ASC = GetAbilitySystemComponent())
 	{
-		if(ASC->HasMatchingGameplayTag(FGASCourseNativeGameplayTags::Get().Status_AbilityInputBlocked))
+		if(ASC->HasMatchingGameplayTag(Status_AbilityInputBlocked))
 		{
 			return;
 		}
