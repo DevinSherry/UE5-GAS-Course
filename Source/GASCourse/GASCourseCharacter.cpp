@@ -3,7 +3,6 @@
 #include "GASCourseCharacter.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
-#include "Game/Character/Components/GASCourseChampionComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
 #include "GameFramework/SpringArmComponent.h"
@@ -18,12 +17,6 @@
 AGASCourseCharacter::AGASCourseCharacter(const class FObjectInitializer& ObjectInitializer) :
 	Super(ObjectInitializer.SetDefaultSubobjectClass<UGASCourseMovementComponent>(ACharacter::CharacterMovementComponentName))
 {
-	//Initialize Champion Component
-	/*
-	ChampionComponent = CreateDefaultSubobject<UGASCourseChampionComponent>(TEXT("Champion Component"));
-	ChampionComponent->SetIsReplicated(true);
-	*/
-
 	SetReplicates(true);
 	
 	// Set size for collision capsule
