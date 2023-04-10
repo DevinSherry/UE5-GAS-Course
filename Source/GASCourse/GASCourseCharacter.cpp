@@ -9,6 +9,7 @@
 #include "Game/GameplayAbilitySystem/GASCourseGameplayAbilitySet.h"
 #include "Game/GameplayAbilitySystem/GASCourseNativeGameplayTags.h"
 #include "Game/Character/Components/GASCourseMovementComponent.h"
+#include "AnimDistanceMatchingLibrary.h"
 
 
 //////////////////////////////////////////////////////////////////////////

@@ -6,6 +6,7 @@ public class GASCourse : ModuleRules
 {
 	public GASCourse(ReadOnlyTargetRules target) : base(target)
 	{
+		PrivateDependencyModuleNames.AddRange(new string[] { "AnimationLocomotionLibraryRuntime"});
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
 		PublicDependencyModuleNames.AddRange(new string[]
