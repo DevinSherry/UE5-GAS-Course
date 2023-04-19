@@ -4,6 +4,7 @@
 #include "Game/GameplayAbilitySystem/GASCourseAbilitySystemComponent.h"
 
 #include "GASAbilityTagRelationshipMapping.h"
+#include "Game/Animation/GASCourseAnimInstance.h"
 #include "Game/GameplayAbilitySystem/GASCourseGameplayAbility.h"
 #include "Game/GameplayAbilitySystem/GASCourseNativeGameplayTags.h"
 
@@ -47,6 +48,11 @@ void UGASCourseAbilitySystemComponent::InitAbilityActorInfo(AActor* InOwnerActor
 		}
 		
 		TryActivateAbilitiesOnSpawn();
+
+		if(UGASCourseAnimInstance* GASAnimInst = Cast<UGASCourseAnimInstance>(ActorInfo->GetAnimInstance()))
+		{
+			GASAnimInst->InitializeWithAbilitySystem(this);
+		}
 	}
 }
 
@@ -138,6 +144,26 @@ void UGASCourseAbilitySystemComponent::AbilityInputTagReleased(const FGameplayTa
 				InputHeldSpecHandles.Remove(AbilitySpec.Handle);
 			}
 		}
+	}
+}
+
+void UGASCourseAbilitySystemComponent::AbilitySpecInputPressed(FGameplayAbilitySpec& Spec)
+{
+	Super::AbilitySpecInputPressed(Spec);
+	if(Spec.IsActive())
+	{
+		InvokeReplicatedEvent(EAbilityGenericReplicatedEvent::InputPressed, Spec.Handle,
+			Spec.ActivationInfo.GetActivationPredictionKey());
+	}
+}
+
+void UGASCourseAbilitySystemComponent::AbilitySpecInputReleased(FGameplayAbilitySpec& Spec)
+{
+	Super::AbilitySpecInputReleased(Spec);
+	if(Spec.IsActive())
+	{
+		InvokeReplicatedEvent(EAbilityGenericReplicatedEvent::InputReleased, Spec.Handle,
+			Spec.ActivationInfo.GetActivationPredictionKey());
 	}
 }
 

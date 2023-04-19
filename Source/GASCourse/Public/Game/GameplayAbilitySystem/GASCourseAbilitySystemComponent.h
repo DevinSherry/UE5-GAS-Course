@@ -44,6 +44,9 @@ public:
 	void AbilityInputTagPressed(const FGameplayTag& InputTag);
 	void AbilityInputTagReleased(const FGameplayTag& InputTag);
 
+	virtual void AbilitySpecInputPressed(FGameplayAbilitySpec& Spec) override;
+	virtual void AbilitySpecInputReleased(FGameplayAbilitySpec& Spec) override;
+
 	void ProcessAbilityInput(float DeltaTime, bool bGamePaused);
 	void ClearAbilityInput();
 

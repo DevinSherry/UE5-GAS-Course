@@ -7,6 +7,30 @@
 #include "GASCourseMovementComponent.generated.h"
 
 /**
+ * FLyraCharacterGroundInfo
+ *
+ *	Information about the ground under the character.  It only gets updated as needed.
+ */
+USTRUCT(BlueprintType)
+struct FGASCharacterGroundInfo
+{
+	GENERATED_BODY()
+
+	FGASCharacterGroundInfo()
+		: LastUpdateFrame(0)
+		, GroundDistance(0.0f)
+	{}
+
+	uint64 LastUpdateFrame;
+
+	UPROPERTY(BlueprintReadOnly)
+	FHitResult GroundHitResult;
+
+	UPROPERTY(BlueprintReadOnly)
+	float GroundDistance;
+};
+
+/**
  * 
  */
 UCLASS()
@@ -22,6 +46,10 @@ public:
 	UPROPERTY(Category="Character Movement (General Settings)", EditAnywhere, BlueprintReadWrite)
 	bool bAllowJumpFromCrouch;
 
+	// Returns the current ground info.  Calling this will update the ground info if it's out of date.
+	UFUNCTION(BlueprintCallable, Category = "Lyra|CharacterMovement")
+	const FGASCharacterGroundInfo& GetGroundInfo();
+
 protected:
 	
 	virtual float GetMaxSpeed() const override;
@@ -32,5 +60,10 @@ protected:
 	virtual float GetMaxJumpHeightWithJumpTime() const override;
 	
 	virtual bool DoJump(bool bReplayingMoves) override;
+
+protected:
+	
+	// Cached ground info for the character.  Do not access this directly!  It's only updated when accessed via GetGroundInfo().
+	FGASCharacterGroundInfo CachedGroundInfo;
 	
 };
