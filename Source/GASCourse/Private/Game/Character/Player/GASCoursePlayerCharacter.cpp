@@ -4,9 +4,7 @@
 #include "Game/Character/Player/GASCoursePlayerCharacter.h"
 #include "Game/Character/Player/GASCoursePlayerState.h"
 #include "Game/Input/GASCourseEnhancedInputComponent.h"
-#include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
-#include "Game/Character/Components/GASCourseChampionComponent.h"
 #include "Game/GameplayAbilitySystem/GASCourseNativeGameplayTags.h"
 
 //////////////////////////////////////////////////////////////////////////

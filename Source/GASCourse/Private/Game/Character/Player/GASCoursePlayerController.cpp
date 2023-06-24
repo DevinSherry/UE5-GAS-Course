@@ -5,6 +5,9 @@
 
 AGASCoursePlayerController::AGASCoursePlayerController(const FObjectInitializer& ObjectInitializer)
 {
+	bShowMouseCursor = true;
+	bEnableClickEvents = true;
+	bEnableMouseOverEvents = true;
 }
 
 AGASCoursePlayerState* AGASCoursePlayerController::GetGASCoursePlayerState() const

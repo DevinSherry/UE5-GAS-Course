@@ -9,7 +9,6 @@
 #include "Game/GameplayAbilitySystem/GASCourseGameplayAbilitySet.h"
 #include "Game/GameplayAbilitySystem/GASCourseNativeGameplayTags.h"
 #include "Game/Character/Components/GASCourseMovementComponent.h"
-#include "AnimDistanceMatchingLibrary.h"
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -48,7 +47,10 @@ AGASCourseCharacter::AGASCourseCharacter(const class FObjectInitializer& ObjectI
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(RootComponent);
 	CameraBoom->TargetArmLength = 400.0f; // The camera follows at this distance behind the character	
-	CameraBoom->bUsePawnControlRotation = true; // Rotate the arm based on the controller
+	CameraBoom->bUsePawnControlRotation = false; // Rotate the arm based on the controller
+	CameraBoom->bInheritPitch = false;
+	CameraBoom->bInheritRoll = false;
+	CameraBoom->bInheritYaw = false;
 
 	// Create a follow camera
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));

@@ -301,7 +301,7 @@ float UGASCourseAbilitySystemComponent::PlayMontage(UGameplayAbility* InAnimatin
 		Duration = AnimInstance->Montage_Play(NewAnimMontage, InPlayRate, EMontagePlayReturnType::MontageLength, StartTimeSeconds);
 		if (Duration > 0.f)
 		{
-			if (LocalAnimMontageInfo.AnimatingAbility && LocalAnimMontageInfo.AnimatingAbility != InAnimatingAbility)
+			if (LocalAnimMontageInfo.AnimatingAbility.Get() && LocalAnimMontageInfo.AnimatingAbility != InAnimatingAbility)
 			{
 				// The ability that was previously animating will have already gotten the 'interrupted' callback.
 				// It may be a good idea to make this a global policy and 'cancel' the ability.
