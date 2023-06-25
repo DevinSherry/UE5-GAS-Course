@@ -147,34 +147,11 @@ void AGASCoursePlayerCharacter::Input_CameraZoom(const FInputActionInstance& Inp
 	
 	if(USpringArmComponent* CameraRef = GetCameraBoom())
 	{
-		const float CurrentTargetArmLength = CameraRef->TargetArmLength;
-		
-		if(AxisValue < 0.0f)
-		{
-			if(CurrentTargetArmLength >= MaxCameraBoomDistance)
-			{
-				CameraRef->TargetArmLength = MaxCameraBoomDistance;
-				CameraRef->SocketOffset.Z = MaxCameraBoomDistance;
-
-				return;
-			}
-
-			CameraRef->TargetArmLength += (CameraZoomDistanceStep);
-			CameraRef->SocketOffset.Z += (CameraZoomDistanceStep);
-		}
-
-		else
-		{
-			if(CurrentTargetArmLength <= MinCameraBoomDistance)
-			{
-				CameraRef->TargetArmLength = MinCameraBoomDistance;
-				CameraRef->SocketOffset.Z = MinCameraBoomDistance;
-
-				return;
-			}
-
-			CameraRef->TargetArmLength -= (CameraZoomDistanceStep);
-			CameraRef->SocketOffset.Z -= (CameraZoomDistanceStep);
-		}
+		const float Step = CameraZoomDistanceStep * AxisValue;
+		const float CurrentTargetArmLength = FMath::Clamp((CameraRef->TargetArmLength - Step),
+		MinCameraBoomDistance, MaxCameraBoomDistance);
+					
+		CameraRef->TargetArmLength = CurrentTargetArmLength;
+		CameraRef->SocketOffset.Z = CurrentTargetArmLength;
 	}
 }
