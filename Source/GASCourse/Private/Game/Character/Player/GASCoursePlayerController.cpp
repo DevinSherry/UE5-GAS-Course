@@ -35,3 +35,15 @@ void AGASCoursePlayerController::PostProcessInput(const float DeltaTime, const b
 	
 	Super::PostProcessInput(DeltaTime, bGamePaused);
 }
+
+void AGASCoursePlayerController::OnPossess(APawn* InPawn)
+{
+	Super::OnPossess(InPawn);
+	if(InPawn)
+	{
+		if(USkeletalMeshComponent* SkeletalMeshComponent = InPawn->GetComponentByClass<USkeletalMeshComponent>())
+		{
+			SkeletalMeshComponent->LinkAnimClassLayers(UnArmedAnimLayer.LoadSynchronous());
+		}
+	}
+}

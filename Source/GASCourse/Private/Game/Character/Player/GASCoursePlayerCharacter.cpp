@@ -6,6 +6,8 @@
 #include "Game/Input/GASCourseEnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "Game/GameplayAbilitySystem/GASCourseNativeGameplayTags.h"
+#include "GameFramework/SpringArmComponent.h"
+#include "GASCourse/GASCourse.h"
 
 //////////////////////////////////////////////////////////////////////////
 // AGASCourseCharacter
@@ -13,6 +15,7 @@
 AGASCoursePlayerCharacter::AGASCoursePlayerCharacter(const FObjectInitializer& ObjectInitializer) :
 Super(ObjectInitializer)
 {
+	
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -42,14 +45,14 @@ void AGASCoursePlayerCharacter::SetupPlayerInputComponent(UInputComponent* Playe
 			EnhancedInputComponent->BindActionByTag(InputConfig, InputTag_PointClickMovement, ETriggerEvent::Canceled, this, &ThisClass::PointClickMovementCanceled);
 			EnhancedInputComponent->BindActionByTag(InputConfig, InputTag_PointClickMovement, ETriggerEvent::Completed, this, &ThisClass::PointClickMovementCompleted);
 
-			//EnhancedInputComponent->BindAction(PointClickMovementAction, ETriggerEvent::Completed, this, GET_MEMBER_NAME_CHECKED(ThisClass, PointClickMovementCompleteTest));
-			
 			//Looking
-			EnhancedInputComponent->BindActionByTag(InputConfig, InputTag_Look_Mouse, ETriggerEvent::Triggered, this, &ThisClass::Look);
 			EnhancedInputComponent->BindActionByTag(InputConfig, InputTag_Look_Stick, ETriggerEvent::Triggered, this, &ThisClass::Look);
 
 			//Crouching
 			EnhancedInputComponent->BindActionByTag(InputConfig, InputTag_Crouch, ETriggerEvent::Triggered, this, &ThisClass::Input_Crouch);
+
+			//Camera Zoom
+			EnhancedInputComponent->BindActionByTag(InputConfig, InputTag_CameraZoom,ETriggerEvent::Triggered, this, &ThisClass::Input_CameraZoom);
 
 			TArray<uint32> BindHandles;
 			EnhancedInputComponent->BindAbilityActions(InputConfig, this, &ThisClass::Input_AbilityInputTagPressed, &ThisClass::Input_AbilityInputTagReleased, /*out*/ BindHandles);
@@ -78,6 +81,9 @@ void AGASCoursePlayerCharacter::PossessedBy(AController* NewController)
 			}
 		}
 	}
+
+	GetCameraBoom()->TargetArmLength = MaxCameraBoomDistance;
+	GetCameraBoom()->SocketOffset = FVector(0.0f,0.0f, MaxCameraBoomDistance);
 }
 
 void AGASCoursePlayerCharacter::OnRep_PlayerState()
@@ -132,5 +138,43 @@ void AGASCoursePlayerCharacter::Input_AbilityInputTagReleased(FGameplayTag Input
 			return;
 		}
 		ASC->AbilityInputTagReleased(InputTag);
+	}
+}
+
+void AGASCoursePlayerCharacter::Input_CameraZoom(const FInputActionInstance& InputActionInstance)
+{
+	const float AxisValue = InputActionInstance.GetValue().Get<float>();
+	
+	if(USpringArmComponent* CameraRef = GetCameraBoom())
+	{
+		const float CurrentTargetArmLength = CameraRef->TargetArmLength;
+		
+		if(AxisValue < 0.0f)
+		{
+			if(CurrentTargetArmLength >= MaxCameraBoomDistance)
+			{
+				CameraRef->TargetArmLength = MaxCameraBoomDistance;
+				CameraRef->SocketOffset.Z = MaxCameraBoomDistance;
+
+				return;
+			}
+
+			CameraRef->TargetArmLength += (CameraZoomDistanceStep);
+			CameraRef->SocketOffset.Z += (CameraZoomDistanceStep);
+		}
+
+		else
+		{
+			if(CurrentTargetArmLength <= MinCameraBoomDistance)
+			{
+				CameraRef->TargetArmLength = MinCameraBoomDistance;
+				CameraRef->SocketOffset.Z = MinCameraBoomDistance;
+
+				return;
+			}
+
+			CameraRef->TargetArmLength -= (CameraZoomDistanceStep);
+			CameraRef->SocketOffset.Z -= (CameraZoomDistanceStep);
+		}
 	}
 }

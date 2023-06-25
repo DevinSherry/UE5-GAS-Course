@@ -1,6 +1,7 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "GASCourseCharacter.h"
+#include "Blueprint/AIBlueprintHelperLibrary.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -10,6 +11,7 @@
 #include "Game/GameplayAbilitySystem/GASCourseNativeGameplayTags.h"
 #include "Game/Character/Components/GASCourseMovementComponent.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Net/UnrealNetwork.h"
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -64,8 +66,8 @@ AGASCourseCharacter::AGASCourseCharacter(const class FObjectInitializer& ObjectI
 	//Initialize AbilitySystemComponent
 	AbilitySystemComponent = CreateDefaultSubobject<UGASCourseAbilitySystemComponent>(TEXT("AbilitySystemComponent"));
 	AbilitySystemComponent->SetIsReplicated(true);
+	
 }
-
 void AGASCourseCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
@@ -197,23 +199,23 @@ void AGASCourseCharacter::PointClickMovementStarted(const FInputActionValue& Val
 	}
 }
 
-void AGASCourseCharacter::PointClickMovementCanceled(const FInputActionValue& Value)
+void AGASCourseCharacter::PointClickMovementCanceled(const FInputActionInstance& InputActionInstance)
 {
-	if(AGASCoursePlayerController* PC = Cast<AGASCoursePlayerController>(Controller))
+	if(GEngine)
 	{
-		//if(Value.GetMagnitude() )
-		//Value.Get<>()
+		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, FString::Printf(TEXT("ElapsedTime: %f"), InputActionInstance.GetElapsedTime()));
 	}
 }
 
-void AGASCourseCharacter::PointClickMovementCompleted(const FInputActionValue& Value)
+void AGASCourseCharacter::PointClickMovementCompleted(const FInputActionInstance& InputActionInstance)
 {
-}
-
-void AGASCourseCharacter::PointClickMovementCompleteTest(const FInputActionValue& ActionValue, float ElapsedTime, float TriggeredTime,
-	const UInputAction* SourceAction)
-{
-
+	if(AGASCoursePlayerController* PC = Cast<AGASCoursePlayerController>(Controller))
+	{
+		if(InputActionInstance.GetElapsedTime() < PC->ElapsedPointClickMovementThreshold)
+		{
+			UAIBlueprintHelperLibrary::SimpleMoveToLocation(PC, PC->GetCachedDestination());
+		}
+	}
 }
 
 void AGASCourseCharacter::Look(const FInputActionValue& Value)

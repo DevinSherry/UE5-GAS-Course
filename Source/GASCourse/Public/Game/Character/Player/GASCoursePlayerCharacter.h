@@ -22,6 +22,15 @@ class GASCOURSE_API AGASCoursePlayerCharacter : public AGASCourseCharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	class UInputMappingContext* DefaultMappingContextGamepad;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GASCourse|Camera Settings", meta = (AllowPrivateAccess = "true"))
+	float MaxCameraBoomDistance = 500.0f;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GASCourse|Camera Settings", meta = (AllowPrivateAccess = "true"))
+	float MinCameraBoomDistance = 250.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GASCourse|Camera Settings", meta = (AllowPrivateAccess = "true"))
+	float CameraZoomDistanceStep = 10.0f;
+
 public:
 
 	AGASCoursePlayerCharacter(const FObjectInitializer& ObjectInitializer);
@@ -41,5 +50,7 @@ protected:
 	
 	void Input_AbilityInputTagPressed(FGameplayTag InputTag);
 	void Input_AbilityInputTagReleased(FGameplayTag InputTag);
+
+	void Input_CameraZoom(const FInputActionInstance& InputActionInstance);
 	
 };

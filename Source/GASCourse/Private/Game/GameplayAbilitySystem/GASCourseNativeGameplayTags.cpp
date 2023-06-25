@@ -7,11 +7,11 @@
 
 UE_DEFINE_GAMEPLAY_TAG(InputTag_Move, "Input.NativeAction.Move")
 UE_DEFINE_GAMEPLAY_TAG(InputTag_PointClickMovement, "Input.NativeAction.PointClickMovement")
-UE_DEFINE_GAMEPLAY_TAG(InputTag_Look_Mouse, "Input.NativeAction.MouseLook")
 UE_DEFINE_GAMEPLAY_TAG(InputTag_Look_Stick, "Input.NativeAction.GamepadLook")
 UE_DEFINE_GAMEPLAY_TAG(InputTag_Jump, "Input.NativeAction.Jump")
 UE_DEFINE_GAMEPLAY_TAG(InputTag_WeaponPrimaryFire, "Input.NativeAction.PrimaryWeaponFire")
 UE_DEFINE_GAMEPLAY_TAG(InputTag_Crouch, "Input.NativeAction.Crouch")
+UE_DEFINE_GAMEPLAY_TAG(InputTag_CameraZoom, "Input.NativeAction.CameraZoom");
 UE_DEFINE_GAMEPLAY_TAG(InputTag_AbilityOne, "Input.NativeAction.Ability.One")
 UE_DEFINE_GAMEPLAY_TAG(InputTag_AbilityTwo, "Input.NativeAction.Ability.Two")
 UE_DEFINE_GAMEPLAY_TAG(InputTag_AbilityThree, "Input.NativeAction.Ability.Three")

@@ -12,7 +12,7 @@ public class GASCourse : ModuleRules
 		PublicDependencyModuleNames.AddRange(new string[]
 		{
 			"Core", "CoreUObject", "Engine", "InputCore", "HeadMountedDisplay", "EnhancedInput",
-			"GameplayAbilities", "GameplayTags", "GameplayTasks", "NetCore"
+			"GameplayAbilities", "GameplayTags", "GameplayTasks", "NetCore", "AIModule"
 		});
 	}
 }
