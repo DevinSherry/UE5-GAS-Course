@@ -9,6 +9,7 @@
 #include "Game/GameplayAbilitySystem/GASCourseGameplayAbilitySet.h"
 #include "Game/GameplayAbilitySystem/GASCourseNativeGameplayTags.h"
 #include "Game/Character/Components/GASCourseMovementComponent.h"
+#include "Kismet/KismetMathLibrary.h"
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -172,6 +173,47 @@ void AGASCourseCharacter::StopMove(const FInputActionValue& Value)
 			}
 		}
 	}
+}
+
+void AGASCourseCharacter::PointClickMovement(const FInputActionValue& Value)
+{
+	if(AGASCoursePlayerController* PC = Cast<AGASCoursePlayerController>(Controller))
+	{
+		FHitResult ResultUnderCursor;
+		if(PC->GetHitResultUnderCursorByChannel(ETraceTypeQuery::TraceTypeQuery1, true, ResultUnderCursor))
+		{
+			PC->SetCachedDestination(ResultUnderCursor.Location);
+			const FVector3d WorldDirection = UKismetMathLibrary::GetDirectionUnitVector(GetActorLocation(), PC->GetCachedDestination());
+			AddMovementInput(WorldDirection, 1.0f, false);
+		}
+	}
+}
+
+void AGASCourseCharacter::PointClickMovementStarted(const FInputActionValue& Value)
+{
+	if(AGASCoursePlayerController* PC = Cast<AGASCoursePlayerController>(Controller))
+	{
+		PC->StopMovement();
+	}
+}
+
+void AGASCourseCharacter::PointClickMovementCanceled(const FInputActionValue& Value)
+{
+	if(AGASCoursePlayerController* PC = Cast<AGASCoursePlayerController>(Controller))
+	{
+		//if(Value.GetMagnitude() )
+		//Value.Get<>()
+	}
+}
+
+void AGASCourseCharacter::PointClickMovementCompleted(const FInputActionValue& Value)
+{
+}
+
+void AGASCourseCharacter::PointClickMovementCompleteTest(const FInputActionValue& ActionValue, float ElapsedTime, float TriggeredTime,
+	const UInputAction* SourceAction)
+{
+
 }
 
 void AGASCourseCharacter::Look(const FInputActionValue& Value)

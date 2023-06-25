@@ -6,6 +6,7 @@
 #include "NativeGameplayTags.h"
 
 UE_DEFINE_GAMEPLAY_TAG(InputTag_Move, "Input.NativeAction.Move")
+UE_DEFINE_GAMEPLAY_TAG(InputTag_PointClickMovement, "Input.NativeAction.PointClickMovement")
 UE_DEFINE_GAMEPLAY_TAG(InputTag_Look_Mouse, "Input.NativeAction.MouseLook")
 UE_DEFINE_GAMEPLAY_TAG(InputTag_Look_Stick, "Input.NativeAction.GamepadLook")
 UE_DEFINE_GAMEPLAY_TAG(InputTag_Jump, "Input.NativeAction.Jump")

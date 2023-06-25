@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "AbilitySystemInterface.h"
+#include "InputAction.h"
 #include "GameFramework/Character.h"
 #include "InputActionValue.h"
 #include "Game/GameplayAbilitySystem/GASCourseAbilitySystemComponent.h"
@@ -79,6 +80,12 @@ protected:
 	void Move(const FInputActionValue& Value);
 	void StopMove(const FInputActionValue& Value);
 
+	/** Called for left-click based movement */
+	void PointClickMovement(const FInputActionValue& Value);
+	void PointClickMovementStarted(const FInputActionValue& Value);
+	void PointClickMovementCanceled(const FInputActionValue& Value);
+	void PointClickMovementCompleted(const FInputActionValue& Value);
+
 	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
 
@@ -116,6 +123,9 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Abilities")
 	TObjectPtr<UGASAbilityTagRelationshipMapping> AbilityTagRelationshipMapping;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category= "Input")
+	TObjectPtr<UInputAction> PointClickMovementAction;
+
 
 public:
 	/** Returns CameraBoom subobject **/
@@ -142,6 +152,9 @@ public:
 	{
 		return (AbilityTagRelationshipMapping) ? AbilityTagRelationshipMapping : nullptr;
 	}
+
+	UFUNCTION()
+	void PointClickMovementCompleteTest(const FInputActionValue& ActionValue, float ElapsedTime, float TriggeredTime, const UInputAction* SourceAction);
 	
 protected:
 
