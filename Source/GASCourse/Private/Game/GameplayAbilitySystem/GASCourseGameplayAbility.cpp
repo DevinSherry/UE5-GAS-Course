@@ -5,6 +5,7 @@
 #include "AbilitySystemGlobals.h"
 #include "AbilitySystemBlueprintLibrary.h"
 #include "Game/GameplayAbilitySystem/GASCourseNativeGameplayTags.h"
+#include "GASCourse/GASCourse.h"
 
 UGASCourseGameplayAbility::UGASCourseGameplayAbility(const FObjectInitializer& ObjectInitializer)
 {
@@ -14,6 +15,7 @@ UGASCourseGameplayAbility::UGASCourseGameplayAbility(const FObjectInitializer& O
 	NetSecurityPolicy = EGameplayAbilityNetSecurityPolicy::ClientOrServer;
 
 	ActivationPolicy = EGASCourseAbilityActivationPolicy::OnInputTriggered;
+	AbilityType = EGASCourseAbilityType::Instant;
 }
 
 UGASCourseAbilitySystemComponent* UGASCourseGameplayAbility::GetGASCourseAbilitySystemComponentFromActorInfo() const
@@ -277,5 +279,17 @@ bool UGASCourseGameplayAbility::DoesAbilitySatisfyTagRequirements(const UAbility
 
 void UGASCourseGameplayAbility::OnPawnAvatarSet()
 {
+}
+
+void UGASCourseGameplayAbility::ApplyDurationEffect(bool bApplyClassDurationEffect, TSubclassOf<UGameplayEffect> InDurationEffect,
+	bool& bSuccess)
+{
+	bSuccess = false;
+	if(bApplyClassDurationEffect && !(DurationEffect))
+	{
+		UE_LOG(LogBlueprint, Error, TEXT("%s: Auto Apply Class Duration Effect executed with invalid duration effect class"),*GASCOURSE_CUR_CLASS_FUNC);
+		return;
+	}
+	bSuccess = true;
 }
 

@@ -26,6 +26,19 @@ enum class EGASCourseAbilityActivationPolicy : uint8
 	OnSpawn
 };
 
+UENUM(BlueprintType)
+enum class EGASCourseAbilityType : uint8
+{
+	// Instant ability, immediately goes into cool-down.
+	Instant,
+
+	// Must have duration gameplay effect class, ability automatically ends on duration end.
+	Duration,
+
+	// Instantiates target data aiming.
+	AimCast
+};
+
 /**
  * 
  */
@@ -35,7 +48,7 @@ class GASCOURSE_API UGASCourseGameplayAbility : public UGameplayAbility
 	GENERATED_BODY()
 	friend class UGASCourseAbilitySystemComponent;
 
-	public:
+public:
 
 	UGASCourseGameplayAbility(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 
@@ -54,6 +67,13 @@ class GASCOURSE_API UGASCourseGameplayAbility : public UGameplayAbility
 	EGASCourseAbilityActivationPolicy GetActivationPolicy() const { return ActivationPolicy; }
 
 	void TryActivateAbilityOnSpawn(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec) const;
+
+	/**Returns the type of ability, see EGASCourseAbilityType*/
+	UFUNCTION(BlueprintCallable, Category="GASCourse|Ability")
+	FORCEINLINE EGASCourseAbilityType GetAbilityType() const
+	{
+		return AbilityType;
+	}
 
 protected:
 
@@ -88,6 +108,23 @@ protected:
 protected:
 
 	// Defines how this ability is meant to activate.
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Lyra|Ability Activation")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "GASCourse|Ability|Activation")
 	EGASCourseAbilityActivationPolicy ActivationPolicy;
+
+	// Defines how this ability is meant to activate.
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "GASCourse|Ability")
+	EGASCourseAbilityType AbilityType;
+
+	//The duration effect to be applied, dictates how long the ability will last for.
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "GASCourse|Ability|Duration", meta=(EditCondition="AbilityType==EGASCourseAbilityType::Duration", EditConditionHides))
+	TSubclassOf<UGameplayEffect> DurationEffect;
+
+	/*Auto apply the duration effect on ability activation, otherwise use function Apply Duration Effect**/
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "GASCourse|Ability|Duration", meta=(EditCondition="AbilityType==EGASCourseAbilityType::Duration", EditConditionHides))
+	bool bAutoApplyDurationEffect;
+
+	/*Manually apply either class duration effect, or custom duration effect**/
+	UFUNCTION(BlueprintCallable, Category = "GASCourse|Ability|Duration")
+	void ApplyDurationEffect(bool bApplyClassDurationEffect,
+		TSubclassOf<UGameplayEffect> InDurationEffect, bool& bSuccess);
 };
