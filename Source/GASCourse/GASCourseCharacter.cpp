@@ -46,6 +46,9 @@ AGASCourseCharacter::AGASCourseCharacter(const class FObjectInitializer& ObjectI
 	GetCharacterMovement()->MinAnalogWalkSpeed = 20.f;
 	GetCharacterMovement()->BrakingDecelerationWalking = 2000.f;
 
+	GetCharacterMovement()->bConstrainToPlane = true;
+	GetCharacterMovement()->bSnapToPlaneAtStart = true;
+
 	// Create a camera boom (pulls in towards the player if there is a collision)
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(RootComponent);
@@ -54,6 +57,7 @@ AGASCourseCharacter::AGASCourseCharacter(const class FObjectInitializer& ObjectI
 	CameraBoom->bInheritPitch = false;
 	CameraBoom->bInheritRoll = false;
 	CameraBoom->bInheritYaw = false;
+	CameraBoom->bDoCollisionTest = false;
 
 	// Create a follow camera
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
@@ -66,6 +70,10 @@ AGASCourseCharacter::AGASCourseCharacter(const class FObjectInitializer& ObjectI
 	//Initialize AbilitySystemComponent
 	AbilitySystemComponent = CreateDefaultSubobject<UGASCourseAbilitySystemComponent>(TEXT("AbilitySystemComponent"));
 	AbilitySystemComponent->SetIsReplicated(true);
+
+	// Activate ticking in order to update the cursor every frame.
+	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bStartWithTickEnabled = true;
 	
 }
 void AGASCourseCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -177,18 +185,44 @@ void AGASCourseCharacter::StopMove(const FInputActionValue& Value)
 	}
 }
 
+FVector AGASCourseCharacter::GetWorldDirection(const FVector& CachedDirection) const
+{
+	const FVector WorldDirection = UKismetMathLibrary::GetDirectionUnitVector(GetActorLocation(), CachedDirection);
+	return WorldDirection;
+}
+
 void AGASCourseCharacter::PointClickMovement(const FInputActionValue& Value)
 {
 	if(AGASCoursePlayerController* PC = Cast<AGASCoursePlayerController>(Controller))
 	{
-		FHitResult ResultUnderCursor;
-		if(PC->GetHitResultUnderCursorByChannel(ETraceTypeQuery::TraceTypeQuery1, true, ResultUnderCursor))
+		SCOPED_NAMED_EVENT(AGASCourseCharacter_PointClickMovement, FColor::Blue);
+		if(PC)
 		{
-			PC->SetCachedDestination(ResultUnderCursor.Location);
-			const FVector3d WorldDirection = UKismetMathLibrary::GetDirectionUnitVector(GetActorLocation(), PC->GetCachedDestination());
-			AddMovementInput(WorldDirection, 1.0f, false);
+			FHitResult HitResultUnderCursor;
+			if(PC->GetHitResultUnderCursor(ECC_Visibility, true, HitResultUnderCursor))
+			{
+				PC->SetCachedDestination(HitResultUnderCursor.Location);
+				MultithreadTask = UE::Tasks::Launch(UE_SOURCE_LOCATION, [this]
+				{
+					if(const AGASCoursePlayerController* InPC = Cast<AGASCoursePlayerController>(Controller))
+					{
+						return GetWorldDirection(InPC->GetCachedDestination());
+					}
+					return FVector::ZeroVector;
+				});
+				
+				const FVector WorldDirection = MultithreadTask.GetResult();
+				AddMovementInput(WorldDirection, 1.0f, false);
+				
+				if(MultithreadTask.IsCompleted())
+				{
+					MultithreadTask = {};
+				}
+
+			}
 		}
 	}
+	MultithreadTask = {};
 }
 
 void AGASCourseCharacter::PointClickMovementStarted(const FInputActionValue& Value)
@@ -196,14 +230,6 @@ void AGASCourseCharacter::PointClickMovementStarted(const FInputActionValue& Val
 	if(AGASCoursePlayerController* PC = Cast<AGASCoursePlayerController>(Controller))
 	{
 		PC->StopMovement();
-	}
-}
-
-void AGASCourseCharacter::PointClickMovementCanceled(const FInputActionInstance& InputActionInstance)
-{
-	if(GEngine)
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, FString::Printf(TEXT("ElapsedTime: %f"), InputActionInstance.GetElapsedTime()));
 	}
 }
 

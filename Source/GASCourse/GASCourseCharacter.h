@@ -9,9 +9,11 @@
 #include "InputAction.h"
 #include "GameFramework/Character.h"
 #include "InputActionValue.h"
+#include "Game/Character/Player/GASCoursePlayerController.h"
 #include "Game/GameplayAbilitySystem/GASCourseAbilitySystemComponent.h"
 #include "Game/GameplayAbilitySystem/GASAbilityTagRelationshipMapping.h"
 #include "Game/GameplayAbilitySystem/AttributeSets/GASCourseCharBaseAttributeSet.h"
+#include "Tasks/Task.h"
 #include "GASCourseCharacter.generated.h"
 
 class UGASCourseGameplayAbilitySet;
@@ -84,7 +86,6 @@ protected:
 	/** Called for left-click based movement */
 	void PointClickMovement(const FInputActionValue& Value);
 	void PointClickMovementStarted(const FInputActionValue& Value);
-	void PointClickMovementCanceled(const FInputActionInstance& InputActionInstance);
 	void PointClickMovementCompleted(const FInputActionInstance& InputActionInstance);
 	
 	/** Called for looking input */
@@ -192,6 +193,13 @@ protected:
 	virtual void NetMulticast_InvokeGameplayCuesAddedAndWhileActive_WithParams(const FGameplayTagContainer GameplayCueTags, FPredictionKey PredictionKey, FGameplayCueParameters GameplayCueParameters) override;
 	  
 	virtual FGameplayAbilityRepAnimMontage& Call_GetRepAnimMontageInfo_Mutable() override;
+
+public:
+
+	UE::Tasks::TTask<FVector> MultithreadTask;
+	
+	FVector GetWorldDirection(const FVector& CachedDirection) const;
+	
 };
 
 
