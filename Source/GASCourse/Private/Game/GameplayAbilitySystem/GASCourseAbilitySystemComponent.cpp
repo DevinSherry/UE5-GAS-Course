@@ -3,7 +3,7 @@
 
 #include "Game/GameplayAbilitySystem/GASCourseAbilitySystemComponent.h"
 
-#include "GASAbilityTagRelationshipMapping.h"
+#include "Game/GameplayAbilitySystem/GASAbilityTagRelationshipMapping.h"
 #include "Game/Animation/GASCourseAnimInstance.h"
 #include "Game/GameplayAbilitySystem/GASCourseGameplayAbility.h"
 #include "Game/GameplayAbilitySystem/GASCourseNativeGameplayTags.h"

@@ -6,6 +6,9 @@
 #include "AbilitySystemBlueprintLibrary.h"
 #include "Game/GameplayAbilitySystem/GASCourseNativeGameplayTags.h"
 #include "GASCourse/GASCourse.h"
+#include "GameplayEffect.h"
+#include "GameplayEffectTypes.h"
+#include "Abilities/Tasks/AbilityTask_WaitGameplayEffectRemoved.h"
 
 UGASCourseGameplayAbility::UGASCourseGameplayAbility(const FObjectInitializer& ObjectInitializer)
 {
@@ -68,9 +71,17 @@ void UGASCourseGameplayAbility::TryActivateAbilityOnSpawn(const FGameplayAbility
 {
 }
 
+void UGASCourseGameplayAbility::DurationEffectRemoved(const FGameplayEffectRemovalInfo& GameplayEffectRemovalInfo)
+{
+	if(AbilityType == EGASCourseAbilityType::Duration)
+	{
+		EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, true);
+	}
+}
+
 bool UGASCourseGameplayAbility::CanActivateAbility(const FGameplayAbilitySpecHandle Handle,
-	const FGameplayAbilityActorInfo* ActorInfo, const FGameplayTagContainer* SourceTags,
-	const FGameplayTagContainer* TargetTags, FGameplayTagContainer* OptionalRelevantTags) const
+                                                   const FGameplayAbilityActorInfo* ActorInfo, const FGameplayTagContainer* SourceTags,
+                                                   const FGameplayTagContainer* TargetTags, FGameplayTagContainer* OptionalRelevantTags) const
 {
 	if (!ActorInfo || !ActorInfo->AbilitySystemComponent.IsValid())
 	{
@@ -112,6 +123,25 @@ void UGASCourseGameplayAbility::ActivateAbility(const FGameplayAbilitySpecHandle
 	const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo,
 	const FGameplayEventData* TriggerEventData)
 {
+
+	switch (AbilityType)
+	{
+	case EGASCourseAbilityType::Duration:
+		if(bAutoApplyDurationEffect)
+		{
+			if(!ApplyDurationEffect(true, DurationEffect))
+			{
+				UE_LOG(LogTemp, Error, TEXT("ApplyDurationEffect Failed! %s"), *GASCOURSE_CUR_CLASS);
+				EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
+				break;
+			}
+		}
+		break;
+		
+	default:
+		break;
+	}
+
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
 }
 
@@ -281,15 +311,33 @@ void UGASCourseGameplayAbility::OnPawnAvatarSet()
 {
 }
 
-void UGASCourseGameplayAbility::ApplyDurationEffect(bool bApplyClassDurationEffect, TSubclassOf<UGameplayEffect> InDurationEffect,
-	bool& bSuccess)
+bool UGASCourseGameplayAbility::ApplyDurationEffect(bool bApplyClassDurationEffect, TSubclassOf<UGameplayEffect> InDurationEffect)
 {
-	bSuccess = false;
+	bool bSuccess = false;
 	if(bApplyClassDurationEffect && !(DurationEffect))
 	{
 		UE_LOG(LogBlueprint, Error, TEXT("%s: Auto Apply Class Duration Effect executed with invalid duration effect class"),*GASCOURSE_CUR_CLASS_FUNC);
-		return;
+		EndAbility(CurrentSpecHandle, CurrentActorInfo,CurrentActivationInfo, true, true);
+		return bSuccess;
 	}
-	bSuccess = true;
+	if(!bApplyClassDurationEffect && !(InDurationEffect))
+	{
+		UE_LOG(LogBlueprint, Error, TEXT("%s: NO VALID DURATION EFFECT GIVEN"),*GASCOURSE_CUR_CLASS_FUNC);
+		EndAbility(CurrentSpecHandle, CurrentActorInfo,CurrentActivationInfo, true, true);
+		return bSuccess;
+	}
+	const UGameplayEffect* DurationEffectToApply = (bApplyClassDurationEffect) ? DurationEffect.GetDefaultObject() : InDurationEffect.GetDefaultObject();
+	//TODO: Apply Player Level Info Here
+	const FActiveGameplayEffectHandle DurationEffectHandle = ApplyGameplayEffectToOwner(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, DurationEffectToApply, 1.0);
+	if(DurationEffectHandle.WasSuccessfullyApplied())
+	{
+		if(UAbilityTask_WaitGameplayEffectRemoved* DurationEffectRemovalTask = UAbilityTask_WaitGameplayEffectRemoved::WaitForGameplayEffectRemoved(this, DurationEffectHandle))
+		{
+			DurationEffectRemovalTask->Activate();
+			DurationEffectRemovalTask->OnRemoved.AddDynamic(this, &UGASCourseGameplayAbility::DurationEffectRemoved);
+			bSuccess = true;
+		}
+	}
+	return bSuccess;
 }
 

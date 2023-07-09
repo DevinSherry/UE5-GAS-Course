@@ -75,6 +75,10 @@ public:
 		return AbilityType;
 	}
 
+	//Callback for when applied duration effect is removed. Ability must be of type EGASCourseAbilityType::Duration
+	UFUNCTION()
+	void DurationEffectRemoved(const FGameplayEffectRemovalInfo& GameplayEffectRemovalInfo);
+
 protected:
 
 	//~UGameplayAbility interface
@@ -125,6 +129,6 @@ protected:
 
 	/*Manually apply either class duration effect, or custom duration effect**/
 	UFUNCTION(BlueprintCallable, Category = "GASCourse|Ability|Duration")
-	void ApplyDurationEffect(bool bApplyClassDurationEffect,
-		TSubclassOf<UGameplayEffect> InDurationEffect, bool& bSuccess);
+	UPARAM(DisplayName= "bDurationEffectApplied") bool ApplyDurationEffect(bool bApplyClassDurationEffect,
+		TSubclassOf<UGameplayEffect> InDurationEffect);
 };
