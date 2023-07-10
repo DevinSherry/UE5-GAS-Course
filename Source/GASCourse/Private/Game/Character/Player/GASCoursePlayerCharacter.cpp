@@ -15,7 +15,9 @@
 AGASCoursePlayerCharacter::AGASCoursePlayerCharacter(const FObjectInitializer& ObjectInitializer) :
 Super(ObjectInitializer)
 {
-	
+	//Set camera boom arm length and socket offset Z to default max camera boom distance.
+	GetCameraBoom()->TargetArmLength = MaxCameraBoomDistance;
+	GetCameraBoom()->SocketOffset.Z = MaxCameraBoomDistance;
 }
 
 //////////////////////////////////////////////////////////////////////////

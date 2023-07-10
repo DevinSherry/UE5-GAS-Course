@@ -237,10 +237,7 @@ void AGASCourseCharacter::PointClickMovementCompleted(const FInputActionInstance
 {
 	if(AGASCoursePlayerController* PC = Cast<AGASCoursePlayerController>(Controller))
 	{
-		if(InputActionInstance.GetElapsedTime() < PC->ElapsedPointClickMovementThreshold)
-		{
-			UAIBlueprintHelperLibrary::SimpleMoveToLocation(PC, PC->GetCachedDestination());
-		}
+		UAIBlueprintHelperLibrary::SimpleMoveToLocation(PC, PC->GetCachedDestination());
 	}
 }
 

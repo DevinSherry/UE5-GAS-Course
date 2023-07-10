@@ -129,12 +129,12 @@ void UGASCourseGameplayAbility::ActivateAbility(const FGameplayAbilitySpecHandle
 	case EGASCourseAbilityType::Duration:
 		if(bAutoApplyDurationEffect)
 		{
-			if(!ApplyDurationEffect(true, DurationEffect))
+			if(ApplyDurationEffect())
 			{
-				UE_LOG(LogTemp, Error, TEXT("ApplyDurationEffect Failed! %s"), *GASCOURSE_CUR_CLASS);
-				EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
 				break;
 			}
+			EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
+			break;
 		}
 		break;
 		
@@ -311,33 +311,36 @@ void UGASCourseGameplayAbility::OnPawnAvatarSet()
 {
 }
 
-bool UGASCourseGameplayAbility::ApplyDurationEffect(bool bApplyClassDurationEffect, TSubclassOf<UGameplayEffect> InDurationEffect)
+bool UGASCourseGameplayAbility::ApplyDurationEffect()
 {
 	bool bSuccess = false;
-	if(bApplyClassDurationEffect && !(DurationEffect))
+	if((DurationEffect))
 	{
-		UE_LOG(LogBlueprint, Error, TEXT("%s: Auto Apply Class Duration Effect executed with invalid duration effect class"),*GASCOURSE_CUR_CLASS_FUNC);
-		EndAbility(CurrentSpecHandle, CurrentActorInfo,CurrentActivationInfo, true, true);
-		return bSuccess;
-	}
-	if(!bApplyClassDurationEffect && !(InDurationEffect))
-	{
-		UE_LOG(LogBlueprint, Error, TEXT("%s: NO VALID DURATION EFFECT GIVEN"),*GASCOURSE_CUR_CLASS_FUNC);
-		EndAbility(CurrentSpecHandle, CurrentActorInfo,CurrentActivationInfo, true, true);
-		return bSuccess;
-	}
-	const UGameplayEffect* DurationEffectToApply = (bApplyClassDurationEffect) ? DurationEffect.GetDefaultObject() : InDurationEffect.GetDefaultObject();
-	//TODO: Apply Player Level Info Here
-	const FActiveGameplayEffectHandle DurationEffectHandle = ApplyGameplayEffectToOwner(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, DurationEffectToApply, 1.0);
-	if(DurationEffectHandle.WasSuccessfullyApplied())
-	{
-		if(UAbilityTask_WaitGameplayEffectRemoved* DurationEffectRemovalTask = UAbilityTask_WaitGameplayEffectRemoved::WaitForGameplayEffectRemoved(this, DurationEffectHandle))
+		if(const UGameplayEffect* DurationEffectObject = DurationEffect.GetDefaultObject())
 		{
-			DurationEffectRemovalTask->Activate();
-			DurationEffectRemovalTask->OnRemoved.AddDynamic(this, &UGASCourseGameplayAbility::DurationEffectRemoved);
-			bSuccess = true;
+			if(DurationEffectObject->DurationPolicy == EGameplayEffectDurationType::HasDuration)
+			{
+				//TODO: Apply Player Level Info Here
+				const FActiveGameplayEffectHandle DurationEffectHandle = ApplyGameplayEffectToOwner(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, DurationEffectObject, 1.0);
+				if(DurationEffectHandle.WasSuccessfullyApplied())
+				{
+					bSuccess = true;
+					if(UAbilityTask_WaitGameplayEffectRemoved* DurationEffectRemovalTask = UAbilityTask_WaitGameplayEffectRemoved::WaitForGameplayEffectRemoved(this, DurationEffectHandle))
+					{
+						DurationEffectRemovalTask->Activate();
+						DurationEffectRemovalTask->OnRemoved.AddDynamic(this, &UGASCourseGameplayAbility::DurationEffectRemoved);
+					}
+				}
+				return bSuccess;
+			}
+			UE_LOG(LogBlueprint, Error, TEXT("%s: SUPPLIED GAMEPLAY EFFECT {%s} HAS INVALID DURATION POLICY {%s}."),*GASCOURSE_CUR_CLASS_FUNC, *DurationEffectObject->GetName(), *UEnum::GetValueAsString(DurationEffectObject->DurationPolicy));
+			EndAbility(CurrentSpecHandle, CurrentActorInfo,CurrentActivationInfo, true, true);
+			return bSuccess;
 		}
 	}
+	
+	UE_LOG(LogBlueprint, Error, TEXT("%s: NO VALID DURATION EFFECT DEFINED IN DEFAULT SETTINGS"),*GASCOURSE_CUR_CLASS_FUNC);
+	EndAbility(CurrentSpecHandle, CurrentActorInfo,CurrentActivationInfo, true, true);
 	return bSuccess;
 }
 

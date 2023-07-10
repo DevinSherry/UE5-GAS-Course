@@ -129,6 +129,5 @@ protected:
 
 	/*Manually apply either class duration effect, or custom duration effect**/
 	UFUNCTION(BlueprintCallable, Category = "GASCourse|Ability|Duration")
-	UPARAM(DisplayName= "bDurationEffectApplied") bool ApplyDurationEffect(bool bApplyClassDurationEffect,
-		TSubclassOf<UGameplayEffect> InDurationEffect);
+	UPARAM(DisplayName= "bDurationEffectApplied") bool ApplyDurationEffect();
 };

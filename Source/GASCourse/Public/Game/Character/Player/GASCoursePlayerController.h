@@ -44,10 +44,6 @@ public:
 	virtual void OnPossess(APawn* InPawn) override;
 
 public:
-	
-	/**This is the min time threshold from IA_PointClickMovement to determine if the input action was actually triggered */
-	UPROPERTY(EditAnywhere ,BlueprintReadOnly, Category = "GASCourse|PlayerController|Movement", meta = (DisplayName = "ElapsedThreshold"))
-	float ElapsedPointClickMovementThreshold = 0.5f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GASCourse|PlayerController|AnimLayers")
 	TSoftClassPtr<UAnimInstance> UnArmedAnimLayer;
