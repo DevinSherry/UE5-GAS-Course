@@ -343,4 +343,3 @@ bool UGASCourseGameplayAbility::ApplyDurationEffect()
 	EndAbility(CurrentSpecHandle, CurrentActorInfo,CurrentActivationInfo, true, true);
 	return bSuccess;
 }
-
