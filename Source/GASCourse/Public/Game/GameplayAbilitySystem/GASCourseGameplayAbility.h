@@ -8,6 +8,13 @@
 #include "Game/Character/Player/GASCoursePlayerController.h"
 #include "GASCourseGameplayAbility.generated.h"
 
+/*
+ * Delegate fired when ability is committed, returns whether commit was successful
+ */
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FGASCourseAbilityCommitSignature, bool, CommitAbility);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FGasCourseAbilityDurationRemoved);
+
+
 /**
  * EGASCourseAbilityActivationPolicy
  *
@@ -50,6 +57,14 @@ class GASCOURSE_API UGASCourseGameplayAbility : public UGameplayAbility
 
 public:
 
+	UPROPERTY(BlueprintAssignable)
+	FGASCourseAbilityCommitSignature OnAbilityCommitDelegate;
+
+	UPROPERTY(BlueprintAssignable)
+	FGasCourseAbilityDurationRemoved OnDurationEffectRemovedDelegate;
+	
+public:
+
 	UGASCourseGameplayAbility(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 
 	UFUNCTION(BlueprintCallable, Category = "GASCourse|Ability")
@@ -79,6 +94,30 @@ public:
 	UFUNCTION()
 	void DurationEffectRemoved(const FGameplayEffectRemovalInfo& GameplayEffectRemovalInfo);
 
+	/**
+	 * @brief Helper function to get a reference to the Duration Effect class.
+	 * @return 
+	 */
+	UFUNCTION()
+	FORCEINLINE TSubclassOf<UGameplayEffect> GetDurationEffect() const
+	{
+		return DurationEffect;
+	}
+
+	/**
+	* @brief Gets the remaining duration time of the active gameplay effect handle of the Duration Effect. Only works for type EGASCourseAbilityType::Duration
+	* @return 
+	*/
+	UFUNCTION(BlueprintCallable)
+	float GetActiveDurationTimeRemaining() const;
+
+	/**
+	 * @brief Gets the total duration time of the active gameplay effect handle of the Duration Effect. Only works for type EGASCourseAbilityType::Duration
+	 * @return 
+	 */
+	UFUNCTION(BlueprintCallable)
+	float GetActiveDurationTime() const;
+
 protected:
 
 	//~UGameplayAbility interface
@@ -93,6 +132,8 @@ protected:
 	virtual FGameplayEffectContextHandle MakeEffectContext(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo) const override;
 	virtual void ApplyAbilityTagsToGameplayEffectSpec(FGameplayEffectSpec& Spec, FGameplayAbilitySpec* AbilitySpec) const override;
 	virtual bool DoesAbilitySatisfyTagRequirements(const UAbilitySystemComponent& AbilitySystemComponent, const FGameplayTagContainer* SourceTags, const FGameplayTagContainer* TargetTags, OUT FGameplayTagContainer* OptionalRelevantTags) const override;
+	virtual bool CommitAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, OUT FGameplayTagContainer* OptionalRelevantTags = nullptr) override;
+	virtual void CommitExecute(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo) override;
 	//~End of UGameplayAbility interface
 
 	virtual void OnPawnAvatarSet();
@@ -130,4 +171,14 @@ protected:
 	/*Manually apply either class duration effect, or custom duration effect**/
 	UFUNCTION(BlueprintCallable, Category = "GASCourse|Ability|Duration")
 	UPARAM(DisplayName= "bDurationEffectApplied") bool ApplyDurationEffect();
+
+	/**
+	 * @brief Should the ability automatically commit when activated? If false, blueprint or child classes must call CommitAbility() manually.
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "GASCourse|Ability")
+	bool bAutoCommitAbilityOnActivate;
+
+private:
+	
+	FActiveGameplayEffectHandle DurationEffectHandle;
 };

@@ -76,6 +76,7 @@ DerivedDataCache/*
 
 # Unnecessary Plugins
 Plugins/Developer/RiderLink*
+Plugins/Marketplace/*
 
 # Unnecessary Content
 Content/__ExternalActors__*
@@ -85,3 +86,5 @@ Content/AnimStarterPack/*
 Content/Magic_Circle_Creator/*
 Content/DreamscapeSeries/*
 Content/Cave/*
+Content/GreenwoodFantasyVillage/*
+Content/InfinityBladeGrassLands/*

@@ -19,6 +19,8 @@ UGASCourseGameplayAbility::UGASCourseGameplayAbility(const FObjectInitializer& O
 
 	ActivationPolicy = EGASCourseAbilityActivationPolicy::OnInputTriggered;
 	AbilityType = EGASCourseAbilityType::Instant;
+
+	bAutoCommitAbilityOnActivate = true;
 }
 
 UGASCourseAbilitySystemComponent* UGASCourseGameplayAbility::GetGASCourseAbilitySystemComponentFromActorInfo() const
@@ -75,8 +77,29 @@ void UGASCourseGameplayAbility::DurationEffectRemoved(const FGameplayEffectRemov
 {
 	if(AbilityType == EGASCourseAbilityType::Duration)
 	{
+		OnDurationEffectRemovedDelegate.Broadcast();
 		EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, true);
 	}
+}
+
+float UGASCourseGameplayAbility::GetActiveDurationTimeRemaining() const
+{
+	if(DurationEffectHandle.IsValid())
+	{
+		const FActiveGameplayEffect* ActiveDurationEffect =  GetAbilitySystemComponentFromActorInfo()->GetActiveGameplayEffect(DurationEffectHandle);
+		return ActiveDurationEffect->GetTimeRemaining(GetWorld()->TimeSeconds);
+	}
+	return 0.0f;
+}
+
+float UGASCourseGameplayAbility::GetActiveDurationTime() const
+{
+	if(DurationEffectHandle.IsValid())
+	{
+		const FActiveGameplayEffect* ActiveDurationEffect =  GetAbilitySystemComponentFromActorInfo()->GetActiveGameplayEffect(DurationEffectHandle);
+		return ActiveDurationEffect->GetDuration();
+	}
+	return 0.0f;
 }
 
 bool UGASCourseGameplayAbility::CanActivateAbility(const FGameplayAbilitySpecHandle Handle,
@@ -105,9 +128,7 @@ void UGASCourseGameplayAbility::OnGiveAbility(const FGameplayAbilityActorInfo* A
 	const FGameplayAbilitySpec& Spec)
 {
 	Super::OnGiveAbility(ActorInfo, Spec);
-
 	K2_OnAbilityAdded();
-
 	TryActivateAbilityOnSpawn(ActorInfo, Spec);
 }
 
@@ -142,6 +163,10 @@ void UGASCourseGameplayAbility::ActivateAbility(const FGameplayAbilitySpecHandle
 		break;
 	}
 
+	if(bAutoCommitAbilityOnActivate)
+	{
+		CommitAbility(Handle, ActorInfo, ActivationInfo);
+	}
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
 }
 
@@ -307,6 +332,20 @@ bool UGASCourseGameplayAbility::DoesAbilitySatisfyTagRequirements(const UAbility
 	return true;
 }
 
+bool UGASCourseGameplayAbility::CommitAbility(const FGameplayAbilitySpecHandle Handle,
+	const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo,
+	OUT FGameplayTagContainer* OptionalRelevantTags)
+{
+	OnAbilityCommitDelegate.Broadcast(Super::CommitAbility(Handle, ActorInfo, ActivationInfo, OptionalRelevantTags));
+	return Super::CommitAbility(Handle, ActorInfo, ActivationInfo, OptionalRelevantTags);
+}
+
+void UGASCourseGameplayAbility::CommitExecute(const FGameplayAbilitySpecHandle Handle,
+	const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo)
+{
+	Super::CommitExecute(Handle, ActorInfo, ActivationInfo);
+}
+
 void UGASCourseGameplayAbility::OnPawnAvatarSet()
 {
 }
@@ -321,7 +360,7 @@ bool UGASCourseGameplayAbility::ApplyDurationEffect()
 			if(DurationEffectObject->DurationPolicy == EGameplayEffectDurationType::HasDuration)
 			{
 				//TODO: Apply Player Level Info Here
-				const FActiveGameplayEffectHandle DurationEffectHandle = ApplyGameplayEffectToOwner(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, DurationEffectObject, 1.0);
+				DurationEffectHandle = ApplyGameplayEffectToOwner(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, DurationEffectObject, 1.0);
 				if(DurationEffectHandle.WasSuccessfullyApplied())
 				{
 					bSuccess = true;
