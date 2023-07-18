@@ -23,7 +23,7 @@ bool AGASCoursePlayerState::ReplicateSubobjects(UActorChannel* Channel, FOutBunc
 	check(Bunch);
 	check(RepFlags);
 
-	bool WroteSomething = false;
+	bool WroteSomething = true;
 
 	for (UActorComponent* ActorComp : ReplicatedComponents)
 	{
@@ -43,7 +43,6 @@ bool AGASCoursePlayerState::ReplicateSubobjects(UActorChannel* Channel, FOutBunc
 					AbilitySystemComponent->GetNumericAttribute(UGASCourseAttributeSet::GetTwoAttributeAttribute()));
 			}
 		}
-	}
+	} 
 	return WroteSomething;
-
 }

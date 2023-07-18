@@ -3,6 +3,7 @@
 
 #include "Game/GameplayAbilitySystem/GASCourseAbilitySystemComponent.h"
 
+#include "Abilities/Tasks/AbilityTask_WaitGameplayEffectRemoved.h"
 #include "Game/GameplayAbilitySystem/GASAbilityTagRelationshipMapping.h"
 #include "Game/Animation/GASCourseAnimInstance.h"
 #include "Game/GameplayAbilitySystem/GASCourseGameplayAbility.h"
@@ -331,7 +332,6 @@ float UGASCourseAbilitySystemComponent::PlayMontage(UGameplayAbility* InAnimatin
 			{
 				AnimInstance->Montage_JumpToSection(StartSectionName, NewAnimMontage);
 			}
-
 			// Replicate to non owners
 			if (IsOwnerActorAuthoritative())
 			{
@@ -368,6 +368,7 @@ float UGASCourseAbilitySystemComponent::PlayMontage(UGameplayAbility* InAnimatin
 				}
 			}
 		}
+
 	}
 
 	return Duration;
@@ -384,7 +385,6 @@ void UGASCourseAbilitySystemComponent::CurrentMontageStop(float OverrideBlendOut
 		const float BlendOutTime = (OverrideBlendOutTime >= 0.0f ? OverrideBlendOutTime : MontageToStop->BlendOut.GetBlendTime());
 
 		AnimInstance->Montage_Stop(BlendOutTime, MontageToStop);
-
 		if (IsOwnerActorAuthoritative())
 		{
 			IGCAbilitySystemReplicationProxyInterface* ReplicationInterface = GetExtendedReplicationInterface();
@@ -392,4 +392,20 @@ void UGASCourseAbilitySystemComponent::CurrentMontageStop(float OverrideBlendOut
 			AnimMontage_UpdateReplicatedData(MutableRepAnimMontageInfo);
 		}
 	}
+}
+
+void UGASCourseAbilitySystemComponent::WaitForAbilityCooldownEnd(UGameplayAbility* InAbility, const FActiveGameplayEffectHandle InCooldownActiveGEHandle)
+{
+	if(InAbility)
+	{
+		if(UAbilityTask_WaitGameplayEffectRemoved* CooldownEffectRemovalTask = UAbilityTask_WaitGameplayEffectRemoved::WaitForGameplayEffectRemoved(InAbility, InCooldownActiveGEHandle))
+		{
+			CooldownEffectRemovalTask->OnRemoved.AddDynamic(this, &UGASCourseAbilitySystemComponent::AbilityCooldownEnded);
+			CooldownEffectRemovalTask->Activate();
+		}
+	}
+}
+void UGASCourseAbilitySystemComponent::AbilityCooldownEnded(const FGameplayEffectRemovalInfo& GameplayEffectRemovalInfo)
+{
+	UE_LOG(LogTemp, Warning, TEXT("ASSSSSSSSS"));
 }

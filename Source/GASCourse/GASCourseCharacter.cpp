@@ -76,6 +76,7 @@ AGASCourseCharacter::AGASCourseCharacter(const class FObjectInitializer& ObjectI
 	PrimaryActorTick.bStartWithTickEnabled = true;
 	
 }
+
 void AGASCourseCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
@@ -327,6 +328,7 @@ void AGASCourseCharacter::Jump()
 	Super::Jump();
 }
 
+
 FReplicationProxyVarList& AGASCourseCharacter::Call_GetReplicationProxyVarList_Mutable()
 {
 	MARK_PROPERTY_DIRTY_FROM_NAME(AGASCourseCharacter, ReplicationVarList, this);
@@ -335,6 +337,7 @@ FReplicationProxyVarList& AGASCourseCharacter::Call_GetReplicationProxyVarList_M
 
 void AGASCourseCharacter::OnRep_ReplicationVarList()
 {
+	
 	UGASCourseAbilitySystemComponent* ASC = GetAbilitySystemComponent();
 	if (ASC)
 	{
@@ -352,6 +355,7 @@ void AGASCourseCharacter::OnRep_ReplicationVarList()
 			ASC->RemoveLooseGameplayTag(FGameplayTag::RequestGameplayTag("Data.Sample"));
 		}
 	}
+
 }
 
 void AGASCourseCharacter::ForceReplication()
@@ -475,7 +479,3 @@ void AGASCourseCharacter::Call_OnRep_ReplicatedAnimMontage()
 		ASC->ReplicatedAnimMontageOnRepAccesor();
 	}
 }
-
-
-
-

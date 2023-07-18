@@ -48,6 +48,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GASCourse|PlayerController|AnimLayers")
 	TSoftClassPtr<UAnimInstance> UnArmedAnimLayer;
 
+	UFUNCTION()
+	void UpdateAnimLinkLayer(APawn* InPawn);
+
 private:
 
 	FVector3d CachedDestination = FVector3d(0.0f,0.0f,0.0f);

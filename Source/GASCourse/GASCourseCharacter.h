@@ -52,6 +52,7 @@ public:
 	float AttributeTwo;
 };
 
+
 UCLASS(config=Game)
 class AGASCourseCharacter : public ACharacter, public IAbilitySystemInterface, public IGCAbilitySystemReplicationProxyInterface
 {
@@ -101,7 +102,7 @@ protected:
 	//Override these functions in order to jump while crouched, if movement component allows for it.
 	virtual bool CanJumpInternal_Implementation() const override;
 	virtual void Jump() override;
-
+	
 	UFUNCTION()
 	void OnRep_ReplicationVarList();
 	

@@ -20,6 +20,10 @@ UGASCourseGameplayAbility::UGASCourseGameplayAbility(const FObjectInitializer& O
 	ActivationPolicy = EGASCourseAbilityActivationPolicy::OnInputTriggered;
 	AbilityType = EGASCourseAbilityType::Instant;
 
+	//EGASCourseAbilityType::Duration initialized variables
+	bAutoEndAbilityOnDurationEnd = true;
+	bAutoCommitCooldownOnDurationEnd = true;
+
 	bAutoCommitAbilityOnActivate = true;
 }
 
@@ -78,13 +82,21 @@ void UGASCourseGameplayAbility::DurationEffectRemoved(const FGameplayEffectRemov
 	if(AbilityType == EGASCourseAbilityType::Duration)
 	{
 		OnDurationEffectRemovedDelegate.Broadcast();
-		EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, true);
+		if(bAutoCommitCooldownOnDurationEnd)
+		{
+			CommitAbilityCooldown(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true);
+		}
+		
+		if(bAutoEndAbilityOnDurationEnd)
+		{
+			EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, true);
+		}
 	}
 }
 
 float UGASCourseGameplayAbility::GetActiveDurationTimeRemaining() const
 {
-	if(DurationEffectHandle.IsValid())
+	if(DurationEffectHandle.IsValid() && GetWorld())
 	{
 		const FActiveGameplayEffect* ActiveDurationEffect =  GetAbilitySystemComponentFromActorInfo()->GetActiveGameplayEffect(DurationEffectHandle);
 		return ActiveDurationEffect->GetTimeRemaining(GetWorld()->TimeSeconds);
@@ -130,13 +142,15 @@ void UGASCourseGameplayAbility::OnGiveAbility(const FGameplayAbilityActorInfo* A
 	Super::OnGiveAbility(ActorInfo, Spec);
 	K2_OnAbilityAdded();
 	TryActivateAbilityOnSpawn(ActorInfo, Spec);
+
+	//Maybe here wait for tag removal of cooldown tags?
+	//GetCooldownTags();
 }
 
 void UGASCourseGameplayAbility::OnRemoveAbility(const FGameplayAbilityActorInfo* ActorInfo,
 	const FGameplayAbilitySpec& Spec)
 {
 	K2_OnAbilityRemoved();
-
 	Super::OnRemoveAbility(ActorInfo, Spec);
 }
 
@@ -343,7 +357,32 @@ bool UGASCourseGameplayAbility::CommitAbility(const FGameplayAbilitySpecHandle H
 void UGASCourseGameplayAbility::CommitExecute(const FGameplayAbilitySpecHandle Handle,
 	const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo)
 {
-	Super::CommitExecute(Handle, ActorInfo, ActivationInfo);
+	if(AbilityType == EGASCourseAbilityType::Duration && bAutoCommitCooldownOnDurationEnd)
+	{
+		//Only Apply Cost, don't apply cooldown.
+		ApplyCost(Handle,ActorInfo, ActivationInfo);
+	}
+	else
+	{
+		Super::CommitExecute(Handle, ActorInfo, ActivationInfo);
+	}
+}
+
+void UGASCourseGameplayAbility::ApplyCooldown(const FGameplayAbilitySpecHandle Handle,
+	const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo) const
+{
+	if (const UGameplayEffect* CooldownGE = GetCooldownGameplayEffect())
+	{
+		const FActiveGameplayEffectHandle CooldownActiveGEHandle = ApplyGameplayEffectToOwner(Handle, ActorInfo, ActivationInfo, CooldownGE, GetAbilityLevel(Handle, ActorInfo));
+		if(CooldownActiveGEHandle.WasSuccessfullyApplied())
+		{
+			OnAbilityCooldownCommitDelegate.Broadcast();
+			if(UGASCourseAbilitySystemComponent* ASC = GetGASCourseAbilitySystemComponentFromActorInfo())
+			{
+				ASC->WaitForAbilityCooldownEnd(const_cast<UGASCourseGameplayAbility*>(this), CooldownActiveGEHandle);
+			}
+		}
+	}
 }
 
 void UGASCourseGameplayAbility::OnPawnAvatarSet()
@@ -364,11 +403,12 @@ bool UGASCourseGameplayAbility::ApplyDurationEffect()
 				if(DurationEffectHandle.WasSuccessfullyApplied())
 				{
 					bSuccess = true;
+					
 					if(UAbilityTask_WaitGameplayEffectRemoved* DurationEffectRemovalTask = UAbilityTask_WaitGameplayEffectRemoved::WaitForGameplayEffectRemoved(this, DurationEffectHandle))
 					{
-						DurationEffectRemovalTask->Activate();
 						DurationEffectRemovalTask->OnRemoved.AddDynamic(this, &UGASCourseGameplayAbility::DurationEffectRemoved);
-					}
+						DurationEffectRemovalTask->Activate();
+					} 
 				}
 				return bSuccess;
 			}

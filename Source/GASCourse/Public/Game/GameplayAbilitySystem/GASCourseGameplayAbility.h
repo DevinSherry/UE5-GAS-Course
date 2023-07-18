@@ -12,7 +12,8 @@
  * Delegate fired when ability is committed, returns whether commit was successful
  */
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FGASCourseAbilityCommitSignature, bool, CommitAbility);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FGasCourseAbilityDurationRemoved);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FGASCourseAbilityCooldownCommitSignature);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FGASCourseAbilityDurationRemoved);
 
 
 /**
@@ -61,7 +62,10 @@ public:
 	FGASCourseAbilityCommitSignature OnAbilityCommitDelegate;
 
 	UPROPERTY(BlueprintAssignable)
-	FGasCourseAbilityDurationRemoved OnDurationEffectRemovedDelegate;
+	FGASCourseAbilityDurationRemoved OnDurationEffectRemovedDelegate;
+
+	UPROPERTY(BlueprintAssignable)
+	FGASCourseAbilityCooldownCommitSignature OnAbilityCooldownCommitDelegate;
 	
 public:
 
@@ -134,6 +138,7 @@ protected:
 	virtual bool DoesAbilitySatisfyTagRequirements(const UAbilitySystemComponent& AbilitySystemComponent, const FGameplayTagContainer* SourceTags, const FGameplayTagContainer* TargetTags, OUT FGameplayTagContainer* OptionalRelevantTags) const override;
 	virtual bool CommitAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, OUT FGameplayTagContainer* OptionalRelevantTags = nullptr) override;
 	virtual void CommitExecute(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo) override;
+	virtual void ApplyCooldown(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo) const override;
 	//~End of UGameplayAbility interface
 
 	virtual void OnPawnAvatarSet();
@@ -149,6 +154,7 @@ protected:
 	/** Called when the ability system is initialized with a pawn avatar. */
 	UFUNCTION(BlueprintImplementableEvent, Category = Ability, DisplayName = "OnPawnAvatarSet")
 	void K2_OnPawnAvatarSet();
+
 
 protected:
 
@@ -171,6 +177,7 @@ protected:
 	/*Manually apply either class duration effect, or custom duration effect**/
 	UFUNCTION(BlueprintCallable, Category = "GASCourse|Ability|Duration")
 	UPARAM(DisplayName= "bDurationEffectApplied") bool ApplyDurationEffect();
+	
 
 	/**
 	 * @brief Should the ability automatically commit when activated? If false, blueprint or child classes must call CommitAbility() manually.
@@ -178,7 +185,20 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "GASCourse|Ability")
 	bool bAutoCommitAbilityOnActivate;
 
+	/**
+	 * @brief Should the ability automatically commit cooldown when the duration effect ends?
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "GASCourse|Ability|Duration", meta=(EditCondition="AbilityType==EGASCourseAbilityType::Duration", EditConditionHides))
+	bool bAutoCommitCooldownOnDurationEnd;
+
+	/**
+ * @brief Should the ability automatically end when the duration effect ends?
+ */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "GASCourse|Ability|Duration", meta=(EditCondition="AbilityType==EGASCourseAbilityType::Duration", EditConditionHides))
+	bool bAutoEndAbilityOnDurationEnd;
+
 private:
 	
 	FActiveGameplayEffectHandle DurationEffectHandle;
+	
 };

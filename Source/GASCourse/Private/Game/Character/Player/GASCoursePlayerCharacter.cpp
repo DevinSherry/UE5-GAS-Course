@@ -68,8 +68,6 @@ void AGASCoursePlayerCharacter::PossessedBy(AController* NewController)
 	
 	if(AGASCoursePlayerState* PS = GetPlayerState<AGASCoursePlayerState>())
 	{
-		//GetChampionComponent()->InitializeChampionComponent(AbilitySystemComponent);
-
 		AbilitySystemComponent = Cast<UGASCourseAbilitySystemComponent>(PS->GetAbilitySystemComponent());
 		PS->GetAbilitySystemComponent()->InitAbilityActorInfo(PS, this);
 		InitializeAbilitySystem(AbilitySystemComponent);
@@ -116,6 +114,10 @@ void AGASCoursePlayerCharacter::OnRep_Controller()
 	if (const AGASCoursePlayerState* PS = GetPlayerState<AGASCoursePlayerState>())
 	{
 		PS->GetAbilitySystemComponent()->RefreshAbilityActorInfo();
+		if(AGASCoursePlayerController* PC = Cast<AGASCoursePlayerController>(GetController()))
+		{
+			PC->UpdateAnimLinkLayer(this);
+		}
 	}
 }
 
