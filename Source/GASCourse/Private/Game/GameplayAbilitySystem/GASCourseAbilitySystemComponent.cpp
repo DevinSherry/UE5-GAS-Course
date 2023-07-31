@@ -400,12 +400,8 @@ void UGASCourseAbilitySystemComponent::WaitForAbilityCooldownEnd(UGameplayAbilit
 	{
 		if(UAbilityTask_WaitGameplayEffectRemoved* CooldownEffectRemovalTask = UAbilityTask_WaitGameplayEffectRemoved::WaitForGameplayEffectRemoved(InAbility, InCooldownActiveGEHandle))
 		{
-			CooldownEffectRemovalTask->OnRemoved.AddDynamic(this, &UGASCourseAbilitySystemComponent::AbilityCooldownEnded);
-			CooldownEffectRemovalTask->Activate();
+			//CooldownEffectRemovalTask->OnRemoved.AddDynamic(this, &UGASCourseAbilitySystemComponent::AbilityCooldownEnded);
+			//CooldownEffectRemovalTask->Activate();
 		}
 	}
-}
-void UGASCourseAbilitySystemComponent::AbilityCooldownEnded(const FGameplayEffectRemovalInfo& GameplayEffectRemovalInfo)
-{
-	UE_LOG(LogTemp, Warning, TEXT("ASSSSSSSSS"));
 }

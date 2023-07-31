@@ -38,6 +38,11 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input")
 	TObjectPtr<UGASCourseInputConfig> InputConfig;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "GASCourse|Animation")
+	TSubclassOf<UAnimInstance> UnArmedAnimLayer;
+
+	void UpdateCharacterAnimLayer(TSubclassOf<UAnimInstance> NewAnimLayer) const;
+
 protected:
 
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;

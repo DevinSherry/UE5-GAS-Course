@@ -20,6 +20,14 @@ Super(ObjectInitializer)
 	GetCameraBoom()->SocketOffset.Z = MaxCameraBoomDistance;
 }
 
+void AGASCoursePlayerCharacter::UpdateCharacterAnimLayer(TSubclassOf<UAnimInstance> NewAnimLayer) const
+{
+	if(NewAnimLayer)
+	{
+		GetMesh()->LinkAnimClassLayers(NewAnimLayer);
+	}
+}
+
 //////////////////////////////////////////////////////////////////////////
 // Input
 void AGASCoursePlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -82,6 +90,8 @@ void AGASCoursePlayerCharacter::PossessedBy(AController* NewController)
 		}
 	}
 
+	UpdateCharacterAnimLayer(UnArmedAnimLayer);
+
 	GetCameraBoom()->TargetArmLength = MaxCameraBoomDistance;
 	GetCameraBoom()->SocketOffset = FVector(0.0f,0.0f, MaxCameraBoomDistance);
 }
@@ -104,20 +114,21 @@ void AGASCoursePlayerCharacter::OnRep_PlayerState()
 				Subsystem->AddMappingContext(DefaultMappingContextGamepad, 0);
 			}
 		}
+
+		UpdateCharacterAnimLayer(UnArmedAnimLayer);
 	}
 }
 
 void AGASCoursePlayerCharacter::OnRep_Controller()
 {
 	Super::OnRep_Controller();
+
+	UpdateCharacterAnimLayer(UnArmedAnimLayer);
+	
 	// Needed in case the PC wasn't valid when we Init-ed the ASC.
 	if (const AGASCoursePlayerState* PS = GetPlayerState<AGASCoursePlayerState>())
 	{
 		PS->GetAbilitySystemComponent()->RefreshAbilityActorInfo();
-		if(AGASCoursePlayerController* PC = Cast<AGASCoursePlayerController>(GetController()))
-		{
-			PC->UpdateAnimLinkLayer(this);
-		}
 	}
 }
 

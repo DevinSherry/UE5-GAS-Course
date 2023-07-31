@@ -24,11 +24,11 @@ void FGASCourseAbilitySet_GrantedHandles::AddAttributeSet(UGASCourseAttributeSet
 	GrantedAttributeSets.Add(Set);
 }
 
-void FGASCourseAbilitySet_GrantedHandles::TakeFromAbilitySystem(UGASCourseAbilitySystemComponent* LyraASC)
+void FGASCourseAbilitySet_GrantedHandles::TakeFromAbilitySystem(UGASCourseAbilitySystemComponent* ASC)
 {
-	check(LyraASC);
+	check(ASC);
 
-	if (!LyraASC->IsOwnerActorAuthoritative())
+	if (!ASC->IsOwnerActorAuthoritative())
 	{
 		// Must be authoritative to give or take ability sets.
 		return;
@@ -38,7 +38,7 @@ void FGASCourseAbilitySet_GrantedHandles::TakeFromAbilitySystem(UGASCourseAbilit
 	{
 		if (Handle.IsValid())
 		{
-			LyraASC->ClearAbility(Handle);
+			ASC->ClearAbility(Handle);
 		}
 	}
 
@@ -46,13 +46,13 @@ void FGASCourseAbilitySet_GrantedHandles::TakeFromAbilitySystem(UGASCourseAbilit
 	{
 		if (Handle.IsValid())
 		{
-			LyraASC->RemoveActiveGameplayEffect(Handle);
+			ASC->RemoveActiveGameplayEffect(Handle);
 		}
 	}
 
 	for (UAttributeSet* Set : GrantedAttributeSets)
 	{
-		LyraASC->RemoveSpawnedAttribute(Set);
+		ASC->RemoveSpawnedAttribute(Set);
 	}
 
 	AbilitySpecHandles.Reset();

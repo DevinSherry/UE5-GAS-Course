@@ -10,6 +10,7 @@
 #include "GameplayEffectTypes.h"
 #include "Abilities/Tasks/AbilityTask_WaitGameplayEffectRemoved.h"
 
+
 UGASCourseGameplayAbility::UGASCourseGameplayAbility(const FObjectInitializer& ObjectInitializer)
 {
 	ReplicationPolicy = EGameplayAbilityReplicationPolicy::ReplicateNo;
@@ -79,39 +80,21 @@ void UGASCourseGameplayAbility::TryActivateAbilityOnSpawn(const FGameplayAbility
 
 void UGASCourseGameplayAbility::DurationEffectRemoved(const FGameplayEffectRemovalInfo& GameplayEffectRemovalInfo)
 {
-	if(AbilityType == EGASCourseAbilityType::Duration)
+	if(HasAuthorityOrPredictionKey(CurrentActorInfo, &CurrentActivationInfo))
 	{
-		OnDurationEffectRemovedDelegate.Broadcast();
-		if(bAutoCommitCooldownOnDurationEnd)
+		if(AbilityType == EGASCourseAbilityType::Duration)
 		{
-			CommitAbilityCooldown(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true);
-		}
+			if(bAutoCommitCooldownOnDurationEnd)
+			{
+				CommitAbilityCooldown(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true);
+			}
 		
-		if(bAutoEndAbilityOnDurationEnd)
-		{
-			EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, true);
+			if(bAutoEndAbilityOnDurationEnd)
+			{
+				EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, true);
+			}
 		}
 	}
-}
-
-float UGASCourseGameplayAbility::GetActiveDurationTimeRemaining() const
-{
-	if(DurationEffectHandle.IsValid() && GetWorld())
-	{
-		const FActiveGameplayEffect* ActiveDurationEffect =  GetAbilitySystemComponentFromActorInfo()->GetActiveGameplayEffect(DurationEffectHandle);
-		return ActiveDurationEffect->GetTimeRemaining(GetWorld()->TimeSeconds);
-	}
-	return 0.0f;
-}
-
-float UGASCourseGameplayAbility::GetActiveDurationTime() const
-{
-	if(DurationEffectHandle.IsValid())
-	{
-		const FActiveGameplayEffect* ActiveDurationEffect =  GetAbilitySystemComponentFromActorInfo()->GetActiveGameplayEffect(DurationEffectHandle);
-		return ActiveDurationEffect->GetDuration();
-	}
-	return 0.0f;
 }
 
 bool UGASCourseGameplayAbility::CanActivateAbility(const FGameplayAbilitySpecHandle Handle,
@@ -158,21 +141,29 @@ void UGASCourseGameplayAbility::ActivateAbility(const FGameplayAbilitySpecHandle
 	const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo,
 	const FGameplayEventData* TriggerEventData)
 {
+	if(HasAuthorityOrPredictionKey(ActorInfo, &ActivationInfo))
+	{
+		if(!CommitAbility(Handle, ActorInfo, ActivationInfo))
+		{
+			EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
+		}
+
+		if(!ActorInfo->IsNetAuthority())
+		{
+			return;
+		}
+	}
 
 	switch (AbilityType)
 	{
 	case EGASCourseAbilityType::Duration:
 		if(bAutoApplyDurationEffect)
 		{
-			if(ApplyDurationEffect())
+			if(!ApplyDurationEffect())
 			{
-				break;
+				EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
 			}
-			EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
-			break;
 		}
-		break;
-		
 	default:
 		break;
 	}
@@ -181,6 +172,7 @@ void UGASCourseGameplayAbility::ActivateAbility(const FGameplayAbilitySpecHandle
 	{
 		CommitAbility(Handle, ActorInfo, ActivationInfo);
 	}
+
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
 }
 
@@ -371,17 +363,31 @@ void UGASCourseGameplayAbility::CommitExecute(const FGameplayAbilitySpecHandle H
 void UGASCourseGameplayAbility::ApplyCooldown(const FGameplayAbilitySpecHandle Handle,
 	const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo) const
 {
+
+	if(!GetActorInfo().IsNetAuthority() || !HasAuthorityOrPredictionKey(CurrentActorInfo, &CurrentActivationInfo))
+	{
+		Super::ApplyCooldown(Handle, ActorInfo, ActivationInfo);
+	}
+	
 	if (const UGameplayEffect* CooldownGE = GetCooldownGameplayEffect())
 	{
 		const FActiveGameplayEffectHandle CooldownActiveGEHandle = ApplyGameplayEffectToOwner(Handle, ActorInfo, ActivationInfo, CooldownGE, GetAbilityLevel(Handle, ActorInfo));
 		if(CooldownActiveGEHandle.WasSuccessfullyApplied())
 		{
-			OnAbilityCooldownCommitDelegate.Broadcast();
 			if(UGASCourseAbilitySystemComponent* ASC = GetGASCourseAbilitySystemComponentFromActorInfo())
 			{
 				ASC->WaitForAbilityCooldownEnd(const_cast<UGASCourseGameplayAbility*>(this), CooldownActiveGEHandle);
 			}
 		}
+	}
+}
+
+void UGASCourseGameplayAbility::GetAbilityCooldownTags(FGameplayTagContainer& CooldownTags) const
+{
+	CooldownTags.Reset();
+	if(const UGameplayEffect* CooldownGE = GetCooldownGameplayEffect())
+	{
+		CooldownTags.AppendTags(CooldownGE->InheritableOwnedTagsContainer.CombinedTags);
 	}
 }
 
@@ -391,6 +397,10 @@ void UGASCourseGameplayAbility::OnPawnAvatarSet()
 
 bool UGASCourseGameplayAbility::ApplyDurationEffect()
 {
+	if(!GetActorInfo().IsNetAuthority() || !HasAuthorityOrPredictionKey(CurrentActorInfo, &CurrentActivationInfo))
+	{
+		return false;
+	}
 	bool bSuccess = false;
 	if((DurationEffect))
 	{

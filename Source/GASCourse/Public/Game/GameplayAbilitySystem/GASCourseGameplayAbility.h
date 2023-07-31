@@ -61,11 +61,8 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FGASCourseAbilityCommitSignature OnAbilityCommitDelegate;
 
-	UPROPERTY(BlueprintAssignable)
-	FGASCourseAbilityDurationRemoved OnDurationEffectRemovedDelegate;
-
-	UPROPERTY(BlueprintAssignable)
-	FGASCourseAbilityCooldownCommitSignature OnAbilityCooldownCommitDelegate;
+	UFUNCTION(BlueprintPure, Category = "GASCourse|Ability|Tags")
+	void GetAbilityCooldownTags(FGameplayTagContainer& CooldownTags) const;
 	
 public:
 
@@ -107,20 +104,6 @@ public:
 	{
 		return DurationEffect;
 	}
-
-	/**
-	* @brief Gets the remaining duration time of the active gameplay effect handle of the Duration Effect. Only works for type EGASCourseAbilityType::Duration
-	* @return 
-	*/
-	UFUNCTION(BlueprintCallable)
-	float GetActiveDurationTimeRemaining() const;
-
-	/**
-	 * @brief Gets the total duration time of the active gameplay effect handle of the Duration Effect. Only works for type EGASCourseAbilityType::Duration
-	 * @return 
-	 */
-	UFUNCTION(BlueprintCallable)
-	float GetActiveDurationTime() const;
 
 protected:
 

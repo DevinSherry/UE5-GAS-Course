@@ -1,11 +1,11 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Game/GameplayAbilitySystem/Tasks/AbilityTask_WaitDurationChange.h"
+#include "Game/GameplayAbilitySystem/Tasks/AbilityTask_WaitForDurationEffectChange.h"
 
-UAbilityTask_WaitDurationChange* UAbilityTask_WaitDurationChange::WaitForDurationChange(UAbilitySystemComponent* InAbilitySystemComponent,FGameplayTagContainer InDurationTags, float InDurationInterval, bool bInUseServerCooldown)
+UAbilityTask_WaitOnDurationChange* UAbilityTask_WaitOnDurationChange::WaitOnDurationChange(UAbilitySystemComponent* InAbilitySystemComponent,FGameplayTagContainer InDurationTags, float InDurationInterval, bool bInUseServerCooldown)
 {
-	UAbilityTask_WaitDurationChange* MyObj = NewObject<UAbilityTask_WaitDurationChange>();
+	UAbilityTask_WaitOnDurationChange* MyObj = NewObject<UAbilityTask_WaitOnDurationChange>();
 	MyObj->WorldContext = GEngine->GetWorldFromContextObjectChecked(InAbilitySystemComponent);
 	MyObj->ASC = InAbilitySystemComponent;
 	MyObj->DurationTags = InDurationTags;
@@ -19,20 +19,51 @@ UAbilityTask_WaitDurationChange* UAbilityTask_WaitDurationChange::WaitForDuratio
 		return nullptr;
 	}
 
-	InAbilitySystemComponent->OnActiveGameplayEffectAddedDelegateToSelf.AddUObject(MyObj, &UAbilityTask_WaitDurationChange::OnActiveGameplayEffectAddedCallback);
+	InAbilitySystemComponent->OnActiveGameplayEffectAddedDelegateToSelf.AddUObject(MyObj, &UAbilityTask_WaitForDurationEffectChange::OnActiveGameplayEffectAddedCallback);
 
 	TArray<FGameplayTag> DurationTagArray;
 	InDurationTags.GetGameplayTagArray(DurationTagArray);
 
 	for(const FGameplayTag DurationTag : DurationTagArray)
 	{
-		InAbilitySystemComponent->RegisterGameplayTagEvent(DurationTag, EGameplayTagEventType::NewOrRemoved).AddUObject(MyObj, &UAbilityTask_WaitDurationChange::DurationTagChanged);
+		InAbilitySystemComponent->RegisterGameplayTagEvent(DurationTag, EGameplayTagEventType::NewOrRemoved).AddUObject(MyObj, &UAbilityTask_WaitForDurationEffectChange::DurationTagChanged);
 	}
 	
 	return MyObj;
 }
 
-void UAbilityTask_WaitDurationChange::EndTask()
+UAbilityTask_WaitOnCooldownChange* UAbilityTask_WaitOnCooldownChange::WaitOnCooldownChange(
+	UAbilitySystemComponent* InAbilitySystemComponent, FGameplayTagContainer InCooldownTags, float InDurationInterval,
+	bool bInUseServerCooldown)
+{
+	UAbilityTask_WaitOnCooldownChange* MyObj = NewObject<UAbilityTask_WaitOnCooldownChange>();
+	MyObj->WorldContext = GEngine->GetWorldFromContextObjectChecked(InAbilitySystemComponent);
+	MyObj->ASC = InAbilitySystemComponent;
+	MyObj->DurationTags = InCooldownTags;
+	MyObj->DurationInterval = InDurationInterval;
+	MyObj->bUseServerCooldown = bInUseServerCooldown;
+
+
+	if(!IsValid(InAbilitySystemComponent) || InCooldownTags.Num() < 1)
+	{
+		MyObj->EndTask();
+		return nullptr;
+	}
+
+	InAbilitySystemComponent->OnActiveGameplayEffectAddedDelegateToSelf.AddUObject(MyObj, &UAbilityTask_WaitForDurationEffectChange::OnActiveGameplayEffectAddedCallback);
+
+	TArray<FGameplayTag> DurationTagArray;
+	InCooldownTags.GetGameplayTagArray(DurationTagArray);
+
+	for(const FGameplayTag DurationTag : DurationTagArray)
+	{
+		InAbilitySystemComponent->RegisterGameplayTagEvent(DurationTag, EGameplayTagEventType::NewOrRemoved).AddUObject(MyObj, &UAbilityTask_WaitForDurationEffectChange::DurationTagChanged);
+	}
+	
+	return MyObj;
+}
+
+void UAbilityTask_WaitForDurationEffectChange::EndTask()
 {
 	if(IsValid(ASC))
 	{
@@ -51,7 +82,7 @@ void UAbilityTask_WaitDurationChange::EndTask()
 	MarkAsGarbage();
 }
 
-void UAbilityTask_WaitDurationChange::OnActiveGameplayEffectAddedCallback(UAbilitySystemComponent* InTargetASC,
+void UAbilityTask_WaitForDurationEffectChange::OnActiveGameplayEffectAddedCallback(UAbilitySystemComponent* InTargetASC,
 	const FGameplayEffectSpec& InSpecApplied, FActiveGameplayEffectHandle ActiveHandle)
 {
 	FGameplayTagContainer AssetTags;
@@ -97,14 +128,14 @@ void UAbilityTask_WaitDurationChange::OnActiveGameplayEffectAddedCallback(UAbili
 			
 			if(WorldContext)
 			{
-				WorldContext->GetWorld()->GetTimerManager().SetTimer(DurationTimeUpdateTimerHandle, this, &UAbilityTask_WaitDurationChange::OnDurationUpdate, DurationInterval, true);
+				WorldContext->GetWorld()->GetTimerManager().SetTimer(DurationTimeUpdateTimerHandle, this, &UAbilityTask_WaitForDurationEffectChange::OnDurationUpdate, DurationInterval, true);
 			}
 
 		}
 	}
 }
 
-void UAbilityTask_WaitDurationChange::DurationTagChanged(const FGameplayTag InDurationTag, int32 InNewCount)
+void UAbilityTask_WaitForDurationEffectChange::DurationTagChanged(const FGameplayTag InDurationTag, int32 InNewCount)
 {
 	if(InNewCount == 0)
 	{
@@ -117,7 +148,7 @@ void UAbilityTask_WaitDurationChange::DurationTagChanged(const FGameplayTag InDu
 	}
 }
 
-bool UAbilityTask_WaitDurationChange::GetCooldownRemainingForTag(const FGameplayTagContainer& InDurationTags,
+bool UAbilityTask_WaitForDurationEffectChange::GetCooldownRemainingForTag(const FGameplayTagContainer& InDurationTags,
 	float& TimeRemaining, float& InDuration) const
 {
 	if(IsValid(ASC) && InDurationTags.Num() > 0)
@@ -150,7 +181,7 @@ bool UAbilityTask_WaitDurationChange::GetCooldownRemainingForTag(const FGameplay
 	return false;
 }
 
-void UAbilityTask_WaitDurationChange::OnDurationUpdate()
+void UAbilityTask_WaitForDurationEffectChange::OnDurationUpdate()
 {
 	float TimeRemaining = 0.0f;
 	float Duration = 0.0f;

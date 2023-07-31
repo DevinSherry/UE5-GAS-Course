@@ -45,11 +45,14 @@ public:
 
 public:
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GASCourse|PlayerController|AnimLayers")
-	TSoftClassPtr<UAnimInstance> UnArmedAnimLayer;
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "GASCourse|HUD")
+	void CreateHUD();
 
-	UFUNCTION()
-	void UpdateAnimLinkLayer(APawn* InPawn);
+	void CreateHUD_Implementation();
+
+protected:
+
+	virtual void OnRep_PlayerState() override;
 
 private:
 

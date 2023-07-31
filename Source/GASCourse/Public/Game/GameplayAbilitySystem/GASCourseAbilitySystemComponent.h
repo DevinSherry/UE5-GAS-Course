@@ -75,9 +75,6 @@ public:
 
 	void WaitForAbilityCooldownEnd(UGameplayAbility* InAbility, const FActiveGameplayEffectHandle InCooldownActiveGEHandle);
 
-	UFUNCTION()
-	void AbilityCooldownEnded(const FGameplayEffectRemovalInfo& GameplayEffectRemovalInfo);
-
 protected:
 
 	// Handles to abilities that had their input pressed this frame.

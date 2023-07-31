@@ -39,17 +39,18 @@ void AGASCoursePlayerController::PostProcessInput(const float DeltaTime, const b
 void AGASCoursePlayerController::OnPossess(APawn* InPawn)
 {
 	Super::OnPossess(InPawn);
-	
-	if(InPawn)
-	{
-		if(USkeletalMeshComponent* SkeletalMeshComponent = InPawn->GetComponentByClass<USkeletalMeshComponent>())
-		{
-			SkeletalMeshComponent->LinkAnimClassLayers(UnArmedAnimLayer.LoadSynchronous());
-		}
-	}
+	//CreateHUD_Implementation();
+	CreateHUD();
 }
 
-void AGASCoursePlayerController::UpdateAnimLinkLayer(APawn* InPawn)
+void AGASCoursePlayerController::CreateHUD_Implementation()
 {
+	
+}
 
+void AGASCoursePlayerController::OnRep_PlayerState()
+{
+	Super::OnRep_PlayerState();
+	//CreateHUD_Implementation();
+	CreateHUD();
 }
