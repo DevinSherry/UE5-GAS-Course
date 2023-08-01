@@ -15,6 +15,8 @@ UE_DEFINE_GAMEPLAY_TAG(InputTag_CameraZoom, "Input.NativeAction.CameraZoom");
 UE_DEFINE_GAMEPLAY_TAG(InputTag_AbilityOne, "Input.NativeAction.Ability.One")
 UE_DEFINE_GAMEPLAY_TAG(InputTag_AbilityTwo, "Input.NativeAction.Ability.Two")
 UE_DEFINE_GAMEPLAY_TAG(InputTag_AbilityThree, "Input.NativeAction.Ability.Three")
+UE_DEFINE_GAMEPLAY_TAG(InputTag_ConfirmTargetData, "Input.NativeAction.ConfirmTargeting")
+UE_DEFINE_GAMEPLAY_TAG(InputTag_CancelTargetData, "Input.NativeAction.CancelTargeting")
 
 UE_DEFINE_GAMEPLAY_TAG(Status_Crouching, "Status.Crouching")
 UE_DEFINE_GAMEPLAY_TAG(Status_Falling, "Status.Falling")

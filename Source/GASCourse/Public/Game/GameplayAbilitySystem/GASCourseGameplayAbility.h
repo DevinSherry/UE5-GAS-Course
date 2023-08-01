@@ -64,6 +64,9 @@ public:
 	UFUNCTION(BlueprintPure, Category = "GASCourse|Ability|Tags")
 	void GetAbilityCooldownTags(FGameplayTagContainer& CooldownTags) const;
 	
+	UFUNCTION(BlueprintPure, Category = "GASCourse|Ability|Tags")
+	void GetAbilityDurationTags(FGameplayTagContainer& DurationTags) const;
+	
 public:
 
 	UGASCourseGameplayAbility(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
@@ -99,11 +102,8 @@ public:
 	 * @brief Helper function to get a reference to the Duration Effect class.
 	 * @return 
 	 */
-	UFUNCTION()
-	FORCEINLINE TSubclassOf<UGameplayEffect> GetDurationEffect() const
-	{
-		return DurationEffect;
-	}
+	UFUNCTION(BlueprintCallable)
+	UGameplayEffect* GetDurationGameplayEffect() const;
 
 protected:
 

@@ -97,6 +97,18 @@ void UGASCourseGameplayAbility::DurationEffectRemoved(const FGameplayEffectRemov
 	}
 }
 
+UGameplayEffect* UGASCourseGameplayAbility::GetDurationGameplayEffect() const
+{
+	if ( DurationEffect )
+	{
+		return DurationEffect->GetDefaultObject<UGameplayEffect>();
+	}
+	else
+	{
+		return nullptr;
+	}
+}
+
 bool UGASCourseGameplayAbility::CanActivateAbility(const FGameplayAbilitySpecHandle Handle,
                                                    const FGameplayAbilityActorInfo* ActorInfo, const FGameplayTagContainer* SourceTags,
                                                    const FGameplayTagContainer* TargetTags, FGameplayTagContainer* OptionalRelevantTags) const
@@ -388,6 +400,15 @@ void UGASCourseGameplayAbility::GetAbilityCooldownTags(FGameplayTagContainer& Co
 	if(const UGameplayEffect* CooldownGE = GetCooldownGameplayEffect())
 	{
 		CooldownTags.AppendTags(CooldownGE->InheritableOwnedTagsContainer.CombinedTags);
+	}
+}
+
+void UGASCourseGameplayAbility::GetAbilityDurationTags(FGameplayTagContainer& DurationTags) const
+{
+	DurationTags.Reset();
+	if(const UGameplayEffect* DurationGE = GetDurationGameplayEffect())
+	{
+		DurationTags.AppendTags(DurationGE->InheritableOwnedTagsContainer.CombinedTags);
 	}
 }
 
