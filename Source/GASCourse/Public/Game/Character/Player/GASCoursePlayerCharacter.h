@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Game/Input/GASCourseInputConfig.h"
 #include "GASCourse/GASCourseCharacter.h"
+#include "Components/TimelineComponent.h"
 #include "GASCoursePlayerCharacter.generated.h"
 
 /**
@@ -31,6 +32,19 @@ class GASCOURSE_API AGASCoursePlayerCharacter : public AGASCourseCharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GASCourse|Camera Settings", meta = (AllowPrivateAccess = "true"))
 	float CameraZoomDistanceStep = 10.0f;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GASCourse|Camera Settings", meta = (AllowPrivateAccess = "true"))
+	float CameraMovementSpeed = 30.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GASCourse|Camera Settings", meta = (AllowPrivateAccess = "true"))
+	float CameraMaxVectorDistance = 3000.0f;
+
+	UPROPERTY(EditAnywhere,BlueprintReadOnly, Category = "GASCourse|Camera Settings", meta = (AllowPrivateAccess = "true"))
+	UCurveFloat* RecenterCameraCurve;
+
+	UPROPERTY(EditAnywhere,BlueprintReadOnly, Category = "GASCourse|Camera Settings", meta = (AllowPrivateAccess = "true"))
+	float RecenterCameraInterpSpeed = 0.1f;
+
+
 public:
 
 	AGASCoursePlayerCharacter(const FObjectInitializer& ObjectInitializer);
@@ -52,10 +66,25 @@ protected:
 
 	virtual void OnRep_PlayerState() override;
 	virtual void OnRep_Controller() override;
+
+	virtual void BeginPlay() override;
+	virtual void Tick(float DeltaSeconds) override;
 	
 	void Input_AbilityInputTagPressed(FGameplayTag InputTag);
 	void Input_AbilityInputTagReleased(FGameplayTag InputTag);
 
 	void Input_CameraZoom(const FInputActionInstance& InputActionInstance);
+
+	void Input_MoveCamera(const FInputActionInstance& InputActionInstance);
+	void UpdateCameraBoomTargetOffset(const FVector& InCameraBoomTargetOffset) const;
+
+	void Input_RecenterCamera(const FInputActionInstance& InputActionInstance);
+
+	UFUNCTION()
+	void RecenterCameraBoomTargetOffset();
+
+private:
+
+	FTimeline ResetCameraOffsetTimeline;
 	
 };

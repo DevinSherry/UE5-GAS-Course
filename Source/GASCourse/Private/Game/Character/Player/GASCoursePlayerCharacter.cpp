@@ -5,9 +5,9 @@
 #include "Game/Character/Player/GASCoursePlayerState.h"
 #include "Game/Input/GASCourseEnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "Components/TimelineComponent.h"
 #include "Game/GameplayAbilitySystem/GASCourseNativeGameplayTags.h"
 #include "GameFramework/SpringArmComponent.h"
-#include "GASCourse/GASCourse.h"
 
 //////////////////////////////////////////////////////////////////////////
 // AGASCourseCharacter
@@ -63,6 +63,9 @@ void AGASCoursePlayerCharacter::SetupPlayerInputComponent(UInputComponent* Playe
 
 			//Looking
 			EnhancedInputComponent->BindActionByTag(InputConfig, InputTag_Look_Stick, ETriggerEvent::Triggered, this, &ThisClass::Look);
+
+			EnhancedInputComponent->BindActionByTag(InputConfig, InputTag_MoveCamera, ETriggerEvent::Triggered, this, &ThisClass::Input_MoveCamera);
+			EnhancedInputComponent->BindActionByTag(InputConfig, InputTag_RecenterCamera, ETriggerEvent::Triggered, this, &ThisClass::Input_RecenterCamera);
 
 			//Crouching
 			EnhancedInputComponent->BindActionByTag(InputConfig, InputTag_Crouch, ETriggerEvent::Triggered, this, &ThisClass::Input_Crouch);
@@ -138,6 +141,24 @@ void AGASCoursePlayerCharacter::OnRep_Controller()
 	}
 }
 
+void AGASCoursePlayerCharacter::BeginPlay()
+{
+	Super::BeginPlay();
+
+	if(RecenterCameraCurve)
+	{
+		FOnTimelineFloat TimelineCallback;
+		TimelineCallback.BindUFunction(this, FName("RecenterCameraBoomTargetOffset"));
+		ResetCameraOffsetTimeline.AddInterpFloat(RecenterCameraCurve, TimelineCallback);
+	}
+}
+
+void AGASCoursePlayerCharacter::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+	ResetCameraOffsetTimeline.TickTimeline(DeltaSeconds);
+}
+
 void AGASCoursePlayerCharacter::Input_AbilityInputTagPressed(FGameplayTag InputTag)
 {
 	if(UGASCourseAbilitySystemComponent* ASC = GetAbilitySystemComponent())
@@ -175,4 +196,34 @@ void AGASCoursePlayerCharacter::Input_CameraZoom(const FInputActionInstance& Inp
 		CameraRef->TargetArmLength = CurrentTargetArmLength;
 		CameraRef->SocketOffset.Z = CurrentTargetArmLength;
 	}
+}
+
+void AGASCoursePlayerCharacter::Input_MoveCamera(const FInputActionInstance& InputActionInstance)
+{
+	const FVector2d CameraMovement =  InputActionInstance.GetValue().Get<FVector2D>();
+	if(CameraMovement.Length() != 0.0f && ResetCameraOffsetTimeline.IsPlaying())
+	{
+		ResetCameraOffsetTimeline.Stop();
+	}
+	UpdateCameraBoomTargetOffset(GetControlRotation().UnrotateVector(FVector(CameraMovement.Y, CameraMovement.X, 0.0f)));
+}
+
+void AGASCoursePlayerCharacter::UpdateCameraBoomTargetOffset(const FVector& InCameraBoomTargetOffset) const
+{
+	const FVector NewTargetOffset = GetCameraBoom()->TargetOffset + (InCameraBoomTargetOffset * CameraMovementSpeed);
+	GetCameraBoom()->TargetOffset = NewTargetOffset.GetClampedToSize(-CameraMaxVectorDistance, CameraMaxVectorDistance);
+}
+
+void AGASCoursePlayerCharacter::Input_RecenterCamera(const FInputActionInstance& InputActionInstance)
+{
+	ResetCameraOffsetTimeline.PlayFromStart();
+}
+
+void AGASCoursePlayerCharacter::RecenterCameraBoomTargetOffset()
+{
+	const float TimelineValue = ResetCameraOffsetTimeline.GetPlaybackPosition();
+	const float CurveFloatValue = RecenterCameraCurve->GetFloatValue(TimelineValue);
+	UE_LOG(LogTemp, Warning, TEXT("Float Value: %f"), CurveFloatValue);
+	
+	GetCameraBoom()->TargetOffset = FMath::VInterpTo(GetCameraBoom()->TargetOffset, FVector(0.0f, 0.0f, 0.0f), CurveFloatValue, RecenterCameraInterpSpeed);
 }

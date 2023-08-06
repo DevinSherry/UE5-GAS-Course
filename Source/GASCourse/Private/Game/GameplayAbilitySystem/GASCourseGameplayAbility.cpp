@@ -9,6 +9,7 @@
 #include "GameplayEffect.h"
 #include "GameplayEffectTypes.h"
 #include "Abilities/Tasks/AbilityTask_WaitGameplayEffectRemoved.h"
+#include "DSP/AudioDebuggingUtilities.h"
 
 
 UGASCourseGameplayAbility::UGASCourseGameplayAbility(const FObjectInitializer& ObjectInitializer)
@@ -155,11 +156,6 @@ void UGASCourseGameplayAbility::ActivateAbility(const FGameplayAbilitySpecHandle
 {
 	if(HasAuthorityOrPredictionKey(ActorInfo, &ActivationInfo))
 	{
-		if(!CommitAbility(Handle, ActorInfo, ActivationInfo))
-		{
-			EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
-		}
-
 		if(!ActorInfo->IsNetAuthority())
 		{
 			return;
@@ -176,6 +172,14 @@ void UGASCourseGameplayAbility::ActivateAbility(const FGameplayAbilitySpecHandle
 				EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
 			}
 		}
+	case EGASCourseAbilityType::Instant:
+		{
+			break;
+		}
+	case EGASCourseAbilityType::AimCast:
+		{
+			break;
+		}
 	default:
 		break;
 	}
@@ -184,7 +188,6 @@ void UGASCourseGameplayAbility::ActivateAbility(const FGameplayAbilitySpecHandle
 	{
 		CommitAbility(Handle, ActorInfo, ActivationInfo);
 	}
-
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
 }
 
