@@ -81,7 +81,7 @@ public:
 protected:
 
 	/** Called for movement input */
-	void Move(const FInputActionValue& Value);
+	virtual void Move(const FInputActionValue& Value);
 	void StopMove(const FInputActionValue& Value);
 
 	/** Called for left-click based movement */

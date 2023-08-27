@@ -5,9 +5,11 @@
 #include "Game/Character/Player/GASCoursePlayerState.h"
 #include "Game/Input/GASCourseEnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "Camera/CameraComponent.h"
 #include "Components/TimelineComponent.h"
 #include "Game/GameplayAbilitySystem/GASCourseNativeGameplayTags.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "Kismet/KismetMathLibrary.h"
 
 //////////////////////////////////////////////////////////////////////////
 // AGASCourseCharacter
@@ -26,6 +28,12 @@ void AGASCoursePlayerCharacter::UpdateCharacterAnimLayer(TSubclassOf<UAnimInstan
 	{
 		GetMesh()->LinkAnimClassLayers(NewAnimLayer);
 	}
+}
+
+void AGASCoursePlayerCharacter::InitializeCamera()
+{
+	GetCameraBoom()->TargetArmLength = MaxCameraBoomDistance;
+	GetCameraBoom()->SocketOffset = FVector(0.0f,0.0f, MaxCameraBoomDistance);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -64,8 +72,10 @@ void AGASCoursePlayerCharacter::SetupPlayerInputComponent(UInputComponent* Playe
 			//Looking
 			EnhancedInputComponent->BindActionByTag(InputConfig, InputTag_Look_Stick, ETriggerEvent::Triggered, this, &ThisClass::Look);
 
+			//Camera Controls
 			EnhancedInputComponent->BindActionByTag(InputConfig, InputTag_MoveCamera, ETriggerEvent::Triggered, this, &ThisClass::Input_MoveCamera);
 			EnhancedInputComponent->BindActionByTag(InputConfig, InputTag_RecenterCamera, ETriggerEvent::Triggered, this, &ThisClass::Input_RecenterCamera);
+			EnhancedInputComponent->BindActionByTag(InputConfig, InputTag_RotateCamera, ETriggerEvent::Triggered, this , &ThisClass::Input_RotateCamera);
 
 			//Crouching
 			EnhancedInputComponent->BindActionByTag(InputConfig, InputTag_Crouch, ETriggerEvent::Triggered, this, &ThisClass::Input_Crouch);
@@ -100,9 +110,7 @@ void AGASCoursePlayerCharacter::PossessedBy(AController* NewController)
 	}
 
 	UpdateCharacterAnimLayer(UnArmedAnimLayer);
-
-	GetCameraBoom()->TargetArmLength = MaxCameraBoomDistance;
-	GetCameraBoom()->SocketOffset = FVector(0.0f,0.0f, MaxCameraBoomDistance);
+	InitializeCamera();
 }
 
 void AGASCoursePlayerCharacter::OnRep_PlayerState()
@@ -125,6 +133,7 @@ void AGASCoursePlayerCharacter::OnRep_PlayerState()
 		}
 
 		UpdateCharacterAnimLayer(UnArmedAnimLayer);
+		InitializeCamera();
 	}
 }
 
@@ -183,6 +192,27 @@ void AGASCoursePlayerCharacter::Input_AbilityInputTagReleased(FGameplayTag Input
 	}
 }
 
+void AGASCoursePlayerCharacter::Move(const FInputActionValue& Value)
+{
+	if(ResetCameraOffsetTimeline.IsPlaying())
+	{
+		return;
+	}
+	Super::Move(Value);
+	if(GetCameraBoom()->IsAttachedTo(RootComponent))
+	{
+		return;
+	}
+
+	const FVector2d Movement = Value.Get<FVector2d>();
+	if(Movement.Length() <= 0)
+	{
+		return;
+	}
+	const FInputActionInstance InputActionInstance;
+	Input_RecenterCamera(InputActionInstance);
+}
+
 void AGASCoursePlayerCharacter::Input_CameraZoom(const FInputActionInstance& InputActionInstance)
 {
 	const float AxisValue = InputActionInstance.GetValue().Get<float>();
@@ -201,29 +231,57 @@ void AGASCoursePlayerCharacter::Input_CameraZoom(const FInputActionInstance& Inp
 void AGASCoursePlayerCharacter::Input_MoveCamera(const FInputActionInstance& InputActionInstance)
 {
 	const FVector2d CameraMovement =  InputActionInstance.GetValue().Get<FVector2D>();
-	if(CameraMovement.Length() != 0.0f && ResetCameraOffsetTimeline.IsPlaying())
+	if(CameraMovement.Length() >= 0.35f && ResetCameraOffsetTimeline.IsPlaying())
 	{
 		ResetCameraOffsetTimeline.Stop();
 	}
-	UpdateCameraBoomTargetOffset(GetControlRotation().UnrotateVector(FVector(CameraMovement.Y, CameraMovement.X, 0.0f)));
+
+	if(GetCameraBoom()->IsAttachedTo(RootComponent))
+	{
+		FDetachmentTransformRules& DetachmentTransformRules = FDetachmentTransformRules::KeepWorldTransform;
+		DetachmentTransformRules.LocationRule = EDetachmentRule::KeepWorld;
+		DetachmentTransformRules.RotationRule = EDetachmentRule::KeepRelative;
+		DetachmentTransformRules.bCallModify = true;
+		GetCameraBoom()->DetachFromComponent(DetachmentTransformRules);
+	}
+	
+	const FVector CameraForward = UKismetMathLibrary::GetForwardVector(GetCameraBoom()->GetRelativeRotation()) * CameraMovement.Y;
+	const FVector CameraRight = UKismetMathLibrary::GetRightVector(GetCameraBoom()->GetRelativeRotation()) * CameraMovement.X;
+	UpdateCameraBoomTargetOffset(CameraForward + CameraRight);
 }
 
 void AGASCoursePlayerCharacter::UpdateCameraBoomTargetOffset(const FVector& InCameraBoomTargetOffset) const
 {
-	const FVector NewTargetOffset = GetCameraBoom()->TargetOffset + (InCameraBoomTargetOffset * CameraMovementSpeed);
+	const FVector NewTargetOffset = GetCameraBoom()->TargetOffset + (InCameraBoomTargetOffset.GetSafeNormal() * CameraMovementSpeed);
 	GetCameraBoom()->TargetOffset = NewTargetOffset.GetClampedToSize(-CameraMaxVectorDistance, CameraMaxVectorDistance);
 }
 
 void AGASCoursePlayerCharacter::Input_RecenterCamera(const FInputActionInstance& InputActionInstance)
 {
+	if(!GetCameraBoom()->IsAttachedTo(RootComponent))
+	{
+		FAttachmentTransformRules& AttachmentRules = FAttachmentTransformRules::KeepWorldTransform;
+		AttachmentRules.LocationRule = EAttachmentRule::KeepWorld;
+		AttachmentRules.RotationRule = EAttachmentRule::KeepRelative;
+		GetCameraBoom()->AttachToComponent(RootComponent, AttachmentRules);
+	}
 	ResetCameraOffsetTimeline.PlayFromStart();
+}
+
+void AGASCoursePlayerCharacter::Input_RotateCamera(const FInputActionInstance& InputActionInstance)
+{
+	const FVector2d CameraRotation =  InputActionInstance.GetValue().Get<FVector2D>();
+	const FRotator NewCameraRelativeRotation = FRotator(FMath::ClampAngle((GetCameraBoom()->GetRelativeRotation().Pitch + CameraRotation.X), MinCameraPitchAngle, MaxCameraPitchAngle),
+		GetCameraBoom()->GetRelativeRotation().Yaw + CameraRotation.Y, 0.0f);
+	
+	GetCameraBoom()->SetRelativeRotation(NewCameraRelativeRotation);
 }
 
 void AGASCoursePlayerCharacter::RecenterCameraBoomTargetOffset()
 {
 	const float TimelineValue = ResetCameraOffsetTimeline.GetPlaybackPosition();
 	const float CurveFloatValue = RecenterCameraCurve->GetFloatValue(TimelineValue);
-	UE_LOG(LogTemp, Warning, TEXT("Float Value: %f"), CurveFloatValue);
+	const FVector CurrentCameraTargetOffset = GetCameraBoom()->TargetOffset;
 	
-	GetCameraBoom()->TargetOffset = FMath::VInterpTo(GetCameraBoom()->TargetOffset, FVector(0.0f, 0.0f, 0.0f), CurveFloatValue, RecenterCameraInterpSpeed);
+	GetCameraBoom()->TargetOffset = (FMath::VInterpTo(CurrentCameraTargetOffset, FVector(0.0f), CurveFloatValue, RecenterCameraInterpSpeed));
 }

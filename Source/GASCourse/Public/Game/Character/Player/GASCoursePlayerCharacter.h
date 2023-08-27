@@ -44,6 +44,12 @@ class GASCOURSE_API AGASCoursePlayerCharacter : public AGASCourseCharacter
 	UPROPERTY(EditAnywhere,BlueprintReadOnly, Category = "GASCourse|Camera Settings", meta = (AllowPrivateAccess = "true"))
 	float RecenterCameraInterpSpeed = 0.1f;
 
+	UPROPERTY(EditAnywhere,BlueprintReadOnly, Category = "GASCourse|Camera Settings", meta = (AllowPrivateAccess = "true"))
+	float MinCameraPitchAngle = -10.0f;
+	
+	UPROPERTY(EditAnywhere,BlueprintReadOnly, Category = "GASCourse|Camera Settings", meta = (AllowPrivateAccess = "true"))
+	float MaxCameraPitchAngle = 40.0f;
+
 
 public:
 
@@ -73,12 +79,13 @@ protected:
 	void Input_AbilityInputTagPressed(FGameplayTag InputTag);
 	void Input_AbilityInputTagReleased(FGameplayTag InputTag);
 
-	void Input_CameraZoom(const FInputActionInstance& InputActionInstance);
+	void Move(const FInputActionValue& Value) override;
 
+	void Input_CameraZoom(const FInputActionInstance& InputActionInstance);
 	void Input_MoveCamera(const FInputActionInstance& InputActionInstance);
 	void UpdateCameraBoomTargetOffset(const FVector& InCameraBoomTargetOffset) const;
-
 	void Input_RecenterCamera(const FInputActionInstance& InputActionInstance);
+	void Input_RotateCamera(const FInputActionInstance& InputActionInstance);
 
 	UFUNCTION()
 	void RecenterCameraBoomTargetOffset();
@@ -86,5 +93,7 @@ protected:
 private:
 
 	FTimeline ResetCameraOffsetTimeline;
+
+	void InitializeCamera();
 	
 };

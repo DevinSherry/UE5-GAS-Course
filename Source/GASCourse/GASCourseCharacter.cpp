@@ -148,7 +148,7 @@ void AGASCourseCharacter::Move(const FInputActionValue& Value)
 				GASCourseASC->SetLooseGameplayTagCount(Status_IsMoving, 1);
 			}
 			// find out which way is forward
-			const FRotator Rotation = Controller->GetControlRotation();
+			const FRotator Rotation = GetCameraBoom()->GetRelativeRotation(); //Controller->GetControlRotation();
 			const FRotator YawRotation(0, Rotation.Yaw, 0);
 
 			// get forward vector
