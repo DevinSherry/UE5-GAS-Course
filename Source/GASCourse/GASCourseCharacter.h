@@ -2,18 +2,13 @@
 
 #pragma once
 
-
-
 #include "CoreMinimal.h"
 #include "AbilitySystemInterface.h"
-#include "InputAction.h"
 #include "GameFramework/Character.h"
 #include "InputActionValue.h"
-#include "Game/Character/Player/GASCoursePlayerController.h"
 #include "Game/GameplayAbilitySystem/GASCourseAbilitySystemComponent.h"
 #include "Game/GameplayAbilitySystem/GASAbilityTagRelationshipMapping.h"
 #include "Game/GameplayAbilitySystem/AttributeSets/GASCourseCharBaseAttributeSet.h"
-#include "Tasks/Task.h"
 #include "GASCourseCharacter.generated.h"
 
 class UGASCourseGameplayAbilitySet;
@@ -83,11 +78,6 @@ protected:
 	/** Called for movement input */
 	virtual void Move(const FInputActionValue& Value);
 	void StopMove(const FInputActionValue& Value);
-
-	/** Called for left-click based movement */
-	void PointClickMovement(const FInputActionValue& Value);
-	void PointClickMovementStarted(const FInputActionValue& Value);
-	void PointClickMovementCompleted(const FInputActionInstance& InputActionInstance);
 	
 	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
@@ -194,12 +184,6 @@ protected:
 	virtual void NetMulticast_InvokeGameplayCuesAddedAndWhileActive_WithParams(const FGameplayTagContainer GameplayCueTags, FPredictionKey PredictionKey, FGameplayCueParameters GameplayCueParameters) override;
 	  
 	virtual FGameplayAbilityRepAnimMontage& Call_GetRepAnimMontageInfo_Mutable() override;
-
-public:
-
-	UE::Tasks::TTask<FVector> MultithreadTask;
-	
-	FVector GetWorldDirection(const FVector& CachedDirection) const;
 	
 };
 

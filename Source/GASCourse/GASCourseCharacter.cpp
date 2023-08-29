@@ -1,7 +1,6 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "GASCourseCharacter.h"
-#include "Blueprint/AIBlueprintHelperLibrary.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -10,7 +9,6 @@
 #include "Game/GameplayAbilitySystem/GASCourseGameplayAbilitySet.h"
 #include "Game/GameplayAbilitySystem/GASCourseNativeGameplayTags.h"
 #include "Game/Character/Components/GASCourseMovementComponent.h"
-#include "Kismet/KismetMathLibrary.h"
 #include "Net/UnrealNetwork.h"
 
 
@@ -183,62 +181,6 @@ void AGASCourseCharacter::StopMove(const FInputActionValue& Value)
 				GASCourseASC->SetLooseGameplayTagCount(Status_IsMoving, 0);
 			}
 		}
-	}
-}
-
-FVector AGASCourseCharacter::GetWorldDirection(const FVector& CachedDirection) const
-{
-	const FVector WorldDirection = UKismetMathLibrary::GetDirectionUnitVector(GetActorLocation(), CachedDirection);
-	return WorldDirection;
-}
-
-void AGASCourseCharacter::PointClickMovement(const FInputActionValue& Value)
-{
-	if(AGASCoursePlayerController* PC = Cast<AGASCoursePlayerController>(Controller))
-	{
-		SCOPED_NAMED_EVENT(AGASCourseCharacter_PointClickMovement, FColor::Blue);
-		if(PC)
-		{
-			FHitResult HitResultUnderCursor;
-			if(PC->GetHitResultUnderCursor(ECC_Visibility, true, HitResultUnderCursor))
-			{
-				PC->SetCachedDestination(HitResultUnderCursor.Location);
-				MultithreadTask = UE::Tasks::Launch(UE_SOURCE_LOCATION, [this]
-				{
-					if(const AGASCoursePlayerController* InPC = Cast<AGASCoursePlayerController>(Controller))
-					{
-						return GetWorldDirection(InPC->GetCachedDestination());
-					}
-					return FVector::ZeroVector;
-				});
-				
-				const FVector WorldDirection = MultithreadTask.GetResult();
-				AddMovementInput(WorldDirection, 1.0f, false);
-				
-				if(MultithreadTask.IsCompleted())
-				{
-					MultithreadTask = {};
-				}
-
-			}
-		}
-	}
-	MultithreadTask = {};
-}
-
-void AGASCourseCharacter::PointClickMovementStarted(const FInputActionValue& Value)
-{
-	if(AGASCoursePlayerController* PC = Cast<AGASCoursePlayerController>(Controller))
-	{
-		PC->StopMovement();
-	}
-}
-
-void AGASCourseCharacter::PointClickMovementCompleted(const FInputActionInstance& InputActionInstance)
-{
-	if(AGASCoursePlayerController* PC = Cast<AGASCoursePlayerController>(Controller))
-	{
-		UAIBlueprintHelperLibrary::SimpleMoveToLocation(PC, PC->GetCachedDestination());
 	}
 }
 

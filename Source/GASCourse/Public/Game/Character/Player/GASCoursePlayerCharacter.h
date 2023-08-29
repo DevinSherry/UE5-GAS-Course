@@ -6,6 +6,8 @@
 #include "Game/Input/GASCourseInputConfig.h"
 #include "GASCourse/GASCourseCharacter.h"
 #include "Components/TimelineComponent.h"
+#include "Tasks/Task.h"
+#include "InputAction.h"
 #include "GASCoursePlayerCharacter.generated.h"
 
 /**
@@ -87,13 +89,27 @@ protected:
 	void Input_RecenterCamera(const FInputActionInstance& InputActionInstance);
 	void Input_RotateCamera(const FInputActionInstance& InputActionInstance);
 
+	/** Called for left-click based movement */
+	void PointClickMovement(const FInputActionValue& Value);
+	void PointClickMovementStarted(const FInputActionValue& Value);
+	void PointClickMovementCompleted(const FInputActionInstance& InputActionInstance);
+
+	void MoveToMouseHitResultLocation();
+
 	UFUNCTION()
 	void RecenterCameraBoomTargetOffset();
+
+	UFUNCTION()
+	void RecenterCameraBoomTimelineFinished();
+
+public:
+
+	UE::Tasks::TTask<FVector> MultithreadTask;
+	FVector GetWorldDirection(const FVector& CachedDirection) const;
 
 private:
 
 	FTimeline ResetCameraOffsetTimeline;
-
 	void InitializeCamera();
 	
 };
