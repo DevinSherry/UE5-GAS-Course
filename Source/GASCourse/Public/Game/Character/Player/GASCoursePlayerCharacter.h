@@ -51,6 +51,12 @@ class GASCOURSE_API AGASCoursePlayerCharacter : public AGASCourseCharacter
 	
 	UPROPERTY(EditAnywhere,BlueprintReadOnly, Category = "GASCourse|Camera Settings", meta = (AllowPrivateAccess = "true"))
 	float MaxCameraPitchAngle = 40.0f;
+	
+	UPROPERTY(EditAnywhere,BlueprintReadOnly, Category = "GASCourse|Camera Settings", meta = (AllowPrivateAccess = "true"))
+	float EdgePanningSpeed = 30.0f;
+
+	UPROPERTY(EditAnywhere,BlueprintReadOnly, Category = "GASCourse|Camera Settings", meta = (AllowPrivateAccess = "true"))
+	UInputAction* EnableRotateCameraAxis;
 
 
 public:
@@ -87,7 +93,7 @@ protected:
 	void Input_MoveCamera(const FInputActionInstance& InputActionInstance);
 	void UpdateCameraBoomTargetOffset(const FVector& InCameraBoomTargetOffset) const;
 	void Input_RecenterCamera(const FInputActionInstance& InputActionInstance);
-	void Input_RotateCamera(const FInputActionInstance& InputActionInstance);
+	void Input_RotateCameraAxis(const FInputActionInstance& InputActionInstance);
 
 	/** Called for left-click based movement */
 	void PointClickMovement(const FInputActionValue& Value);
@@ -101,6 +107,8 @@ protected:
 
 	UFUNCTION()
 	void RecenterCameraBoomTimelineFinished();
+
+	void CameraEdgePanning();
 
 public:
 
