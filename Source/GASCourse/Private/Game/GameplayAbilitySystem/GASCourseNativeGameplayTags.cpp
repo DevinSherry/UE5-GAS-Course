@@ -17,6 +17,7 @@ UE_DEFINE_GAMEPLAY_TAG(InputTag_AbilityTwo, "Input.NativeAction.Ability.Two")
 UE_DEFINE_GAMEPLAY_TAG(InputTag_AbilityThree, "Input.NativeAction.Ability.Three")
 UE_DEFINE_GAMEPLAY_TAG(InputTag_ConfirmTargetData, "Input.NativeAction.ConfirmTargeting")
 UE_DEFINE_GAMEPLAY_TAG(InputTag_CancelTargetData, "Input.NativeAction.CancelTargeting")
+
 UE_DEFINE_GAMEPLAY_TAG(InputTag_MoveCamera, "Input.NativeAction.MoveCamera")
 UE_DEFINE_GAMEPLAY_TAG(InputTag_RecenterCamera, "Input.NativeAction.RecenterCamera")
 UE_DEFINE_GAMEPLAY_TAG(InputTag_RotateCamera, "Input.NativeAction.RotateCamera")
