@@ -10,6 +10,11 @@ AGASCoursePlayerController::AGASCoursePlayerController(const FObjectInitializer&
 	bEnableMouseOverEvents = true;
 }
 
+void AGASCoursePlayerController::BeginPlayingState()
+{
+	Super::BeginPlayingState();
+}
+
 AGASCoursePlayerState* AGASCoursePlayerController::GetGASCoursePlayerState() const
 {
 	return CastChecked<AGASCoursePlayerState>(PlayerState, ECastCheckedType::NullAllowed);
@@ -39,7 +44,6 @@ void AGASCoursePlayerController::PostProcessInput(const float DeltaTime, const b
 void AGASCoursePlayerController::OnPossess(APawn* InPawn)
 {
 	Super::OnPossess(InPawn);
-	//CreateHUD_Implementation();
 	CreateHUD();
 }
 

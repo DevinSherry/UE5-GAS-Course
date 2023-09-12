@@ -19,6 +19,8 @@ public:
 	
 	AGASCoursePlayerController(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 
+	virtual void BeginPlayingState() override;
+
 	UFUNCTION(BlueprintCallable, Category = "GASCourse|PlayerController")
 	AGASCoursePlayerState* GetGASCoursePlayerState() const;
 

@@ -5,6 +5,7 @@
 #include "AbilitySystemGlobals.h"
 #include "../GASCourseCharacter.h"
 #include "Game/Character/Components/GASCourseMovementComponent.h"
+#include "Misc/DataValidation.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(GASCourseAnimInstance)
 
@@ -19,12 +20,12 @@ void UGASCourseAnimInstance::InitializeWithAbilitySystem(UAbilitySystemComponent
 }
 
 #if WITH_EDITOR
-EDataValidationResult UGASCourseAnimInstance::IsDataValid(TArray<FText>& ValidationErrors)
+EDataValidationResult UGASCourseAnimInstance::IsDataValid(FDataValidationContext& Context) const
 {
-	Super::IsDataValid(ValidationErrors);
+	Super::IsDataValid(Context);
 	
-	GameplayTagPropertyMap.IsDataValid(this, ValidationErrors);
-	return ((ValidationErrors.Num() > 0) ? EDataValidationResult::Invalid : EDataValidationResult::Valid);
+	GameplayTagPropertyMap.IsDataValid(this, Context);
+	return ((Context.GetNumErrors() > 0) ? EDataValidationResult::Invalid : EDataValidationResult::Valid);
 }
 #endif // WITH_EDITOR
 

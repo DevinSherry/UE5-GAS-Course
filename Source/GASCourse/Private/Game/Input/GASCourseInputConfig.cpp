@@ -3,7 +3,7 @@
 
 #include "Game/Input/GASCourseInputConfig.h"
 #include "GameplayTagContainer.h"
-#include "EnhancedInput/Public/InputAction.h"
+#include "InputAction.h"
 
 const UInputAction* UGASCourseInputConfig::FindInputActionForTag(const FGameplayTag& InputTag) const
 {

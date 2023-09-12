@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Engine/DataAsset.h"
-#include "GameplayTags/Classes/GameplayTagContainer.h"
+#include "GameplayTagContainer.h"
 #include "GASCourseInputConfig.generated.h"
 
 class UInputAction;

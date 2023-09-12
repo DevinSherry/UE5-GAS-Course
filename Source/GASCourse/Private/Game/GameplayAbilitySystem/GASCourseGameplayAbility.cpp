@@ -402,7 +402,8 @@ void UGASCourseGameplayAbility::GetAbilityCooldownTags(FGameplayTagContainer& Co
 	CooldownTags.Reset();
 	if(const UGameplayEffect* CooldownGE = GetCooldownGameplayEffect())
 	{
-		CooldownTags.AppendTags(CooldownGE->InheritableOwnedTagsContainer.CombinedTags);
+		CooldownTags.AppendTags(CooldownGE->GetGrantedTags());
+		
 	}
 }
 
@@ -411,7 +412,7 @@ void UGASCourseGameplayAbility::GetAbilityDurationTags(FGameplayTagContainer& Du
 	DurationTags.Reset();
 	if(const UGameplayEffect* DurationGE = GetDurationGameplayEffect())
 	{
-		DurationTags.AppendTags(DurationGE->InheritableOwnedTagsContainer.CombinedTags);
+		DurationTags.AppendTags(DurationGE->GetGrantedTags());
 	}
 }
 

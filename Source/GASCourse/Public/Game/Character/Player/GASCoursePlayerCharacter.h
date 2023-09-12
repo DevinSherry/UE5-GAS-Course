@@ -35,7 +35,7 @@ class GASCOURSE_API AGASCoursePlayerCharacter : public AGASCourseCharacter
 	float CameraZoomDistanceStep = 10.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GASCourse|Camera Settings", meta = (AllowPrivateAccess = "true"))
-	float CameraMovementSpeed = 30.0f;
+	float MaxCameraMovementSpeed = 30.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GASCourse|Camera Settings", meta = (AllowPrivateAccess = "true"))
 	float CameraMaxVectorDistance = 3000.0f;
@@ -44,7 +44,13 @@ class GASCOURSE_API AGASCoursePlayerCharacter : public AGASCourseCharacter
 	UCurveFloat* RecenterCameraCurve;
 
 	UPROPERTY(EditAnywhere,BlueprintReadOnly, Category = "GASCourse|Camera Settings", meta = (AllowPrivateAccess = "true"))
+	UCurveFloat* MoveCameraCurve;
+
+	UPROPERTY(EditAnywhere,BlueprintReadOnly, Category = "GASCourse|Camera Settings", meta = (AllowPrivateAccess = "true"))
 	float RecenterCameraInterpSpeed = 0.1f;
+	
+	UPROPERTY(EditAnywhere,BlueprintReadOnly, Category = "GASCourse|Camera Settings", meta = (AllowPrivateAccess = "true"))
+	float MoveCameraInterpSpeed = 0.1f;
 
 	UPROPERTY(EditAnywhere,BlueprintReadOnly, Category = "GASCourse|Camera Settings", meta = (AllowPrivateAccess = "true"))
 	float MinCameraPitchAngle = -10.0f;
@@ -58,6 +64,11 @@ class GASCOURSE_API AGASCoursePlayerCharacter : public AGASCourseCharacter
 	UPROPERTY(EditAnywhere,BlueprintReadOnly, Category = "GASCourse|Camera Settings", meta = (AllowPrivateAccess = "true"))
 	UInputAction* EnableRotateCameraAxis;
 
+	UPROPERTY(EditAnywhere,BlueprintReadOnly, Category = "GASCourse|Camera Settings", meta = (AllowPrivateAccess = "true"))
+	float CameraTargetOffsetZDownTraceLength = -5000.0f;
+
+	UPROPERTY(EditAnywhere,BlueprintReadOnly, Category = "GASCourse|Camera Settings", meta = (AllowPrivateAccess = "true"))
+	float CameraTargetOffsetZDownTraceRadius = 30.0f;
 
 public:
 
@@ -91,6 +102,7 @@ protected:
 
 	void Input_CameraZoom(const FInputActionInstance& InputActionInstance);
 	void Input_MoveCamera(const FInputActionInstance& InputActionInstance);
+	void Input_MoveCameraCompleted(const FInputActionInstance& InputActionInstance);
 	void UpdateCameraBoomTargetOffset(const FVector& InCameraBoomTargetOffset) const;
 	void Input_RecenterCamera(const FInputActionInstance& InputActionInstance);
 	void Input_RotateCameraAxis(const FInputActionInstance& InputActionInstance);
@@ -108,16 +120,38 @@ protected:
 	UFUNCTION()
 	void RecenterCameraBoomTimelineFinished();
 
+	UFUNCTION()
+	void UpdateCameraMovementSpeed();
+
+	UFUNCTION()
+	void UpdateCameraMovementSpeedTimelineFinished();
+
 	void CameraEdgePanning();
+
+	UFUNCTION()
+	void SetMousePositionToScreenCenter();
+
+	UFUNCTION()
+	void UpdateCameraTargetOffsetZ();
 
 public:
 
 	UE::Tasks::TTask<FVector> MultithreadTask;
 	FVector GetWorldDirection(const FVector& CachedDirection) const;
 
+	UE::Tasks::TTask<FHitResult> HitResultMultithreadTask;
+
 private:
 
 	FTimeline ResetCameraOffsetTimeline;
+	FTimeline MoveCameraTimeline;
 	void InitializeCamera();
+
+	void OnWindowFocusChanged(bool bIsInFocus);
+	bool bIsWindowFocused;
+
+	float CurrentCameraMovementSpeed;
+	bool bCameraSpeedTimelineFinished;
+	bool bCameraSpeedTimelineActivated;
 	
 };

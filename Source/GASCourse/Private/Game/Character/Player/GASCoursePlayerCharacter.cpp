@@ -5,14 +5,19 @@
 #include "Game/Character/Player/GASCoursePlayerState.h"
 #include "Game/Input/GASCourseEnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "Animation/AnimInstanceProxy.h"
 #include "Blueprint/AIBlueprintHelperLibrary.h"
 #include "Blueprint/WidgetLayoutLibrary.h"
-#include "Camera/CameraComponent.h"
 #include "Components/TimelineComponent.h"
 #include "Game/Character/Player/GASCoursePlayerController.h"
 #include "Game/GameplayAbilitySystem/GASCourseNativeGameplayTags.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Kismet/KismetMathLibrary.h"
+
+#if UE_EDITOR
+#include "Editor/EditorEngine.h"
+#include "UnrealEd.h"
+#endif
 
 //////////////////////////////////////////////////////////////////////////
 // AGASCourseCharacter
@@ -37,6 +42,24 @@ void AGASCoursePlayerCharacter::InitializeCamera()
 {
 	GetCameraBoom()->TargetArmLength = MaxCameraBoomDistance;
 	GetCameraBoom()->SocketOffset = FVector(0.0f,0.0f, MaxCameraBoomDistance);
+}
+
+void AGASCoursePlayerCharacter::OnWindowFocusChanged(bool bIsInFocus)
+{
+	bIsWindowFocused = bIsInFocus;
+	SetMousePositionToScreenCenter();
+}
+
+void AGASCoursePlayerCharacter::UpdateCameraMovementSpeed()
+{
+	const float TimelineValue = MoveCameraTimeline.GetPlaybackPosition();
+	const float CurveFloatValue = MoveCameraCurve->GetFloatValue(TimelineValue);
+	CurrentCameraMovementSpeed = (FMath::FInterpTo(0.0f, MaxCameraMovementSpeed, CurveFloatValue, MoveCameraInterpSpeed));
+}
+
+void AGASCoursePlayerCharacter::UpdateCameraMovementSpeedTimelineFinished()
+{
+	bCameraSpeedTimelineFinished = true;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -77,6 +100,7 @@ void AGASCoursePlayerCharacter::SetupPlayerInputComponent(UInputComponent* Playe
 
 			//Camera Controls
 			EnhancedInputComponent->BindActionByTag(InputConfig, InputTag_MoveCamera, ETriggerEvent::Triggered, this, &ThisClass::Input_MoveCamera);
+			EnhancedInputComponent->BindActionByTag(InputConfig, InputTag_MoveCamera,ETriggerEvent::Completed, this, &ThisClass::Input_MoveCameraCompleted);
 			EnhancedInputComponent->BindActionByTag(InputConfig, InputTag_RecenterCamera, ETriggerEvent::Triggered, this, &ThisClass::Input_RecenterCamera);
 			EnhancedInputComponent->BindActionByTag(InputConfig, InputTag_RotateCamera, ETriggerEvent::Triggered, this , &ThisClass::Input_RotateCameraAxis);
 
@@ -166,14 +190,28 @@ void AGASCoursePlayerCharacter::BeginPlay()
 		TimelineCallback.BindUFunction(this, FName("RecenterCameraBoomTargetOffset"));
 		ResetCameraOffsetTimeline.AddInterpFloat(RecenterCameraCurve, TimelineCallback);
 	}
+
+	if(MoveCameraCurve)
+	{
+		FOnTimelineFloat TimelineCallback;
+		FOnTimelineEvent TimelineFinishedFunc;
+		TimelineFinishedFunc.BindUFunction(this, FName("UpdateCameraMovementSpeedTimelineFinished"));
+		MoveCameraTimeline.SetTimelineFinishedFunc(TimelineFinishedFunc);
+		TimelineCallback.BindUFunction(this, FName("UpdateCameraMovementSpeed"));
+		MoveCameraTimeline.AddInterpFloat(MoveCameraCurve, TimelineCallback);
+	}
+
+	FSlateApplication::Get().OnApplicationActivationStateChanged().AddUObject(this, &ThisClass::OnWindowFocusChanged);
 }
 
 void AGASCoursePlayerCharacter::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 	ResetCameraOffsetTimeline.TickTimeline(DeltaSeconds);
+	MoveCameraTimeline.TickTimeline(DeltaSeconds);
 
 	CameraEdgePanning();
+	UpdateCameraTargetOffsetZ();
 }
 
 void AGASCoursePlayerCharacter::Input_AbilityInputTagPressed(FGameplayTag InputTag)
@@ -240,14 +278,26 @@ void AGASCoursePlayerCharacter::Input_MoveCamera(const FInputActionInstance& Inp
 		ResetCameraOffsetTimeline.Stop();
 	}
 
+	if(!MoveCameraTimeline.IsPlaying() && !bCameraSpeedTimelineFinished)
+	{
+		MoveCameraTimeline.PlayFromStart();
+	}
+
 	const FVector RotatedVector = GetCameraBoom()->GetRelativeRotation().RotateVector(FVector(CameraMovement.Y, CameraMovement.X, 0.0f));
 	UpdateCameraBoomTargetOffset(RotatedVector);
 }
 
+void AGASCoursePlayerCharacter::Input_MoveCameraCompleted(const FInputActionInstance& InputActionInstance)
+{
+	MoveCameraTimeline.Stop();
+	bCameraSpeedTimelineFinished = false;
+	CurrentCameraMovementSpeed = 0.0f;
+}
+
 void AGASCoursePlayerCharacter::UpdateCameraBoomTargetOffset(const FVector& InCameraBoomTargetOffset) const
 {
-	const FVector NewTargetOffset = GetCameraBoom()->TargetOffset + (InCameraBoomTargetOffset.GetSafeNormal2D() * CameraMovementSpeed);
-	GetCameraBoom()->TargetOffset = NewTargetOffset.GetClampedToSize(-CameraMaxVectorDistance, CameraMaxVectorDistance);
+	const FVector NewTargetOffset = GetCameraBoom()->TargetOffset + (InCameraBoomTargetOffset.GetSafeNormal2D() * CurrentCameraMovementSpeed);
+	GetCameraBoom()->TargetOffset = FVector(NewTargetOffset.X, NewTargetOffset.Y, GetCameraBoom()->TargetOffset.Z).GetClampedToSize(-CameraMaxVectorDistance, CameraMaxVectorDistance);
 }
 
 void AGASCoursePlayerCharacter::Input_RecenterCamera(const FInputActionInstance& InputActionInstance)
@@ -346,6 +396,7 @@ void AGASCoursePlayerCharacter::CameraEdgePanning()
 {
 	SCOPED_NAMED_EVENT(AGASCourseCharacter_CameraEdgePanning, FColor::Red);
 	bool bIsEnableRotateCameraAxis = false;
+	
 	if(EnableRotateCameraAxis)
 	{
 		if (UGASCourseEnhancedInputComponent* EnhancedInputComponent = CastChecked<UGASCourseEnhancedInputComponent>(InputComponent))
@@ -355,24 +406,109 @@ void AGASCoursePlayerCharacter::CameraEdgePanning()
 			bIsEnableRotateCameraAxis = EnableRotateAxisBinding->GetValue().Get<bool>();
 		}
 	}
-	if(GetLocalViewingPlayerController())
-	{
-		const FVector2d MousePositionbyDPI = UWidgetLayoutLibrary::GetMousePositionOnViewport(this);
-		const FVector2d ViewportScale2D = FVector2d(UWidgetLayoutLibrary::GetViewportScale(this));
-		const FVector2d ViewportSize = UWidgetLayoutLibrary::GetViewportSize(this);
 
-		const FVector2d MultipliedMousePosition = MousePositionbyDPI * ViewportScale2D;
+#if UE_EDITOR
+	const FViewport* EditorViewport = GEditor->GetPIEViewport();
+	bIsWindowFocused = EditorViewport->HasMouseCapture();
+#endif
+	
+	const FVector2d MousePositionbyDPI = UWidgetLayoutLibrary::GetMousePositionOnViewport(this);
+	const FVector2d ViewportScale2D = FVector2d(UWidgetLayoutLibrary::GetViewportScale(this));
+	const FVector2d ViewportSize = UWidgetLayoutLibrary::GetViewportSize(this);
+	const FVector2d MultipliedMousePosition = MousePositionbyDPI * ViewportScale2D;
 		
-		const float MappedNormalizedRangeX = UKismetMathLibrary::MapRangeClamped(UKismetMathLibrary::NormalizeToRange(MultipliedMousePosition.X, (ViewportSize.X * .05f), (ViewportSize.X * 0.95f)),
-			0.0f, 1.0f, -1.0f, 1.0f);
+	const float MappedNormalizedRangeX = UKismetMathLibrary::MapRangeClamped(UKismetMathLibrary::NormalizeToRange(MultipliedMousePosition.X, (ViewportSize.X * .01f), (ViewportSize.X * 0.99f)),
+	0.0f, 1.0f, -1.0f, 1.0f);
 
-		const float MappedNormalizedRangeY = UKismetMathLibrary::MapRangeClamped(UKismetMathLibrary::NormalizeToRange(MultipliedMousePosition.Y, (ViewportSize.Y * .05f), (ViewportSize.Y * 0.95f)),
-			0.0f, 1.0f, 1.0f, -1.0f);
-
-		if(FMath::Abs(MappedNormalizedRangeX) == 1 || FMath::Abs(MappedNormalizedRangeY) == 1 && !bIsEnableRotateCameraAxis)
+	const float MappedNormalizedRangeY = UKismetMathLibrary::MapRangeClamped(UKismetMathLibrary::NormalizeToRange(MultipliedMousePosition.Y, (ViewportSize.Y * .01f), (ViewportSize.Y * 0.99f)),
+	0.0f, 1.0f, 1.0f, -1.0f);
+	
+	if(FMath::Abs(MappedNormalizedRangeX) == 1 || FMath::Abs(MappedNormalizedRangeY) == 1)
+	{
+		if(!bIsEnableRotateCameraAxis && bIsWindowFocused)
 		{
 			const FVector OffsetDirection = GetCameraBoom()->GetRelativeRotation().RotateVector(FVector(MappedNormalizedRangeY, MappedNormalizedRangeX, 0.0f)).GetSafeNormal2D();
-			GetCameraBoom()->TargetOffset += (OffsetDirection * EdgePanningSpeed).GetClampedToSize(-CameraMaxVectorDistance, CameraMaxVectorDistance);
+			const FVector NewTargetOffset = GetCameraBoom()->TargetOffset + (OffsetDirection * EdgePanningSpeed);
+			GetCameraBoom()->TargetOffset = NewTargetOffset.GetClampedToSize(-CameraMaxVectorDistance, CameraMaxVectorDistance);
+
+			if(!MoveCameraTimeline.IsPlaying() && !bCameraSpeedTimelineFinished && !bCameraSpeedTimelineActivated)
+			{
+				MoveCameraTimeline.PlayFromStart();
+				bCameraSpeedTimelineActivated = true;
+			}
 		}
 	}
+	else
+	{
+		if(bCameraSpeedTimelineActivated)
+		{
+			MoveCameraTimeline.Stop();
+			bCameraSpeedTimelineFinished = false;
+			bCameraSpeedTimelineActivated = false;
+			CurrentCameraMovementSpeed = 0.0f;
+		}
+
+	}
+}
+
+void AGASCoursePlayerCharacter::SetMousePositionToScreenCenter()
+{
+	if (APlayerController* PC = Cast<APlayerController>(GetController()))
+	{
+		const ULocalPlayer* LP = PC->GetLocalPlayer();
+		if(LP)
+		{
+			UGameViewportClient* GVC = LP->ViewportClient;
+			if(GVC)
+			{
+				FViewport* VP = GVC->Viewport;
+				if(VP)
+				{
+					FVector2D Viewportsize;
+					GVC->GetViewportSize(Viewportsize);
+					const int32 X = static_cast<int32>(Viewportsize.X * 0.5f);
+					const int32 Y = static_cast<int32>(Viewportsize.Y * 0.5f);
+
+					VP->SetMouse(X, Y);
+				}
+			}
+		}
+	}
+}
+
+void AGASCoursePlayerCharacter::UpdateCameraTargetOffsetZ()
+{
+	if(const UWorld* World = GetWorld())
+	{
+		const FVector CameraBoomLocation = GetCameraBoom()->GetComponentLocation() + GetCameraBoom()->TargetOffset;
+#if UE_EDITOR
+		DrawDebugSphere(GetWorld(), CameraBoomLocation, 15.f, 8, FColor::Blue);
+		DrawDebugLine(GetWorld(), CameraBoomLocation, CameraBoomLocation + (GetActorUpVector() * 1000.0f), FColor::Red);
+#endif
+		
+		SCOPED_NAMED_EVENT(AGASCourseCharacter_UpdateCameraTargetOffsetZMultithread, FColor::Blue)
+		HitResultMultithreadTask = UE::Tasks::Launch(UE_SOURCE_LOCATION, [this]
+		{
+			const UWorld* World = GetWorld();
+			const FVector TraceStart = GetCameraBoom()->GetComponentLocation() + GetCameraBoom()->TargetOffset;;
+			const FVector TraceEnd = TraceStart + (GetActorUpVector() * CameraTargetOffsetZDownTraceLength);
+			TArray<AActor*> ActorsToIgnore;
+			ActorsToIgnore.Add(this);
+			FHitResult OutHitResult;
+			UKismetSystemLibrary::SphereTraceSingle(World, TraceStart, TraceEnd, CameraTargetOffsetZDownTraceRadius, UEngineTypes::ConvertToTraceType(ECC_Camera), true,
+			ActorsToIgnore, EDrawDebugTrace::ForOneFrame, OutHitResult, true);
+			return OutHitResult;
+		});
+
+		const FHitResult MultithreadHitResult = HitResultMultithreadTask.GetResult();
+		const float HitLocationZ = MultithreadHitResult.Location.Z;
+		const float ZDifference = HitLocationZ - GetCameraBoom()->TargetOffset.Z;
+		GetCameraBoom()->TargetOffset.Z += ZDifference;
+				
+		if(HitResultMultithreadTask.IsCompleted())
+		{
+			HitResultMultithreadTask = {};
+		}
+	}
+	HitResultMultithreadTask = {};
 }
