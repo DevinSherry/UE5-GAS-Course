@@ -5,7 +5,6 @@
 #include "Game/Character/Player/GASCoursePlayerState.h"
 #include "Game/Input/GASCourseEnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
-#include "Animation/AnimInstanceProxy.h"
 #include "Blueprint/AIBlueprintHelperLibrary.h"
 #include "Blueprint/WidgetLayoutLibrary.h"
 #include "Components/TimelineComponent.h"
@@ -13,6 +12,7 @@
 #include "Game/GameplayAbilitySystem/GASCourseNativeGameplayTags.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Kismet/KismetSystemLibrary.h"
 
 #if UE_EDITOR
 #include "Editor/EditorEngine.h"

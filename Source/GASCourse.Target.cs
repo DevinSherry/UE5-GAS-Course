@@ -16,5 +16,14 @@ public class GASCourseTarget : TargetRules
 			BuildEnvironment = TargetBuildEnvironment.Unique;
 			bUseIris = true;
 		}
+
+		if (Type == TargetType.Editor)
+		{
+			ExtraModuleNames.AddRange( 
+				new string[]
+				{
+					"GASCourseEditor"
+				});
+		}
 	}
 }

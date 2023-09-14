@@ -14,6 +14,11 @@
 				"CoreUObject",
 				"EnhancedInput"
 			]
+		},
+		{
+			"Name": "GASCourseEditor",
+			"Type": "Editor",
+			"LoadingPhase": "Default"
 		}
 	],
 	"Plugins": [

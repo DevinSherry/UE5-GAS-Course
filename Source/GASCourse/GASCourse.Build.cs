@@ -10,11 +10,22 @@ public class GASCourse : ModuleRules
 		
 		PrivateDependencyModuleNames.AddRange(new string[] { "AnimationLocomotionLibraryRuntime"});
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
+		
+		PublicIncludePaths.AddRange(
+			new string[] {
+				"GASCourse"
+			}
+		);
+
+		PrivateIncludePaths.AddRange(
+			new string[] {
+			}
+		);
 
 		PublicDependencyModuleNames.AddRange(new string[]
 		{
 			"Core", "CoreUObject", "Engine", "InputCore", "HeadMountedDisplay", "EnhancedInput",
-			"GameplayAbilities", "GameplayTags", "GameplayTasks", "NetCore", "AIModule", "Slate", "SlateCore", "UMG", "UnrealEd"
+			"GameplayAbilities", "GameplayTags", "GameplayTasks", "NetCore", "AIModule", "Slate", "SlateCore", "UMG",
 		});
 	}
 }
