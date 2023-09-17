@@ -35,7 +35,10 @@ class GASCOURSE_API AGASCoursePlayerCharacter : public AGASCourseCharacter
 	float CameraZoomDistanceStep = 10.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GASCourse|Camera Settings", meta = (AllowPrivateAccess = "true"))
-	float MaxCameraMovementSpeed = 30.0f;
+	float CameraMovementSpeedMin = 30.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GASCourse|Camera Settings", meta = (AllowPrivateAccess = "true"))
+	float CameraMovementSpeedMax = 30.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GASCourse|Camera Settings", meta = (AllowPrivateAccess = "true"))
 	float CameraMaxVectorDistance = 3000.0f;
@@ -59,7 +62,10 @@ class GASCOURSE_API AGASCoursePlayerCharacter : public AGASCourseCharacter
 	float MaxCameraPitchAngle = 40.0f;
 	
 	UPROPERTY(EditAnywhere,BlueprintReadOnly, Category = "GASCourse|Camera Settings", meta = (AllowPrivateAccess = "true"))
-	float EdgePanningSpeed = 30.0f;
+	float EdgePanningSpeedMin = 30.0f;
+
+	UPROPERTY(EditAnywhere,BlueprintReadOnly, Category = "GASCourse|Camera Settings", meta = (AllowPrivateAccess = "true"))
+	float EdgePanningSpeedMax = 30.0f;
 
 	UPROPERTY(EditAnywhere,BlueprintReadOnly, Category = "GASCourse|Camera Settings", meta = (AllowPrivateAccess = "true"))
 	UInputAction* EnableRotateCameraAxis;
@@ -133,6 +139,15 @@ protected:
 
 	UFUNCTION()
 	void UpdateCameraTargetOffsetZ();
+
+	UFUNCTION()
+	float GetEdgePanningSpeedBasedOnZoomDistance() const;
+
+	UFUNCTION()
+	float GetCameraMovementSpeedBasedOnZoomDistance() const;
+
+	UFUNCTION()
+	void OnMovementUpdated(float DeltaSeconds, FVector OldLocation, FVector OldVelocity);
 
 public:
 

@@ -18,7 +18,11 @@
 		{
 			"Name": "GASCourseEditor",
 			"Type": "Editor",
-			"LoadingPhase": "Default"
+			"LoadingPhase": "PostEngineInit",
+			"AdditionalDependencies": 
+			[
+				"UnrealEd"
+			]
 		}
 	],
 	"Plugins": [

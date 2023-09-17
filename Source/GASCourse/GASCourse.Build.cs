@@ -8,9 +8,16 @@ public class GASCourse : ModuleRules
 	{
 		SetupIrisSupport(Target);
 		
-		PrivateDependencyModuleNames.AddRange(new string[] { "AnimationLocomotionLibraryRuntime"});
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
-		
+
+		if (Target.bBuildEditor)
+		{
+			PublicDependencyModuleNames.AddRange(new string[]
+			{
+				"UnrealEd"
+			});
+		}
+
 		PublicIncludePaths.AddRange(
 			new string[] {
 				"GASCourse"
@@ -27,5 +34,11 @@ public class GASCourse : ModuleRules
 			"Core", "CoreUObject", "Engine", "InputCore", "HeadMountedDisplay", "EnhancedInput",
 			"GameplayAbilities", "GameplayTags", "GameplayTasks", "NetCore", "AIModule", "Slate", "SlateCore", "UMG",
 		});
+		
+		PrivateDependencyModuleNames.AddRange(
+			new string[] 
+			{
+				"AnimationLocomotionLibraryRuntime"
+			});
 	}
 }

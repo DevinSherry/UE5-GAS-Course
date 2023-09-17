@@ -27,8 +27,9 @@ public class GASCourseEditor : ModuleRules
 				"CoreUObject",
 				"Engine",
 				"EditorFramework",
-				"UnrealEd",
+				"EditorFramework",
 				"GASCourse",
+				"UnrealEd",
 			});
 		PrivateDependencyModuleNames.AddRange(
 			new string[] 
