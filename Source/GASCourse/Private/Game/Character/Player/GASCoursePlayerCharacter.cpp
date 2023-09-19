@@ -63,6 +63,18 @@ void AGASCoursePlayerCharacter::UpdateCameraMovementSpeedTimelineFinished()
 	bCameraSpeedTimelineFinished = true;
 }
 
+void AGASCoursePlayerCharacter::UpdateCameraRotationSpeed()
+{
+	const float TimelineValue = RotateCameraTimeline.GetPlaybackPosition();
+	const float CurveFloatValue =RotateCameraCurve->GetFloatValue(TimelineValue);
+
+	CurrentCameraRotationSpeed = (FMath::FInterpTo(CurrentCameraRotationSpeed, CameraRotationSpeedMultiplier, CurveFloatValue, RotateCameraInterpSpeed));
+}
+
+void AGASCoursePlayerCharacter::UpdateCameraRotationSpeedTimelineFinished()
+{
+}
+
 //////////////////////////////////////////////////////////////////////////
 // Input
 void AGASCoursePlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -103,7 +115,8 @@ void AGASCoursePlayerCharacter::SetupPlayerInputComponent(UInputComponent* Playe
 			EnhancedInputComponent->BindActionByTag(InputConfig, InputTag_MoveCamera, ETriggerEvent::Triggered, this, &ThisClass::Input_MoveCamera);
 			EnhancedInputComponent->BindActionByTag(InputConfig, InputTag_MoveCamera,ETriggerEvent::Completed, this, &ThisClass::Input_MoveCameraCompleted);
 			EnhancedInputComponent->BindActionByTag(InputConfig, InputTag_RecenterCamera, ETriggerEvent::Triggered, this, &ThisClass::Input_RecenterCamera);
-			EnhancedInputComponent->BindActionByTag(InputConfig, InputTag_RotateCamera, ETriggerEvent::Triggered, this , &ThisClass::Input_RotateCameraAxis);
+			EnhancedInputComponent->BindActionByTag(InputConfig, InputTag_RotateCameraAxis, ETriggerEvent::Triggered, this, &ThisClass::Input_RotateCameraAxis);
+			EnhancedInputComponent->BindActionByTag(InputConfig, InputTag_RotateCamera,ETriggerEvent::Completed, this, &ThisClass::Input_RotateCameraCompleted);
 
 			//Crouching
 			EnhancedInputComponent->BindActionByTag(InputConfig, InputTag_Crouch, ETriggerEvent::Triggered, this, &ThisClass::Input_Crouch);
@@ -204,6 +217,16 @@ void AGASCoursePlayerCharacter::BeginPlay()
 		MoveCameraTimeline.AddInterpFloat(MoveCameraCurve, TimelineCallback);
 	}
 
+	if(RotateCameraCurve)
+	{
+		FOnTimelineFloat TimelineCallback;
+		FOnTimelineEvent TimelineFinishedFunc;
+		TimelineFinishedFunc.BindUFunction(this, FName("UpdateCameraRotationSpeedTimelineFinished"));
+		RotateCameraTimeline.SetTimelineFinishedFunc(TimelineFinishedFunc);
+		TimelineCallback.BindUFunction(this, FName("UpdateCameraRotationSpeed"));
+		RotateCameraTimeline.AddInterpFloat(RotateCameraCurve, TimelineCallback);
+	}
+
 	FSlateApplication::Get().OnApplicationActivationStateChanged().AddUObject(this, &ThisClass::OnWindowFocusChanged);
 }
 
@@ -212,6 +235,7 @@ void AGASCoursePlayerCharacter::Tick(float DeltaSeconds)
 	Super::Tick(DeltaSeconds);
 	ResetCameraOffsetTimeline.TickTimeline(DeltaSeconds);
 	MoveCameraTimeline.TickTimeline(DeltaSeconds);
+	RotateCameraTimeline.TickTimeline(DeltaSeconds);
 
 	CameraEdgePanning();
 }
@@ -243,18 +267,6 @@ void AGASCoursePlayerCharacter::Input_AbilityInputTagReleased(FGameplayTag Input
 void AGASCoursePlayerCharacter::Move(const FInputActionValue& Value)
 {
 	Super::Move(Value);
-	
-	const FVector2d Movement = Value.Get<FVector2d>();
-	if(Movement.Length() <= 0)
-	{
-		return;
-	}
-	
-	if(GetCameraBoom()->TargetOffset.Length() > 0 && !ResetCameraOffsetTimeline.IsPlaying())
-	{
-		const FInputActionInstance InputActionInstance;
-		Input_RecenterCamera(InputActionInstance);
-	}
 }
 
 void AGASCoursePlayerCharacter::Input_CameraZoom(const FInputActionInstance& InputActionInstance)
@@ -320,11 +332,26 @@ void AGASCoursePlayerCharacter::Input_RecenterCamera(const FInputActionInstance&
 
 void AGASCoursePlayerCharacter::Input_RotateCameraAxis(const FInputActionInstance& InputActionInstance)
 {
+	if(!RotateCameraTimeline.IsPlaying())
+	{
+		RotateCameraTimeline.PlayFromStart();
+	}
+	GetCameraBoom()->bEnableCameraRotationLag = false;
 	const FVector2d CameraRotation = InputActionInstance.GetValue().Get<FVector2D>();
-	const FRotator NewCameraRelativeRotation = FRotator(FMath::ClampAngle((GetCameraBoom()->GetRelativeRotation().Pitch + CameraRotation.X), MinCameraPitchAngle, MaxCameraPitchAngle),
-		GetCameraBoom()->GetRelativeRotation().Yaw + CameraRotation.Y, 0.0f);
+	const float CameraRotationX = CameraRotation.X * CurrentCameraRotationSpeed;
+	const float CameraRotationY = CameraRotation.Y * CurrentCameraRotationSpeed;
+	
+	const FRotator NewCameraRelativeRotation = FRotator(FMath::ClampAngle((GetCameraBoom()->GetRelativeRotation().Pitch + CameraRotationX), MinCameraPitchAngle, MaxCameraPitchAngle),
+		GetCameraBoom()->GetRelativeRotation().Yaw + CameraRotationY, 0.0f);
 	
 	GetCameraBoom()->SetRelativeRotation(NewCameraRelativeRotation);
+}
+
+void AGASCoursePlayerCharacter::Input_RotateCameraCompleted(const FInputActionInstance& InputActionInstance)
+{
+	RotateCameraTimeline.Stop();
+	CurrentCameraRotationSpeed = 0.0f;
+	GetCameraBoom()->bEnableCameraRotationLag = true;
 }
 
 void AGASCoursePlayerCharacter::PointClickMovement(const FInputActionValue& Value)
@@ -565,19 +592,15 @@ float AGASCoursePlayerCharacter::GetCameraMovementSpeedBasedOnZoomDistance() con
 
 void AGASCoursePlayerCharacter::OnMovementUpdated(float DeltaSeconds, FVector OldLocation, FVector OldVelocity)
 {
-	if(OldVelocity.Length() > 50.0f)
+	const float MovementHeightDelta = GetActorLocation().Z - OldLocation.Z;
+	const FVector CombinedCameraBoomLocation = GetCameraBoom()->TargetOffset + GetCameraBoom()->GetComponentLocation();
+	if(GetCameraBoom()->IsAttachedTo(RootComponent))
 	{
-		const float PositionZDiff = GetActorLocation().Z - OldLocation.Z;
-		if(PositionZDiff < 0)
-		{
-			if(GetActorLocation().Z > GetCameraBoom()->GetComponentLocation().Z)
-			{
-				return;
-			}
-		}
-		const FVector CameraComponentLocation = GetCameraBoom()->GetComponentLocation();
-		GetCameraBoom()->SetWorldLocation(FVector(CameraComponentLocation.X, CameraComponentLocation.Y, OldLocation.Z));
-		//const float HitLocationZ = OldLocation.Z;
-		//GetCameraBoom()->TargetOffset.Z = HitLocationZ;
+		return;
+	}
+
+	if((MovementHeightDelta > 0.0f && GetMesh()->GetComponentLocation().Z > CombinedCameraBoomLocation.Z) || (MovementHeightDelta < 0.0f && CombinedCameraBoomLocation.Z > GetMesh()->GetComponentLocation().Z))
+	{
+		GetCameraBoom()->TargetOffset.Z += MovementHeightDelta;
 	}
 }

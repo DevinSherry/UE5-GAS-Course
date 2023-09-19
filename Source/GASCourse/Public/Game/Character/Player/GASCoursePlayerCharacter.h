@@ -48,6 +48,9 @@ class GASCOURSE_API AGASCoursePlayerCharacter : public AGASCourseCharacter
 
 	UPROPERTY(EditAnywhere,BlueprintReadOnly, Category = "GASCourse|Camera Settings", meta = (AllowPrivateAccess = "true"))
 	UCurveFloat* MoveCameraCurve;
+	
+	UPROPERTY(EditAnywhere,BlueprintReadOnly, Category = "GASCourse|Camera Settings", meta = (AllowPrivateAccess = "true"))
+	UCurveFloat* RotateCameraCurve;
 
 	UPROPERTY(EditAnywhere,BlueprintReadOnly, Category = "GASCourse|Camera Settings", meta = (AllowPrivateAccess = "true"))
 	float RecenterCameraInterpSpeed = 0.1f;
@@ -60,6 +63,12 @@ class GASCOURSE_API AGASCoursePlayerCharacter : public AGASCourseCharacter
 	
 	UPROPERTY(EditAnywhere,BlueprintReadOnly, Category = "GASCourse|Camera Settings", meta = (AllowPrivateAccess = "true"))
 	float MaxCameraPitchAngle = 40.0f;
+
+	UPROPERTY(EditAnywhere,BlueprintReadOnly, Category = "GASCourse|Camera Settings", meta = (AllowPrivateAccess = "true"))
+	float CameraRotationSpeedMultiplier = 1.0f;
+
+	UPROPERTY(EditAnywhere,BlueprintReadOnly, Category = "GASCourse|Camera Settings", meta = (AllowPrivateAccess = "true"))
+	float RotateCameraInterpSpeed = 1.0f;
 	
 	UPROPERTY(EditAnywhere,BlueprintReadOnly, Category = "GASCourse|Camera Settings", meta = (AllowPrivateAccess = "true"))
 	float EdgePanningSpeedMin = 30.0f;
@@ -112,6 +121,7 @@ protected:
 	void UpdateCameraBoomTargetOffset(const FVector& InCameraBoomTargetOffset) const;
 	void Input_RecenterCamera(const FInputActionInstance& InputActionInstance);
 	void Input_RotateCameraAxis(const FInputActionInstance& InputActionInstance);
+	void Input_RotateCameraCompleted(const FInputActionInstance& InputActionInstance);
 
 	/** Called for left-click based movement */
 	void PointClickMovement(const FInputActionValue& Value);
@@ -131,6 +141,12 @@ protected:
 
 	UFUNCTION()
 	void UpdateCameraMovementSpeedTimelineFinished();
+
+	UFUNCTION()
+	void UpdateCameraRotationSpeed();
+
+	UFUNCTION()
+	void UpdateCameraRotationSpeedTimelineFinished();
 
 	void CameraEdgePanning();
 
@@ -160,6 +176,7 @@ private:
 
 	FTimeline ResetCameraOffsetTimeline;
 	FTimeline MoveCameraTimeline;
+	FTimeline RotateCameraTimeline;
 	void InitializeCamera();
 
 	void OnWindowFocusChanged(bool bIsInFocus);
@@ -168,5 +185,9 @@ private:
 	float CurrentCameraMovementSpeed;
 	bool bCameraSpeedTimelineFinished;
 	bool bCameraSpeedTimelineActivated;
+
+	float CurrentCameraRotationSpeed;
+	bool bCameraRotationTimelineFinished;
+	bool bCameraRotationTimelineActivated;
 	
 };
