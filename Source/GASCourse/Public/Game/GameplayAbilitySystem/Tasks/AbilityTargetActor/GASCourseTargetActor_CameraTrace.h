@@ -3,9 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Abilities/GameplayAbilityTargetActor_Trace.h"
+#include "GASCourseTargetActor_Trace.h"
 #include "GASCourseTargetActor_CameraTrace.generated.h"
-
 
 class UGameplayAbility;
 
@@ -13,11 +12,15 @@ class UGameplayAbility;
  * 
  */
 UCLASS(Blueprintable)
-class GASCOURSE_API AGASCourseTargetActor_CameraTrace : public AGameplayAbilityTargetActor_Trace
+class GASCOURSE_API AGASCourseTargetActor_CameraTrace : public AGASCourseTargetActor_Trace
 {
 	GENERATED_UCLASS_BODY()
 
+public:	
+
 	virtual void StartTargeting(UGameplayAbility* InAbility) override;
+	virtual void ConfirmTargetingAndContinue() override;
+	virtual void CancelTargeting();
 
 	/** Radius for a sphere or capsule. */
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (ExposeOnSpawn = true), Category = Targeting)

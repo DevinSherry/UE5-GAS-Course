@@ -244,7 +244,7 @@ void AGASCoursePlayerCharacter::Input_AbilityInputTagPressed(FGameplayTag InputT
 {
 	if(UGASCourseAbilitySystemComponent* ASC = GetAbilitySystemComponent())
 	{
-		if(ASC->HasMatchingGameplayTag(Status_AbilityInputBlocked))
+		if(ASC->HasMatchingGameplayTag(Status_Block_AbilityInput))
 		{
 			return;
 		}
@@ -256,7 +256,7 @@ void AGASCoursePlayerCharacter::Input_AbilityInputTagReleased(FGameplayTag Input
 {
 	if(UGASCourseAbilitySystemComponent* ASC = GetAbilitySystemComponent())
 	{
-		if(ASC->HasMatchingGameplayTag(Status_AbilityInputBlocked))
+		if(ASC->HasMatchingGameplayTag(Status_Block_AbilityInput))
 		{
 			return;
 		}
@@ -356,11 +356,19 @@ void AGASCoursePlayerCharacter::Input_RotateCameraCompleted(const FInputActionIn
 
 void AGASCoursePlayerCharacter::PointClickMovement(const FInputActionValue& Value)
 {
+	if(GetAbilitySystemComponent()->HasMatchingGameplayTag(Status_Block_PointClickMovementInput))
+	{
+		return;
+	}
 	MoveToMouseHitResultLocation();
 }
 
 void AGASCoursePlayerCharacter::PointClickMovementStarted(const FInputActionValue& Value)
 {
+	if(GetAbilitySystemComponent()->HasMatchingGameplayTag(Status_Block_PointClickMovementInput))
+	{
+		return;
+	}
 	if(AGASCoursePlayerController* PC = Cast<AGASCoursePlayerController>(Controller))
 	{
 		PC->StopMovement();
@@ -369,7 +377,11 @@ void AGASCoursePlayerCharacter::PointClickMovementStarted(const FInputActionValu
 
 void AGASCoursePlayerCharacter::PointClickMovementCompleted(const FInputActionInstance& InputActionInstance)
 {
-
+	if(GetAbilitySystemComponent()->HasMatchingGameplayTag(Status_Block_PointClickMovementInput))
+	{
+		return;
+	}
+	
 	if(AGASCoursePlayerController* PC = Cast<AGASCoursePlayerController>(Controller))
 	{
 		UAIBlueprintHelperLibrary::SimpleMoveToLocation(PC, PC->GetCachedDestination());

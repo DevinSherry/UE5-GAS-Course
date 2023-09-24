@@ -170,7 +170,7 @@ void UGASCourseAbilitySystemComponent::AbilitySpecInputReleased(FGameplayAbility
 
 void UGASCourseAbilitySystemComponent::ProcessAbilityInput(float DeltaTime, bool bGamePaused)
 {
-	if (HasMatchingGameplayTag(Status_AbilityInputBlocked))
+	if (HasMatchingGameplayTag(Status_Block_AbilityInput))
 	{
 		ClearAbilityInput();
 		return;

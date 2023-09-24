@@ -38,38 +38,56 @@ void AGASCourseTargetActor_CameraTrace::StartTargeting(UGameplayAbility* InAbili
 	Super::StartTargeting(InAbility);
 }
 
+void AGASCourseTargetActor_CameraTrace::ConfirmTargetingAndContinue()
+{
+	Super::ConfirmTargetingAndContinue();
+}
+
+void AGASCourseTargetActor_CameraTrace::CancelTargeting()
+{
+	Super::CancelTargeting();
+}
+
 FHitResult AGASCourseTargetActor_CameraTrace::PerformTrace(AActor* InSourceActor)
 {
 	bool bTraceComplex = false;
 
-	FCollisionQueryParams Params(SCENE_QUERY_STAT(AGameplayAbilityTargetActor_GroundTrace), bTraceComplex);
+	FCollisionQueryParams Params(SCENE_QUERY_STAT(AGASCourseTargetActor_CameraTrace), bTraceComplex);
 	Params.bReturnPhysicalMaterial = true;
 	Params.AddIgnoredActor(InSourceActor);
+	UWorld *ThisWorld = GetWorld();
+	FHitResult ReturnHitResult;
 
 	//TODO: Get Camera Location
 	APlayerController* PC = OwningAbility->GetCurrentActorInfo()->PlayerController.Get();
 	check(PC);
-	FVector CameraLoc;
-	FRotator CameraRot;
-	PC->GetPlayerViewPoint(CameraLoc, CameraRot);
-	
-	//TODO: Get Camera Aim Direction + length
-	FVector TraceStart = CameraLoc;// InSourceActor->GetActorLocation();
+
+	FVector MousePositionToWorldLocation;
+	FVector MousePositionToWorldDirection;
+
+	FVector TraceStart;
 	FVector TraceEnd;
-	AimWithPlayerController(InSourceActor, Params, TraceStart, TraceEnd);		//Effective on server and launching client only
+	
+	if(PC->DeprojectMousePositionToWorld(MousePositionToWorldLocation, MousePositionToWorldDirection))
+	{
+		TraceStart = MousePositionToWorldLocation;// InSourceActor->GetActorLocation();
+		TraceEnd = TraceStart + MousePositionToWorldDirection * MaxRange;
+	}
 
-	// ------------------------------------------------------
-
-	FHitResult ReturnHitResult;
-	//Use a line trace initially to see where the player is actually pointing
 	LineTraceWithFilter(ReturnHitResult, InSourceActor->GetWorld(), Filter, TraceStart, TraceEnd, TraceProfile.Name, Params);
 	//Default to end of trace line if we don't hit anything.
 	if (!ReturnHitResult.bBlockingHit)
 	{
 		ReturnHitResult.Location = TraceEnd;
 	}
+	
+	DrawDebugSphere(ThisWorld, TraceEnd, 50.0f, 10, FColor::Red, false, 1.0f, 0, 2.0f);
+	return ReturnHitResult;
 
 	/*
+
+	// ------------------------------------------------------
+	
 	//Second trace, straight down. Consider using InSourceActor->GetWorld()->NavigationSystem->ProjectPointToNavigation() instead of just going straight down in the case of movement abilities (flag/bool).
 	TraceStart = ReturnHitResult.Location - (TraceEnd - TraceStart).GetSafeNormal();		//Pull back very slightly to avoid scraping down walls
 	TraceEnd = TraceStart;
@@ -93,7 +111,7 @@ FHitResult AGASCourseTargetActor_CameraTrace::PerformTrace(AActor* InSourceActor
 			ReturnHitResult.Location.Z -= CollisionHeightOffset;	//Undo the artificial height adjustment
 		}
 	}
-	*/
+	
 	if (AGameplayAbilityWorldReticle* LocalReticleActor = ReticleActor.Get())
 	{
 		LocalReticleActor->SetIsTargetValid(bLastTraceWasGood);
@@ -102,8 +120,7 @@ FHitResult AGASCourseTargetActor_CameraTrace::PerformTrace(AActor* InSourceActor
 
 	// Reset the trace start so the target data uses the correct origin
 	ReturnHitResult.TraceStart = CameraLoc;
-
-	return ReturnHitResult;
+*/
 }
 
 bool AGASCourseTargetActor_CameraTrace::IsConfirmTargetingAllowed()

@@ -137,7 +137,7 @@ void AGASCourseCharacter::Move(const FInputActionValue& Value)
 		if (UGASCourseAbilitySystemComponent* GASCourseASC = GetAbilitySystemComponent())
 		{
 			//Block any type of movement if character has tag Status.MovementInputBlocked
-			if(GASCourseASC->HasMatchingGameplayTag(Status_BlockMovementInput))
+			if(GASCourseASC->HasMatchingGameplayTag(Status_Block_MovementInput))
 			{
 				return;
 			}
@@ -172,7 +172,7 @@ void AGASCourseCharacter::StopMove(const FInputActionValue& Value)
 		if (UGASCourseAbilitySystemComponent* GASCourseASC = GetAbilitySystemComponent())
 		{
 			//Block any type of movement if character has tag Status.MovementInputBlocked
-			if(GASCourseASC->HasMatchingGameplayTag(Status_BlockMovementInput))
+			if(GASCourseASC->HasMatchingGameplayTag(Status_Block_MovementInput))
 			{
 				return;
 			}
@@ -201,7 +201,7 @@ void AGASCourseCharacter::Input_Crouch(const FInputActionValue& Value)
 {
 	const UGASCourseAbilitySystemComponent* GASCourseASC = GetAbilitySystemComponent();
 	//Block any type of movement if character has tag Status.MovementInputBlocked
-	if(GASCourseASC->HasMatchingGameplayTag(Status_BlockMovementInput))
+	if(GASCourseASC->HasMatchingGameplayTag(Status_Block_MovementInput))
 	{
 		return;
 	}
@@ -221,7 +221,7 @@ void AGASCourseCharacter::OnStartCrouch(float HalfHeightAdjust, float ScaledHalf
 {
 	UGASCourseAbilitySystemComponent* GASCourseASC = GetAbilitySystemComponent();
 	//Block any type of movement if character has tag Status.MovementInputBlocked
-	if(GASCourseASC->HasMatchingGameplayTag(Status_BlockMovementInput))
+	if(GASCourseASC->HasMatchingGameplayTag(Status_Block_MovementInput))
 	{
 		return;
 	}
@@ -234,7 +234,7 @@ void AGASCourseCharacter::OnEndCrouch(float HalfHeightAdjust, float ScaledHalfHe
 {
 	UGASCourseAbilitySystemComponent* GASCourseASC = GetAbilitySystemComponent();
 	//Block any type of movement if character has tag Status.MovementInputBlocked
-	if(GASCourseASC->HasMatchingGameplayTag(Status_BlockMovementInput))
+	if(GASCourseASC->HasMatchingGameplayTag(Status_Block_MovementInput))
 	{
 		return;
 	}
@@ -246,7 +246,7 @@ void AGASCourseCharacter::OnEndCrouch(float HalfHeightAdjust, float ScaledHalfHe
 bool AGASCourseCharacter::CanJumpInternal_Implementation() const
 {
 	const UGASCourseAbilitySystemComponent* GASCourseASC = GetAbilitySystemComponent();
-	if(GASCourseASC->HasMatchingGameplayTag(Status_BlockMovementInput))
+	if(GASCourseASC->HasMatchingGameplayTag(Status_Block_MovementInput))
 	{
 		return false;
 	}
