@@ -455,14 +455,18 @@ void AGASCoursePlayerCharacter::CameraEdgePanning()
 	SCOPED_NAMED_EVENT(AGASCourseCharacter_CameraEdgePanning, FColor::Red);
 	bool bIsEnableRotateCameraAxis = false;
 	bIsWindowFocused = true;
-	
-	if(EnableRotateCameraAxis)
+
+	//TODO: Move this check somewhere else?
+	if(InputComponent)
 	{
-		if (UGASCourseEnhancedInputComponent* EnhancedInputComponent = CastChecked<UGASCourseEnhancedInputComponent>(InputComponent))
+		if(EnableRotateCameraAxis)
 		{
-			check(EnhancedInputComponent);
-			const FEnhancedInputActionValueBinding* EnableRotateAxisBinding = &EnhancedInputComponent->BindActionValue(EnableRotateCameraAxis);
-			bIsEnableRotateCameraAxis = EnableRotateAxisBinding->GetValue().Get<bool>();
+			if (UGASCourseEnhancedInputComponent* EnhancedInputComponent = CastChecked<UGASCourseEnhancedInputComponent>(InputComponent))
+			{
+				check(EnhancedInputComponent);
+				const FEnhancedInputActionValueBinding* EnableRotateAxisBinding = &EnhancedInputComponent->BindActionValue(EnableRotateCameraAxis);
+				bIsEnableRotateCameraAxis = EnableRotateAxisBinding->GetValue().Get<bool>();
+			}
 		}
 	}
 

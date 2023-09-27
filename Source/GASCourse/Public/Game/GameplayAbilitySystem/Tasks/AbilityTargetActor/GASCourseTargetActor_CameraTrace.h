@@ -1,8 +1,6 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
-
-#include "CoreMinimal.h"
 #include "GASCourseTargetActor_Trace.h"
 #include "GASCourseTargetActor_CameraTrace.generated.h"
 
@@ -11,6 +9,7 @@ class UGameplayAbility;
 /**
  * 
  */
+
 UCLASS(Blueprintable)
 class GASCOURSE_API AGASCourseTargetActor_CameraTrace : public AGASCourseTargetActor_Trace
 {
@@ -29,16 +28,23 @@ public:
 	/** Height for a capsule. Implicitly indicates a capsule is desired if this is greater than zero. */
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (ExposeOnSpawn = true), Category = Targeting)
 	float CollisionHeight;
+	
+	/** Trace Channel to check for*/
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (ExposeOnSpawn = true), Category = Targeting)
+	TArray<TEnumAsByte<ECollisionChannel>> QueryChannels;
 
 protected:
 	virtual FHitResult PerformTrace(AActor* InSourceActor) override;
 
 	virtual bool IsConfirmTargetingAllowed() override;
 
-	bool AdjustCollisionResultForShape(const FVector OriginalStartPoint, const FVector OriginalEndPoint, const FCollisionQueryParams Params, FHitResult& OutHitResult) const;
-
-	FCollisionShape CollisionShape;
-	float CollisionHeightOffset;		//When tracing, give this much extra height to avoid start-in-ground problems. Dealing with thick placement actors while standing near walls may be trickier.
-	bool bLastTraceWasGood;
+	TArray<TWeakObjectPtr<AActor> >	PerformOverlap(const FVector& Origin);
 	
+	bool OverlapMultiByObjectTypes(TArray<TWeakObjectPtr<AActor>>& OutHitActors, const FVector& Pos, const FQuat& Rot, const FCollisionShape& OverlapCollisionShape,
+		const FCollisionQueryParams& Params = FCollisionQueryParams::DefaultQueryParam) const;
+	
+	FGameplayAbilityTargetDataHandle MakeTargetData(const TArray<TWeakObjectPtr<AActor>>& Actors, const FVector& Origin) const;
+	
+protected:	
+	bool bLastTraceWasGood;
 };

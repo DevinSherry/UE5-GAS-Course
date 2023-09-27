@@ -3,44 +3,31 @@
 
 #include "Game/GameplayAbilitySystem/Tasks/AbilityTargetActor/GASCourseTargetActor_CameraTrace.h"
 #include "Abilities/GameplayAbility.h"
+#include "Kismet/KismetSystemLibrary.h"
 
 AGASCourseTargetActor_CameraTrace::AGASCourseTargetActor_CameraTrace(const FObjectInitializer& ObjectInitializer)
 : Super(ObjectInitializer)
 {
 	CollisionRadius = 50.0f;
 	CollisionHeight = 50.0f;
-	CollisionHeightOffset = 0.0f;
 }
 
 void AGASCourseTargetActor_CameraTrace::StartTargeting(UGameplayAbility* InAbility)
 {
-	//CollisionShape starts as "line," which is correct as a default for our purposes
-	if (CollisionRadius > 0.0f)
-	{
-		//Check CollisionHeight here because the shape code doesn't. It is used as half-height
-		if ((CollisionHeight * 0.5f) > CollisionRadius)
-		{
-			CollisionShape = FCollisionShape::MakeCapsule(CollisionRadius, CollisionHeight * 0.5f);
-			CollisionHeightOffset = CollisionHeight * 0.5f;
-		}
-		else
-		{
-			CollisionShape = FCollisionShape::MakeSphere(CollisionRadius);
-			CollisionHeight = 0.0f;
-			CollisionHeightOffset = CollisionRadius;
-		}
-	}
-	else
-	{
-		//Make sure these are clean.
-		CollisionRadius = CollisionHeight = 0.0f;
-	}
 	Super::StartTargeting(InAbility);
 }
 
 void AGASCourseTargetActor_CameraTrace::ConfirmTargetingAndContinue()
 {
 	Super::ConfirmTargetingAndContinue();
+	
+	check(ShouldProduceTargetData());
+	if (SourceActor)
+	{
+		const FVector Origin = PerformTrace(SourceActor).Location;
+		FGameplayAbilityTargetDataHandle Handle = MakeTargetData(PerformOverlap(Origin), Origin);
+		TargetDataReadyDelegate.Broadcast(Handle);
+	}
 }
 
 void AGASCourseTargetActor_CameraTrace::CancelTargeting()
@@ -57,8 +44,7 @@ FHitResult AGASCourseTargetActor_CameraTrace::PerformTrace(AActor* InSourceActor
 	Params.AddIgnoredActor(InSourceActor);
 	UWorld *ThisWorld = GetWorld();
 	FHitResult ReturnHitResult;
-
-	//TODO: Get Camera Location
+	
 	APlayerController* PC = OwningAbility->GetCurrentActorInfo()->PlayerController.Get();
 	check(PC);
 
@@ -67,60 +53,49 @@ FHitResult AGASCourseTargetActor_CameraTrace::PerformTrace(AActor* InSourceActor
 
 	FVector TraceStart;
 	FVector TraceEnd;
+
+	bLastTraceWasGood = false;
 	
 	if(PC->DeprojectMousePositionToWorld(MousePositionToWorldLocation, MousePositionToWorldDirection))
 	{
-		TraceStart = MousePositionToWorldLocation;// InSourceActor->GetActorLocation();
+		TraceStart = MousePositionToWorldLocation;
 		TraceEnd = TraceStart + MousePositionToWorldDirection * MaxRange;
 	}
-
+	
 	LineTraceWithFilter(ReturnHitResult, InSourceActor->GetWorld(), Filter, TraceStart, TraceEnd, TraceProfile.Name, Params);
 	//Default to end of trace line if we don't hit anything.
-	if (!ReturnHitResult.bBlockingHit)
+	if (ReturnHitResult.bBlockingHit)
 	{
-		ReturnHitResult.Location = TraceEnd;
-	}
-	
-	DrawDebugSphere(ThisWorld, TraceEnd, 50.0f, 10, FColor::Red, false, 1.0f, 0, 2.0f);
-	return ReturnHitResult;
-
-	/*
-
-	// ------------------------------------------------------
-	
-	//Second trace, straight down. Consider using InSourceActor->GetWorld()->NavigationSystem->ProjectPointToNavigation() instead of just going straight down in the case of movement abilities (flag/bool).
-	TraceStart = ReturnHitResult.Location - (TraceEnd - TraceStart).GetSafeNormal();		//Pull back very slightly to avoid scraping down walls
-	TraceEnd = TraceStart;
-	TraceStart.Z += CollisionHeightOffset;
-	TraceEnd.Z -= 99999.0f;
-	LineTraceWithFilter(ReturnHitResult, InSourceActor->GetWorld(), Filter, TraceStart, TraceEnd, TraceProfile.Name, Params);
-	//if (!ReturnHitResult.bBlockingHit) then our endpoint may be off the map. Hopefully this is only possible in debug maps.
-
-	bLastTraceWasGood = true;		//So far, we're good. If we need a ground spot and can't find one, we'll come back.
-
-	//Use collision shape to find a valid ground spot, if appropriate
-	if (CollisionShape.ShapeType != ECollisionShape::Line)
-	{
-		ReturnHitResult.Location.Z += CollisionHeightOffset;		//Rise up out of the ground
-		TraceStart = InSourceActor->GetActorLocation();
 		TraceEnd = ReturnHitResult.Location;
-		TraceStart.Z += CollisionHeightOffset;
-		bLastTraceWasGood = AdjustCollisionResultForShape(TraceStart, TraceEnd, Params, ReturnHitResult);
-		if (bLastTraceWasGood)
-		{
-			ReturnHitResult.Location.Z -= CollisionHeightOffset;	//Undo the artificial height adjustment
-		}
+		bLastTraceWasGood = true;
 	}
+
+#if ENABLE_DRAW_DEBUG
+	if (bDebug)
+	{
+		//DrawDebugSphere(ThisWorld, TraceEnd, CollisionRadius, 10, FColor::Red, false, 1.0f, 0, 2.0f);
+		const FVector CylinderHeight = (ReturnHitResult.Normal * CollisionHeight);
+		DrawDebugCylinder(ThisWorld, TraceEnd, TraceEnd + CylinderHeight, CollisionRadius, 10, FColor::Red, false, 1.0f, 0, 2.0f);
+	}
+#endif	
 	
 	if (AGameplayAbilityWorldReticle* LocalReticleActor = ReticleActor.Get())
 	{
 		LocalReticleActor->SetIsTargetValid(bLastTraceWasGood);
 		LocalReticleActor->SetActorLocation(ReturnHitResult.Location);
+		LocalReticleActor->SetActorScale3D(ReticleParams.AOEScale);
+		FRotator LocalReticleRot = ReturnHitResult.Normal.Rotation();
+		LocalReticleActor->SetActorRotation(LocalReticleRot);
+		UE_LOG(LogTemp, Warning, TEXT("Rotation: %s"), *LocalReticleRot.ToString());
+#if ENABLE_DRAW_DEBUG
+		if (bDebug)
+		{
+			DrawDebugLine(GetWorld(), ReturnHitResult.Location, ReturnHitResult.Location + (ReturnHitResult.Normal * 500.0f), FColor::Blue, true);
+		}
+#endif	
 	}
 
-	// Reset the trace start so the target data uses the correct origin
-	ReturnHitResult.TraceStart = CameraLoc;
-*/
+	return ReturnHitResult;
 }
 
 bool AGASCourseTargetActor_CameraTrace::IsConfirmTargetingAllowed()
@@ -128,99 +103,59 @@ bool AGASCourseTargetActor_CameraTrace::IsConfirmTargetingAllowed()
 	return bLastTraceWasGood;
 }
 
-bool AGASCourseTargetActor_CameraTrace::AdjustCollisionResultForShape(const FVector OriginalStartPoint,
-	const FVector OriginalEndPoint, const FCollisionQueryParams Params, FHitResult& OutHitResult) const
+TArray<TWeakObjectPtr<AActor>> AGASCourseTargetActor_CameraTrace::PerformOverlap(const FVector& Origin)
 {
-		UWorld *ThisWorld = GetWorld();
-	//Pull back toward player to find a better spot, accounting for the width of our object
-	FVector Movement = (OriginalEndPoint - OriginalStartPoint);	
-	FVector MovementDirection = Movement.GetSafeNormal();
-	float MovementMagnitude2D = Movement.Size2D();
-
-#if ENABLE_DRAW_DEBUG
-	if (bDebug)
+	constexpr bool bTraceComplex = false;
+	
+	FCollisionQueryParams Params(SCENE_QUERY_STAT(RadiusTargetingOverlap), bTraceComplex);
+	Params.bReturnPhysicalMaterial = false;
+	
+	TArray<TWeakObjectPtr<AActor>>	HitActors;
+	if(QueryChannels.Num() == 0)
 	{
-		if (CollisionShape.ShapeType == ECollisionShape::Capsule)
+		return HitActors;
+	}
+	
+	OverlapMultiByObjectTypes(HitActors, Origin, FQuat::Identity, FCollisionShape::MakeSphere(CollisionRadius), Params);
+	return HitActors;
+}
+
+bool AGASCourseTargetActor_CameraTrace::OverlapMultiByObjectTypes(TArray<TWeakObjectPtr<AActor>>& OutHitActors, const FVector& Pos,
+	const FQuat& Rot, const FCollisionShape& OverlapCollisionShape, const FCollisionQueryParams& Params) const
+{
+	TArray<FOverlapResult> Overlaps;
+	bool bTraceSuccessful = false;
+	
+	if(QueryChannels.Num() == 0)
+	{
+		return bTraceSuccessful;
+	}
+	
+	for(const ECollisionChannel QueryChannel : QueryChannels)
+	{
+		SourceActor->GetWorld()->OverlapMultiByObjectType(Overlaps, Pos, Rot, FCollisionObjectQueryParams(QueryChannel), OverlapCollisionShape, Params);
+		for(int32 i = 0; i < Overlaps.Num(); ++i)
 		{
-			DrawDebugCapsule(ThisWorld, OriginalEndPoint, CollisionHeight * 0.5f, CollisionRadius, FQuat::Identity, FColor::Black);
-		}
-		else
-		{
-			DrawDebugSphere(ThisWorld, OriginalEndPoint, CollisionRadius, 8, FColor::Black);
+			//Should this check to see if these pawns are in the AimTarget list?
+			AActor* HitActor = Overlaps[i].OverlapObjectHandle.FetchActor<AActor>();
+			if (HitActor && !OutHitActors.Contains(HitActor) && Filter.FilterPassesForActor(HitActor))
+			{
+				OutHitActors.Add(HitActor);
+			}
 		}
 	}
-#endif // ENABLE_DRAW_DEBUG
 
-	if (MovementMagnitude2D <= (CollisionRadius * 2.0f))
+	return bTraceSuccessful = OutHitActors.Num() > 0 ? true : false;
+}
+
+FGameplayAbilityTargetDataHandle AGASCourseTargetActor_CameraTrace::MakeTargetData(
+	const TArray<TWeakObjectPtr<AActor>>& Actors, const FVector& Origin) const
+{
+	if (OwningAbility)
 	{
-		return false;		//Bad case!
+		/** Use the source location instead of the literal origin */
+		return StartLocation.MakeTargetDataHandleFromActors(Actors, false);
 	}
 
-	//TODO This increment value needs to ramp up - the first few increments should be small, then we should start moving in larger steps. A few ideas for this:
-	//1. Use a curve! Even one defined by a hardcoded formula would be fine, this isn't something that should require user tuning, or that the user should really know/care about.
-	//2. Use larger increments as the object is further from the player/camera, since the user can't really perceive precision at long range.
-	float IncrementSize = FMath::Clamp<float>(CollisionRadius * 0.5f, 20.0f, 50.0f);
-	float LerpIncrement = IncrementSize / MovementMagnitude2D;
-	FHitResult LocalResult;
-	FVector TraceStart;
-	FVector TraceEnd;
-	for (float LerpValue = CollisionRadius / MovementMagnitude2D; LerpValue < 1.0f; LerpValue += LerpIncrement)
-	{
-		TraceEnd = TraceStart = OriginalEndPoint - (LerpValue * Movement);
-		TraceEnd.Z -= 99999.0f;
-		SweepWithFilter(LocalResult, ThisWorld, Filter, TraceStart, TraceEnd, FQuat::Identity, CollisionShape, TraceProfile.Name, Params);
-		if (!LocalResult.bStartPenetrating)
-		{
-			if (!LocalResult.bBlockingHit || (LocalResult.HitObjectHandle.IsValid() && LocalResult.HitObjectHandle.DoesRepresentClass(APawn::StaticClass())))
-			{
-				//Off the map, or hit an actor
-#if ENABLE_DRAW_DEBUG
-				if (bDebug)
-				{
-					if (CollisionShape.ShapeType == ECollisionShape::Capsule)
-					{
-						DrawDebugCapsule(ThisWorld, LocalResult.Location, CollisionHeight * 0.5f, CollisionRadius, FQuat::Identity, FColor::Yellow);
-					}
-					else
-					{
-						DrawDebugSphere(ThisWorld, LocalResult.Location, CollisionRadius, 8, FColor::Yellow);
-					}
-				}
-#endif // ENABLE_DRAW_DEBUG
-				continue;
-			}
-#if ENABLE_DRAW_DEBUG
-			if (bDebug)
-			{
-				if (CollisionShape.ShapeType == ECollisionShape::Capsule)
-				{
-					DrawDebugCapsule(ThisWorld, LocalResult.Location, CollisionHeight * 0.5f, CollisionRadius, FQuat::Identity, FColor::Green);
-				}
-				else
-				{
-					DrawDebugSphere(ThisWorld, LocalResult.Location, CollisionRadius, 8, FColor::Green);
-				}
-			}
-#endif // ENABLE_DRAW_DEBUG
-
-			//TODO: Test for flat ground. Concept: Test four corners and the center, make triangles out of the center and adjacent corner points. Check normal.Z of triangles against a minimum Z value.
-
-			OutHitResult = LocalResult;
-			return true;
-		}
-#if ENABLE_DRAW_DEBUG
-		if (bDebug)
-		{
-			if (CollisionShape.ShapeType == ECollisionShape::Capsule)
-			{
-				DrawDebugCapsule(ThisWorld, TraceStart, CollisionHeight * 0.5f, CollisionRadius, FQuat::Identity, FColor::Red);
-			}
-			else
-			{
-				DrawDebugSphere(ThisWorld, TraceStart, CollisionRadius, 8, FColor::Red);
-			}
-		}
-#endif // ENABLE_DRAW_DEBUG
-	}
-	return false;
+	return FGameplayAbilityTargetDataHandle();
 }
