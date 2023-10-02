@@ -52,17 +52,6 @@ class AGASCourseCharacter : public ACharacter, public IAbilitySystemInterface, p
 {
 	GENERATED_BODY()
 
-	/** Camera boom positioning the camera behind the character */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
-	class USpringArmComponent* CameraBoom;
-
-	/** Follow camera */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
-	class UCameraComponent* FollowCamera;
-	
-	/** Follow camera */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Champion, meta = (AllowPrivateAccess = "true"))
-	class UGASCourseChampionComponent* ChampionComponent;
 
 public:
 	
@@ -116,10 +105,6 @@ protected:
 	TObjectPtr<UGASAbilityTagRelationshipMapping> AbilityTagRelationshipMapping;
 
 public:
-	/** Returns CameraBoom subobject **/
-	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
-	/** Returns FollowCamera subobject **/
-	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 	
 	virtual UGASCourseAbilitySystemComponent* GetAbilitySystemComponent() const override;
 	

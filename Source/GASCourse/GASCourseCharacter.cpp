@@ -47,21 +47,6 @@ AGASCourseCharacter::AGASCourseCharacter(const class FObjectInitializer& ObjectI
 	GetCharacterMovement()->bConstrainToPlane = true;
 	GetCharacterMovement()->bSnapToPlaneAtStart = true;
 
-	// Create a camera boom (pulls in towards the player if there is a collision)
-	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
-	CameraBoom->SetupAttachment(RootComponent);
-	CameraBoom->TargetArmLength = 400.0f; // The camera follows at this distance behind the character	
-	CameraBoom->bUsePawnControlRotation = false; // Rotate the arm based on the controller
-	CameraBoom->bInheritPitch = false;
-	CameraBoom->bInheritRoll = false;
-	CameraBoom->bInheritYaw = false;
-	CameraBoom->bDoCollisionTest = false;
-
-	// Create a follow camera
-	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
-	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
-	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
-
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
 
@@ -146,7 +131,7 @@ void AGASCourseCharacter::Move(const FInputActionValue& Value)
 				GASCourseASC->SetLooseGameplayTagCount(Status_IsMoving, 1);
 			}
 			// find out which way is forward
-			const FRotator Rotation = GetCameraBoom()->GetRelativeRotation(); //Controller->GetControlRotation();
+			const FRotator Rotation = Controller->GetControlRotation(); //TODO: Maybe breaks something?
 			const FRotator YawRotation(0, Rotation.Yaw, 0);
 
 			// get forward vector

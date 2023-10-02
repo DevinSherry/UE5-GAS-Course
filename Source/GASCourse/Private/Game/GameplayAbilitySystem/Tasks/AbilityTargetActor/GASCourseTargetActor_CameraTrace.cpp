@@ -18,8 +18,6 @@ void AGASCourseTargetActor_CameraTrace::StartTargeting(UGameplayAbility* InAbili
 
 void AGASCourseTargetActor_CameraTrace::ConfirmTargetingAndContinue()
 {
-	Super::ConfirmTargetingAndContinue();
-	
 	check(ShouldProduceTargetData());
 	if (SourceActor)
 	{
@@ -72,26 +70,19 @@ FHitResult AGASCourseTargetActor_CameraTrace::PerformTrace(AActor* InSourceActor
 #if ENABLE_DRAW_DEBUG
 	if (bDebug)
 	{
-		//DrawDebugSphere(ThisWorld, TraceEnd, CollisionRadius, 10, FColor::Red, false, 1.0f, 0, 2.0f);
 		const FVector CylinderHeight = (ReturnHitResult.Normal * CollisionHeight);
 		DrawDebugCylinder(ThisWorld, TraceEnd, TraceEnd + CylinderHeight, CollisionRadius, 10, FColor::Red, false, 1.0f, 0, 2.0f);
+		DrawDebugLine(GetWorld(), ReturnHitResult.Location, ReturnHitResult.Location + (ReturnHitResult.Normal * 500.0f), FColor::Blue, true);
 	}
 #endif	
 	
 	if (AGameplayAbilityWorldReticle* LocalReticleActor = ReticleActor.Get())
 	{
 		LocalReticleActor->SetIsTargetValid(bLastTraceWasGood);
-		LocalReticleActor->SetActorLocation(ReturnHitResult.Location);
+		LocalReticleActor->SetActorLocation(ReturnHitResult.Location + (ReturnHitResult.Normal * 10.0f));
 		LocalReticleActor->SetActorScale3D(ReticleParams.AOEScale);
 		FRotator LocalReticleRot = ReturnHitResult.Normal.Rotation();
 		LocalReticleActor->SetActorRotation(LocalReticleRot);
-		UE_LOG(LogTemp, Warning, TEXT("Rotation: %s"), *LocalReticleRot.ToString());
-#if ENABLE_DRAW_DEBUG
-		if (bDebug)
-		{
-			DrawDebugLine(GetWorld(), ReturnHitResult.Location, ReturnHitResult.Location + (ReturnHitResult.Normal * 500.0f), FColor::Blue, true);
-		}
-#endif	
 	}
 
 	return ReturnHitResult;

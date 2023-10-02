@@ -3,3 +3,12 @@
 
 #include "Game/GameplayAbilitySystem/Reticle/GASCourseAbilityWorldReticle.h"
 
+void AGASCourseAbilityWorldReticle::FaceTowardsImpactNormal(bool bInFaceImpactNormal)
+{
+
+}
+
+void AGASCourseAbilityWorldReticle::Tick(float DeltaSeconds)
+{
+
+}

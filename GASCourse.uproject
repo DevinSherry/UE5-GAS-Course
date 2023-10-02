@@ -19,8 +19,7 @@
 			"Name": "GASCourseEditor",
 			"Type": "Editor",
 			"LoadingPhase": "PostEngineInit",
-			"AdditionalDependencies": 
-			[
+			"AdditionalDependencies": [
 				"UnrealEd"
 			]
 		}
@@ -74,6 +73,14 @@
 			"Name": "ElectronicNodes",
 			"Enabled": true,
 			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/content/5cb2a394d0c04e73891762be4cbd7216"
+		},
+		{
+			"Name": "StateTree",
+			"Enabled": true
+		},
+		{
+			"Name": "GameplayStateTree",
+			"Enabled": true
 		}
 	]
 }
