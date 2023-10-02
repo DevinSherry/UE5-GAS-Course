@@ -13,7 +13,6 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Kismet/KismetSystemLibrary.h"
-#include "GASCourse/GASCourse.h"
 
 #if WITH_EDITOR
 #include "Editor/EditorEngine.h"

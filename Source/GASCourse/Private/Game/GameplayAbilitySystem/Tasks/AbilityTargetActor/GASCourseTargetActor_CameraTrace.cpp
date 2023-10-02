@@ -3,7 +3,6 @@
 
 #include "Game/GameplayAbilitySystem/Tasks/AbilityTargetActor/GASCourseTargetActor_CameraTrace.h"
 #include "Abilities/GameplayAbility.h"
-#include "Kismet/KismetSystemLibrary.h"
 
 AGASCourseTargetActor_CameraTrace::AGASCourseTargetActor_CameraTrace(const FObjectInitializer& ObjectInitializer)
 : Super(ObjectInitializer)

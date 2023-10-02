@@ -3,7 +3,7 @@
 
 #include "Game/GameplayAbilitySystem/Tasks/AbilityTargetActor/GASCourseTargetActor_Trace.h"
 #include "AbilitySystemComponent.h"
-#include "GASCoursePlayerController.h"
+#include "Game/Character/Player/GASCoursePlayerController.h"
 #include "Abilities/GameplayAbility.h"
 #include "Game/GameplayAbilitySystem/GASCourseNativeGameplayTags.h"
 

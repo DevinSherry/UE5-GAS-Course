@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
 #include "EnhancedPlayerInput.h"
 #include "GASCourseEnhancedPlayerInput.generated.h"
 

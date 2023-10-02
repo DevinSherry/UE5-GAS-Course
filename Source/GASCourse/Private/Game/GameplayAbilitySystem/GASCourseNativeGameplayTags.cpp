@@ -2,7 +2,6 @@
 
 
 #include "Game/GameplayAbilitySystem/GASCourseNativeGameplayTags.h"
-#include "GameplayTagsManager.h"
 #include "NativeGameplayTags.h"
 
 UE_DEFINE_GAMEPLAY_TAG(InputTag_Move, "Input.NativeAction.Move")

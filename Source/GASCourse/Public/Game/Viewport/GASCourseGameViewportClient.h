@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
 #include "Engine/GameViewportClient.h"
 #include "GASCourseGameViewportClient.generated.h"
 

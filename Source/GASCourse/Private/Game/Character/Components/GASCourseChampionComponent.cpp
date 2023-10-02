@@ -2,7 +2,6 @@
 
 
 #include "Game/Character/Components/GASCourseChampionComponent.h"
-
 #include "Game/Character/Player/GASCoursePlayerState.h"
 #include "GASCourse/GASCourseCharacter.h"
 

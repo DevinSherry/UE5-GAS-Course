@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
 #include "Abilities/GameplayAbilityWorldReticle.h"
 #include "GASCourseAbilityWorldReticle.generated.h"
 

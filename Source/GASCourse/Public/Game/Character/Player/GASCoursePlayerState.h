@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
 #include "AbilitySystemInterface.h"
 #include "Game/GameplayAbilitySystem/GASCourseAbilitySystemComponent.h"
 #include "GameFramework/PlayerState.h"

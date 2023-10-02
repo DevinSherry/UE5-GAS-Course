@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
 #include "AbilitySystemComponent.h"
 #include "Game/GameplayAbilitySystem/GASAbilityTagRelationshipMapping.h"
 #include "GASCourseAbilitySystemComponent.generated.h"

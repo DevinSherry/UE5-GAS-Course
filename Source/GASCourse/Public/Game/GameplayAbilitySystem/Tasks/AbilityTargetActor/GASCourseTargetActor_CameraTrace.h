@@ -1,6 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
+
 #include "GASCourseTargetActor_Trace.h"
 #include "GASCourseTargetActor_CameraTrace.generated.h"
 

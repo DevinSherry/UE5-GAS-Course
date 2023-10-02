@@ -20,4 +20,3 @@
 //Current Function Signature where this is called!
 #define GASCOURSE_CUR_FUNCSIG (FString(__FUNCSIG__))
 
-#include "CoreMinimal.h"

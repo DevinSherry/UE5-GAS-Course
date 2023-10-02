@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
 #include "Animation/AnimInstance.h"
 #include "GameplayEffectTypes.h"
 #include "GASCourseAnimInstance.generated.h"

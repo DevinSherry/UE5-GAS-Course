@@ -2,10 +2,8 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
 #include "GASCourseAbilitySystemComponent.h"
 #include "GASCourseGameplayAbility.h"
-#include "Game/Input/GASCourseInputConfig.h"
 #include "GASCourseGameplayAbilitySet.generated.h"
 
 /**

@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
 #include "Engine/DataAsset.h"
 #include "Containers/Array.h"
 #include "GameplayTagContainer.h"

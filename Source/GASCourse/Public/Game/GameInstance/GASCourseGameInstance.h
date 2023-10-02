@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
 #include "Engine/GameInstance.h"
 #include "GASCourseGameInstance.generated.h"
 

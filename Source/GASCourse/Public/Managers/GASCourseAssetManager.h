@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
 #include "Engine/AssetManager.h"
 #include "GASCourseAssetManager.generated.h"
 

@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
 #include "Game/Input/GASCourseInputConfig.h"
 #include "GASCourse/GASCourseCharacter.h"
 #include "Components/TimelineComponent.h"

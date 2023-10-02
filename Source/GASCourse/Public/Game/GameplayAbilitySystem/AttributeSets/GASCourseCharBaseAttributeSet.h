@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
 #include "GASCourseAttributeSet.h"
 #include "AbilitySystemComponent.h"
 #include "GASCourseCharBaseAttributeSet.generated.h"

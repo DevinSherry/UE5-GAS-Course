@@ -2,7 +2,6 @@
 
 
 #include "Game/GameplayAbilitySystem/AttributeSets/GASCourseCharBaseAttributeSet.h"
-
 #include "Game/Character/Player/GASCoursePlayerState.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GASCourse/GASCourseCharacter.h"

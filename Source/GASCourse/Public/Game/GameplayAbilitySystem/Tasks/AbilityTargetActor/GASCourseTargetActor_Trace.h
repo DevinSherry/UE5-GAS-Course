@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
 #include "Abilities/GameplayAbilityTargetActor_Trace.h"
 #include "GASCourseTargetActor_Trace.generated.h"
 

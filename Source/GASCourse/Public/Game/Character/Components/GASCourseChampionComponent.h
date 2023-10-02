@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "Game/GameplayAbilitySystem/GASCourseGameplayAbilitySet.h"
 #include "GASCourseChampionComponent.generated.h"

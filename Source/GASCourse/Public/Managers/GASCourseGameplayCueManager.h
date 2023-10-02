@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
 #include "GameplayCueManager.h"
 #include "GASCourseGameplayCueManager.generated.h"
 

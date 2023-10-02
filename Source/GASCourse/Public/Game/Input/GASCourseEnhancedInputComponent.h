@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
 #include "EnhancedInputComponent.h"
 #include "InputAction.h"
 #include "GASCourseInputConfig.h"
