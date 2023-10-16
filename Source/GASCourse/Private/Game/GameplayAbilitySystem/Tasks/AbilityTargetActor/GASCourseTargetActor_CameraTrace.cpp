@@ -3,17 +3,29 @@
 
 #include "Game/GameplayAbilitySystem/Tasks/AbilityTargetActor/GASCourseTargetActor_CameraTrace.h"
 #include "Abilities/GameplayAbility.h"
+#include "Components/PostProcessComponent.h"
 
 AGASCourseTargetActor_CameraTrace::AGASCourseTargetActor_CameraTrace(const FObjectInitializer& ObjectInitializer)
 : Super(ObjectInitializer)
 {
 	CollisionRadius = 50.0f;
 	CollisionHeight = 50.0f;
+	OutlinePostProcess = CreateDefaultSubobject<UPostProcessComponent>(TEXT("PostProcessComponent"));
 }
 
 void AGASCourseTargetActor_CameraTrace::StartTargeting(UGameplayAbility* InAbility)
 {
 	Super::StartTargeting(InAbility);
+	if(TargetOutlineData.OutlineMaterial)
+	{
+		UMaterialInstanceDynamic* OutlineMaterialDynamic = UMaterialInstanceDynamic::Create(TargetOutlineData.OutlineMaterial, this);
+		OutlineMaterialDynamic->SetVectorParameterValue("Color", TargetOutlineData.OutlineColor.ToFColor(true));
+		if(OutlinePostProcess)
+		{
+			OutlinePostProcess->bUnbound = true;
+			OutlinePostProcess->AddOrUpdateBlendable(OutlineMaterialDynamic, 1.0f);
+		}
+	}
 }
 
 void AGASCourseTargetActor_CameraTrace::ConfirmTargetingAndContinue()
@@ -30,6 +42,22 @@ void AGASCourseTargetActor_CameraTrace::ConfirmTargetingAndContinue()
 void AGASCourseTargetActor_CameraTrace::CancelTargeting()
 {
 	Super::CancelTargeting();
+}
+
+void AGASCourseTargetActor_CameraTrace::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+	if (SourceActor && SourceActor->GetLocalRole() != ENetRole::ROLE_SimulatedProxy)
+	{
+		const FHitResult HitResult = PerformTrace(SourceActor);
+		const FVector EndPoint = HitResult.Component.IsValid() ? HitResult.ImpactPoint : HitResult.TraceEnd;
+
+		if(TargetOutlineData.bEnableTargetingOutline)
+		{
+			DrawTargetOutline(ActorsToOutline, PerformOverlap(EndPoint));
+			ActorsToOutline = PerformOverlap(EndPoint);
+		}
+	}
 }
 
 FHitResult AGASCourseTargetActor_CameraTrace::PerformTrace(AActor* InSourceActor)
@@ -59,7 +87,7 @@ FHitResult AGASCourseTargetActor_CameraTrace::PerformTrace(AActor* InSourceActor
 		TraceEnd = TraceStart + MousePositionToWorldDirection * MaxRange;
 	}
 	
-	LineTraceWithFilter(ReturnHitResult, InSourceActor->GetWorld(), Filter, TraceStart, TraceEnd, TraceProfile.Name, Params);
+	LineTraceWithFilter(ReturnHitResult, InSourceActor->GetWorld(), Filter, TraceStart, TraceEnd, TraceChannel, Params);
 	//Default to end of trace line if we don't hit anything.
 	if (ReturnHitResult.bBlockingHit)
 	{
@@ -79,7 +107,7 @@ FHitResult AGASCourseTargetActor_CameraTrace::PerformTrace(AActor* InSourceActor
 	if (AGameplayAbilityWorldReticle* LocalReticleActor = ReticleActor.Get())
 	{
 		LocalReticleActor->SetIsTargetValid(bLastTraceWasGood);
-		LocalReticleActor->SetActorLocation(ReturnHitResult.Location + (ReturnHitResult.Normal * 10.0f));
+		LocalReticleActor->SetActorLocation(ReturnHitResult.Location);
 		LocalReticleActor->SetActorScale3D(ReticleParams.AOEScale);
 		FRotator LocalReticleRot = ReturnHitResult.Normal.Rotation();
 		LocalReticleActor->SetActorRotation(LocalReticleRot);
@@ -111,7 +139,7 @@ TArray<TWeakObjectPtr<AActor>> AGASCourseTargetActor_CameraTrace::PerformOverlap
 }
 
 bool AGASCourseTargetActor_CameraTrace::OverlapMultiByObjectTypes(TArray<TWeakObjectPtr<AActor>>& OutHitActors, const FVector& Pos,
-	const FQuat& Rot, const FCollisionShape& OverlapCollisionShape, const FCollisionQueryParams& Params) const
+                                                                  const FQuat& Rot, const FCollisionShape& OverlapCollisionShape, const FCollisionQueryParams& Params) const
 {
 	TArray<FOverlapResult> Overlaps;
 	bool bTraceSuccessful = false;
@@ -148,4 +176,64 @@ FGameplayAbilityTargetDataHandle AGASCourseTargetActor_CameraTrace::MakeTargetDa
 	}
 
 	return FGameplayAbilityTargetDataHandle();
+}
+
+void AGASCourseTargetActor_CameraTrace::DrawTargetOutline(TArray<TWeakObjectPtr<AActor>> InHitActors,
+	TArray<TWeakObjectPtr<AActor>> InLatestHitActors)
+{
+	if(TargetOutlineData.CharacterClassToOutline == nullptr)
+	{
+		return;
+	}
+	
+	for(const TWeakObjectPtr<AActor>& Actor : InHitActors)
+	{
+		if(Actor->IsA(TargetOutlineData.CharacterClassToOutline))
+		{
+			const AGASCourseCharacter* Character = Cast<AGASCourseCharacter>(Actor);
+			if(USkeletalMeshComponent* Mesh = Character->GetComponentByClass<USkeletalMeshComponent>())
+			{
+				Mesh->SetRenderCustomDepth(false);
+				Mesh->SetCustomDepthStencilValue(0);
+			}
+		}
+	}
+	
+	for(const TWeakObjectPtr<AActor>& Actor : InLatestHitActors)
+	{
+		if(Actor->IsA(TargetOutlineData.CharacterClassToOutline))
+		{
+			const AGASCourseCharacter* Character = Cast<AGASCourseCharacter>(Actor);
+			if(USkeletalMeshComponent* Mesh = Character->GetComponentByClass<USkeletalMeshComponent>())
+			{
+				Mesh->SetRenderCustomDepth(true);
+				Mesh->SetCustomDepthStencilValue(2);
+			}
+		}
+	}
+}
+
+void AGASCourseTargetActor_CameraTrace::ClearTargetOutline(TArray<TWeakObjectPtr<AActor>> InHitActors)
+{
+	if(TargetOutlineData.CharacterClassToOutline == nullptr)
+	{
+		return;
+	}
+	
+	for(const TWeakObjectPtr<AActor>& Actor : InHitActors)
+	{
+		if(Actor->IsA(TargetOutlineData.CharacterClassToOutline))
+		{
+			const AGASCourseCharacter* Character = Cast<AGASCourseCharacter>(Actor);
+			if(USkeletalMeshComponent* Mesh = Character->GetComponentByClass<USkeletalMeshComponent>())
+			{
+				Mesh->SetRenderCustomDepth(false);
+				Mesh->SetCustomDepthStencilValue(0);
+			}
+		}
+	}
+	if(OutlinePostProcess)
+	{
+		OutlinePostProcess->MarkAsGarbage();
+	}
 }

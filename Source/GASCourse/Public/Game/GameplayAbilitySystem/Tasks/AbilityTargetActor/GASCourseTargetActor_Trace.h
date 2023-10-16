@@ -2,24 +2,59 @@
 
 #pragma once
 
+#include "GASCourseCharacter.h"
 #include "Abilities/GameplayAbilityTargetActor_Trace.h"
 #include "GASCourseTargetActor_Trace.generated.h"
 
 /**
  * 
  */
+
+USTRUCT(Blueprintable)
+struct FTargetingOutline
+{
+	GENERATED_BODY()
+
+public:
+	
+	UPROPERTY(EditAnywhere,BlueprintReadWrite, Category = "GASCourse|Targeting|Outline")
+	bool bEnableTargetingOutline;
+	
+	UPROPERTY(EditAnywhere,BlueprintReadWrite, Category = "GASCourse|Targeting|Outline")
+	FLinearColor OutlineColor;
+	
+	UPROPERTY(EditAnywhere,BlueprintReadWrite, Category = "GASCourse|Targeting|Outline")
+	TSubclassOf<AGASCourseCharacter> CharacterClassToOutline;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GASCourse|Targeting|Outline")
+	UMaterialInterface* OutlineMaterial;
+
+	FTargetingOutline()
+	{
+		bEnableTargetingOutline = true;
+		OutlineColor = FColor::Red;
+		CharacterClassToOutline = nullptr;
+		OutlineMaterial = nullptr;
+	}
+	
+};
 UCLASS(Abstract, Blueprintable, notplaceable, config=Game, HideCategories=Trace)
 class GASCOURSE_API AGASCourseTargetActor_Trace : public AGameplayAbilityTargetActor
 {
 	GENERATED_UCLASS_BODY()
 	
 public:
+	
+	class UPostProcessComponent* OutlinePostProcess;
+	
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 	virtual void CancelTargeting() override;
 
+	virtual void ConfirmTargeting() override;
+
 	/** Traces as normal, but will manually filter all hit actors */
-	static void LineTraceWithFilter(FHitResult& OutHitResult, const UWorld* World, const FGameplayTargetDataFilterHandle FilterHandle, const FVector& Start, const FVector& End, FName ProfileName, const FCollisionQueryParams Params);
+	static void LineTraceWithFilter(FHitResult& OutHitResult, const UWorld* World, const FGameplayTargetDataFilterHandle FilterHandle, const FVector& Start, const FVector& End, ECollisionChannel CollisionChannel, const FCollisionQueryParams Params);
 
 	/** Sweeps as normal, but will manually filter all hit actors */
 	static void SweepWithFilter(FHitResult& OutHitResult, const UWorld* World, const FGameplayTargetDataFilterHandle FilterHandle, const FVector& Start, const FVector& End, const FQuat& Rotation, const FCollisionShape CollisionShape, FName ProfileName, const FCollisionQueryParams Params);
@@ -40,12 +75,13 @@ public:
 	float MaxRange;
 
 	//Profile FName to detect the ground
-	FCollisionProfileName TraceProfile;
+	UPROPERTY(BlueprintReadOnly, meta = (ExposeOnSpawn = true), Category = Targeting)
+	TEnumAsByte<ECollisionChannel> TraceChannel;
 
-	//TODO: Consider removing this because our game doesn't rely on aiming/pitch stuff for targeting.
-	bool bTraceAffectsAimPitch;
+	TArray<TWeakObjectPtr<AActor>> ActorsToOutline;
 
 protected:
+	
 	virtual FHitResult PerformTrace(AActor* InSourceActor) PURE_VIRTUAL(AGameplayAbilityTargetActor_Trace, return FHitResult(););
 
 	FGameplayAbilityTargetDataHandle MakeTargetData(const FHitResult& HitResult) const;
@@ -53,6 +89,9 @@ protected:
 	TWeakObjectPtr<AGameplayAbilityWorldReticle> ReticleActor;
 
 	virtual void UpdateLooseGameplayTagsDuringTargeting(FGameplayTag InGameplayTag, int32 InCount);
+
+	virtual void DrawTargetOutline(TArray<TWeakObjectPtr<AActor> > InHitActors,  TArray<TWeakObjectPtr<AActor>> InLatestHitActors);
+	virtual void ClearTargetOutline(TArray<TWeakObjectPtr<AActor> > InHitActors);
 
 protected:
 

@@ -3,6 +3,7 @@
 
 #include "Game/GameplayAbilitySystem/Tasks/AbilityTargetActor/GASCourseTargetActor_Trace.h"
 #include "AbilitySystemComponent.h"
+#include "Game/Character/NPC/GASCourseNPC_Base.h"
 #include "Game/Character/Player/GASCoursePlayerController.h"
 #include "Abilities/GameplayAbility.h"
 #include "Game/GameplayAbilitySystem/GASCourseNativeGameplayTags.h"
@@ -15,8 +16,6 @@ AGASCourseTargetActor_Trace::AGASCourseTargetActor_Trace(const FObjectInitialize
 
 	//Initialize these variables to our needs for tracing.
 	MaxRange = 999999.0f;
-	bTraceAffectsAimPitch = false;
-	TraceProfile = FName("BlockAll");
 }
 
 void AGASCourseTargetActor_Trace::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -30,13 +29,14 @@ void AGASCourseTargetActor_Trace::EndPlay(const EEndPlayReason::Type EndPlayReas
 }
 
 void AGASCourseTargetActor_Trace::LineTraceWithFilter(FHitResult& OutHitResult, const UWorld* World,
-	const FGameplayTargetDataFilterHandle FilterHandle, const FVector& Start, const FVector& End, FName ProfileName,
+	const FGameplayTargetDataFilterHandle FilterHandle, const FVector& Start, const FVector& End, ECollisionChannel CollisionChannel,
 	const FCollisionQueryParams Params)
 {
 	check(World);
 
 	TArray<FHitResult> HitResults;
-	World->LineTraceMultiByProfile(HitResults, Start, End, ProfileName, Params);
+	//World->LineTraceMultiByProfile(HitResults, Start, End, ProfileName, Params);
+	World->LineTraceMultiByChannel(HitResults, Start, End, CollisionChannel, Params);
 
 	OutHitResult.TraceStart = Start;
 	OutHitResult.TraceEnd = End;
@@ -100,7 +100,7 @@ void AGASCourseTargetActor_Trace::AimWithPlayerController(const AActor* InSource
 	ClipCameraRayToAbilityRange(ViewStart, ViewDir, TraceStart, MaxRange, ViewEnd);
 
 	FHitResult HitResult;
-	LineTraceWithFilter(HitResult, InSourceActor->GetWorld(), Filter, ViewStart, ViewEnd, TraceProfile.Name, Params);
+	LineTraceWithFilter(HitResult, InSourceActor->GetWorld(), Filter, ViewStart, ViewEnd, TraceChannel, Params);
 
 	const bool bUseTraceResult = HitResult.bBlockingHit && (FVector::DistSquared(TraceStart, HitResult.Location) <= (MaxRange * MaxRange));
 
@@ -112,7 +112,7 @@ void AGASCourseTargetActor_Trace::AimWithPlayerController(const AActor* InSource
 		AdjustedAimDir = ViewDir;
 	}
 
-	if (!bTraceAffectsAimPitch && bUseTraceResult)
+	if (bUseTraceResult)
 	{
 		FVector OriginalAimDir = (ViewEnd - TraceStart).GetSafeNormal();
 
@@ -185,6 +185,16 @@ FGameplayAbilityTargetDataHandle AGASCourseTargetActor_Trace::MakeTargetData(con
 	return StartLocation.MakeTargetDataHandleFromHitResult(OwningAbility, HitResult);
 }
 
+void AGASCourseTargetActor_Trace::DrawTargetOutline(TArray<TWeakObjectPtr<AActor>> InHitActors, TArray<TWeakObjectPtr<AActor>> InLatestHitActors)
+{
+
+}
+
+void AGASCourseTargetActor_Trace::ClearTargetOutline(TArray<TWeakObjectPtr<AActor>> InHitActors)
+{
+
+}
+
 void AGASCourseTargetActor_Trace::StartTargeting(UGameplayAbility* InAbility)
 {
 	Super::StartTargeting(InAbility);
@@ -219,6 +229,7 @@ void AGASCourseTargetActor_Trace::ConfirmTargetingAndContinue()
 	Super::ConfirmTargetingAndContinue();
 	UpdateLooseGameplayTagsDuringTargeting(Status_Block_PointClickMovementInput, 0);
 	ShowMouseCursor(true);
+	ClearTargetOutline(ActorsToOutline);
 }
 
 void AGASCourseTargetActor_Trace::CancelTargeting()
@@ -226,6 +237,16 @@ void AGASCourseTargetActor_Trace::CancelTargeting()
 	Super::CancelTargeting();
 	UpdateLooseGameplayTagsDuringTargeting(Status_Block_PointClickMovementInput, 0);
 	ShowMouseCursor(true);
+	ClearTargetOutline(ActorsToOutline);
+}
+
+void AGASCourseTargetActor_Trace::ConfirmTargeting()
+{
+	Super::ConfirmTargeting();
+	Super::ConfirmTargetingAndContinue();
+	UpdateLooseGameplayTagsDuringTargeting(Status_Block_PointClickMovementInput, 0);
+	ShowMouseCursor(true);
+	ClearTargetOutline(ActorsToOutline);
 }
 
 void AGASCourseTargetActor_Trace::UpdateLooseGameplayTagsDuringTargeting(FGameplayTag InGameplayTag, int32 InCount)

@@ -21,6 +21,7 @@ public:
 	virtual void StartTargeting(UGameplayAbility* InAbility) override;
 	virtual void ConfirmTargetingAndContinue() override;
 	virtual void CancelTargeting();
+	virtual void Tick(float DeltaSeconds) override;
 
 	/** Radius for a sphere or capsule. */
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (ExposeOnSpawn = true), Category = Targeting)
@@ -33,6 +34,10 @@ public:
 	/** Trace Channel to check for*/
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (ExposeOnSpawn = true), Category = Targeting)
 	TArray<TEnumAsByte<ECollisionChannel>> QueryChannels;
+	
+	/** Trace Channel to check for*/
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (ExposeOnSpawn = true), Category = Targeting)
+	FTargetingOutline TargetOutlineData;
 
 protected:
 	virtual FHitResult PerformTrace(AActor* InSourceActor) override;
@@ -45,6 +50,9 @@ protected:
 		const FCollisionQueryParams& Params = FCollisionQueryParams::DefaultQueryParam) const;
 	
 	FGameplayAbilityTargetDataHandle MakeTargetData(const TArray<TWeakObjectPtr<AActor>>& Actors, const FVector& Origin) const;
+
+	void DrawTargetOutline(TArray<TWeakObjectPtr<AActor>> InHitActors, TArray<TWeakObjectPtr<AActor>> InLatestHitActors) override;
+	void ClearTargetOutline(TArray<TWeakObjectPtr<AActor>> InHitActors) override;
 	
 protected:	
 	bool bLastTraceWasGood;
