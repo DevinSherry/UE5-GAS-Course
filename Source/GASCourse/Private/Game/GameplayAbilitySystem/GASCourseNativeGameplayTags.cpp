@@ -14,6 +14,8 @@ UE_DEFINE_GAMEPLAY_TAG(InputTag_CameraZoom, "Input.NativeAction.CameraZoom")
 UE_DEFINE_GAMEPLAY_TAG(InputTag_AbilityOne, "Input.NativeAction.Ability.One")
 UE_DEFINE_GAMEPLAY_TAG(InputTag_AbilityTwo, "Input.NativeAction.Ability.Two")
 UE_DEFINE_GAMEPLAY_TAG(InputTag_AbilityThree, "Input.NativeAction.Ability.Three")
+UE_DEFINE_GAMEPLAY_TAG(InputTag_EquipmentAbilityOne, "Input.NativeAction.Ability.Equipment.One")
+UE_DEFINE_GAMEPLAY_TAG(InputTag_EquipmentAbilityTwo, "Input.NativeAction.Ability.Equipment.Two")
 UE_DEFINE_GAMEPLAY_TAG(InputTag_ConfirmTargetData, "Input.NativeAction.ConfirmTargeting")
 UE_DEFINE_GAMEPLAY_TAG(InputTag_CancelTargetData, "Input.NativeAction.CancelTargeting")
 

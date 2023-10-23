@@ -397,6 +397,7 @@ void AGASCoursePlayerCharacter::Input_RotateCameraCompleted(const FInputActionIn
 	RotateCameraTimeline.Stop();
 	CurrentCameraRotationSpeed = 0.0f;
 	GetCameraBoom()->bEnableCameraRotationLag = true;
+	SetMousePositionToScreenCenter();
 }
 
 void AGASCoursePlayerCharacter::PointClickMovement(const FInputActionValue& Value)
