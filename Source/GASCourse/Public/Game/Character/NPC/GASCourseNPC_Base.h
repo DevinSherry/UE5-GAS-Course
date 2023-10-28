@@ -16,10 +16,16 @@ class GASCOURSE_API AGASCourseNPC_Base : public AGASCourseCharacter
 public:
 	AGASCourseNPC_Base(const FObjectInitializer& ObjectInitializer);
 	
-	//Add GASCourseAbilitySystemComponent on PossessedBy
-	virtual void PossessedBy(AController* NewController) override;
+
 	
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaSeconds) override;
+
+protected:
+	
+	virtual void OnRep_Controller() override;
+	
+	//Add GASCourseAbilitySystemComponent on PossessedBy
+	virtual void PossessedBy(AController* NewController) override;
 	
 };
