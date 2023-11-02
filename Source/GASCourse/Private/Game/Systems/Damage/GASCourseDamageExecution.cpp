@@ -2,12 +2,10 @@
 
 
 #include "Game/Systems/Damage/GASCourseDamageExecution.h"
-#include "GASCourseAbilitySystemComponent.h"
 #include "Game/GameplayAbilitySystem/AttributeSets/GASCourseHealthAttributeSet.h"
 
 struct GASCourseDamageStatics
 {
-	
 	DECLARE_ATTRIBUTE_CAPTUREDEF(IncomingDamage);
 
 	GASCourseDamageStatics()
@@ -20,7 +18,7 @@ static const GASCourseDamageStatics& DamageStatics()
 {
 	static GASCourseDamageStatics DStatics;
 	return DStatics;
-}
+} 
 
 UGASCourseDamageExecution::UGASCourseDamageExecution()
 {
@@ -63,14 +61,16 @@ void UGASCourseDamageExecution::Execute_Implementation(const FGameplayEffectCust
 		OutExecutionOutput.AddOutputModifier(FGameplayModifierEvaluatedData(DamageStatics().IncomingDamageProperty, EGameplayModOp::Additive, MitigatedDamage));
 	}
 
-	// Broadcast damages to Target ASC
-	if (UGASCourseAbilitySystemComponent* TargetASC = Cast<UGASCourseAbilitySystemComponent>(TargetAbilitySystemComponent))
+	// Broadcast damages to Target ASC & SourceASC
+	if (TargetAbilitySystemComponent && SourceAbilitySystemComponent)
 	{
-		UGASCourseAbilitySystemComponent* SourceASC = Cast<UGASCourseAbilitySystemComponent>(SourceAbilitySystemComponent);
 		FGameplayEventData DamageDealtPayload;
-		DamageDealtPayload.Instigator = SourceAbilitySystemComponent->GetOwnerActor();
-		DamageDealtPayload.Target = TargetAbilitySystemComponent->GetOwnerActor();
+		DamageDealtPayload.Instigator = SourceAbilitySystemComponent->GetAvatarActor();
+		DamageDealtPayload.Target = TargetAbilitySystemComponent->GetAvatarActor();
 		DamageDealtPayload.EventMagnitude = MitigatedDamage;
+		DamageDealtPayload.ContextHandle = Spec.GetContext();
+		
 		SourceAbilitySystemComponent->HandleGameplayEvent(FGameplayTag::RequestGameplayTag(FName("Event.Gameplay.OnDamageDealt")), &DamageDealtPayload);
+		TargetAbilitySystemComponent->HandleGameplayEvent(FGameplayTag::RequestGameplayTag(FName("Event.Gameplay.OnDamageReceived")), &DamageDealtPayload);
 	}
 }

@@ -88,11 +88,14 @@ const FGASCharacterGroundInfo& UGASCourseMovementComponent::GetGroundInfo()
 float UGASCourseMovementComponent::GetMaxSpeed() const
 {
 	const AGASCourseCharacter* Owner = Cast<AGASCourseCharacter>(GetOwner());
-	const AGASCoursePlayerState* PS = Cast<AGASCoursePlayerState>(Owner->GetPlayerState());
-	if (!Owner || !PS)
+	if(Owner->IsPlayerControlled())
 	{
-		UE_LOG(LogTemp, Error, TEXT("%s() No Owner"), *FString(__FUNCTION__));
-		return Super::GetMaxSpeed();
+		const AGASCoursePlayerState* PS = Cast<AGASCoursePlayerState>(Owner->GetPlayerState());
+		if (!Owner || !PS)
+		{
+			UE_LOG(LogTemp, Error, TEXT("%s() No Owner"), *FString(__FUNCTION__));
+			return Super::GetMaxSpeed();
+		}
 	}
 	
 	switch(MovementMode)
@@ -118,10 +121,14 @@ float UGASCourseMovementComponent::GetMaxSpeed() const
 float UGASCourseMovementComponent::GetMaxJumpHeight() const
 {
 	const AGASCourseCharacter* Owner = Cast<AGASCourseCharacter>(GetOwner());
-	if (!Owner)
+	if(Owner->IsPlayerControlled())
 	{
-		UE_LOG(LogTemp, Error, TEXT("%s() No Owner"), *FString(__FUNCTION__));
-		return Super::GetMaxJumpHeight();
+		const AGASCoursePlayerState* PS = Cast<AGASCoursePlayerState>(Owner->GetPlayerState());
+		if (!Owner || !PS)
+		{
+			UE_LOG(LogTemp, Error, TEXT("%s() No Owner"), *FString(__FUNCTION__));
+			return Super::GetMaxJumpHeight();
+		}
 	}
 	
 	const float Gravity = GetGravityZ();
@@ -129,10 +136,9 @@ float UGASCourseMovementComponent::GetMaxJumpHeight() const
 	{
 		return FMath::Square(Owner->GetJumpZVelocityOverride()) / (-2.f * Gravity);
 	}
-	else
-	{
-		return 0.f;
-	}
+
+	
+	return 0.f;
 }
 
 float UGASCourseMovementComponent::GetMaxJumpHeightWithJumpTime() const
@@ -161,10 +167,14 @@ float UGASCourseMovementComponent::GetMaxJumpHeightWithJumpTime() const
 bool UGASCourseMovementComponent::DoJump(bool bReplayingMoves)
 {
 	const AGASCourseCharacter* Owner = Cast<AGASCourseCharacter>(GetOwner());
-	if (!Owner)
+	if(Owner->IsPlayerControlled())
 	{
-		UE_LOG(LogTemp, Error, TEXT("%s() No Owner"), *FString(__FUNCTION__));
-		return Super::DoJump(bReplayingMoves);
+		const AGASCoursePlayerState* PS = Cast<AGASCoursePlayerState>(Owner->GetPlayerState());
+		if (!Owner || !PS)
+		{
+			UE_LOG(LogTemp, Error, TEXT("%s() No Owner"), *FString(__FUNCTION__));
+			return Super::DoJump(bReplayingMoves);
+		}
 	}
 	if ( CharacterOwner && CharacterOwner->CanJump() )
 	{
