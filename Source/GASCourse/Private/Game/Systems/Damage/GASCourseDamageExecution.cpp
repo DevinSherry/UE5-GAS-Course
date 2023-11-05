@@ -3,6 +3,7 @@
 
 #include "Game/Systems/Damage/GASCourseDamageExecution.h"
 #include "Game/GameplayAbilitySystem/AttributeSets/GASCourseHealthAttributeSet.h"
+#include "AbilitySystemBlueprintLibrary.h"
 
 struct GASCourseDamageStatics
 {
@@ -36,6 +37,7 @@ void UGASCourseDamageExecution::Execute_Implementation(const FGameplayEffectCust
 	AActor* TargetActor = TargetAbilitySystemComponent ? TargetAbilitySystemComponent->GetAvatarActor() : nullptr;
 
 	const FGameplayEffectSpec& Spec = ExecutionParams.GetOwningSpec();
+	Spec.CapturedSourceTags
 
 	// Gather the tags from the source and target as that can affect which buffs should be used
 	const FGameplayTagContainer* SourceTags = Spec.CapturedSourceTags.GetAggregatedTags();
@@ -69,6 +71,11 @@ void UGASCourseDamageExecution::Execute_Implementation(const FGameplayEffectCust
 		DamageDealtPayload.Target = TargetAbilitySystemComponent->GetAvatarActor();
 		DamageDealtPayload.EventMagnitude = MitigatedDamage;
 		DamageDealtPayload.ContextHandle = Spec.GetContext();
+		if(Spec.GetContext().GetHitResult())
+		{
+			FHitResult HitResultFromContext = *Spec.GetContext().GetHitResult();
+			DamageDealtPayload.TargetData = UAbilitySystemBlueprintLibrary::AbilityTargetDataFromHitResult(HitResultFromContext); 
+		}
 		
 		SourceAbilitySystemComponent->HandleGameplayEvent(FGameplayTag::RequestGameplayTag(FName("Event.Gameplay.OnDamageDealt")), &DamageDealtPayload);
 		TargetAbilitySystemComponent->HandleGameplayEvent(FGameplayTag::RequestGameplayTag(FName("Event.Gameplay.OnDamageReceived")), &DamageDealtPayload);
