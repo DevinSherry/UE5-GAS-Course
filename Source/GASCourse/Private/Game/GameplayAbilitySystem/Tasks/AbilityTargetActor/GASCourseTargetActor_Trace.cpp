@@ -200,6 +200,7 @@ void AGASCourseTargetActor_Trace::StartTargeting(UGameplayAbility* InAbility)
 	Super::StartTargeting(InAbility);
 	SourceActor = InAbility->GetCurrentActorInfo()->AvatarActor.Get();
 	UpdateLooseGameplayTagsDuringTargeting(Status_Block_PointClickMovementInput, 1);
+	UpdateLooseGameplayTagsDuringTargeting(Status_Gameplay_Targeting, 1);
 	ShowMouseCursor(false);
 	
 	if (ReticleClass)
@@ -228,6 +229,7 @@ void AGASCourseTargetActor_Trace::ConfirmTargetingAndContinue()
 {
 	Super::ConfirmTargetingAndContinue();
 	UpdateLooseGameplayTagsDuringTargeting(Status_Block_PointClickMovementInput, 0);
+	UpdateLooseGameplayTagsDuringTargeting(Status_Gameplay_Targeting, 0);
 	ShowMouseCursor(true);
 	ClearTargetOutline(ActorsToOutline);
 }
@@ -236,6 +238,7 @@ void AGASCourseTargetActor_Trace::CancelTargeting()
 {
 	Super::CancelTargeting();
 	UpdateLooseGameplayTagsDuringTargeting(Status_Block_PointClickMovementInput, 0);
+	UpdateLooseGameplayTagsDuringTargeting(Status_Gameplay_Targeting, 0);
 	ShowMouseCursor(true);
 	ClearTargetOutline(ActorsToOutline);
 }
@@ -245,6 +248,7 @@ void AGASCourseTargetActor_Trace::ConfirmTargeting()
 	Super::ConfirmTargeting();
 	Super::ConfirmTargetingAndContinue();
 	UpdateLooseGameplayTagsDuringTargeting(Status_Block_PointClickMovementInput, 0);
+	UpdateLooseGameplayTagsDuringTargeting(Status_Gameplay_Targeting, 0);
 	ShowMouseCursor(true);
 	ClearTargetOutline(ActorsToOutline);
 }
