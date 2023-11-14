@@ -4,6 +4,8 @@
 #include "Game/Systems/Damage/GASCourseDamageExecution.h"
 #include "Game/GameplayAbilitySystem/AttributeSets/GASCourseHealthAttributeSet.h"
 #include "AbilitySystemBlueprintLibrary.h"
+#include "GASCourseGameplayEffect.h"
+#include "TargetTagsGameplayEffectComponent.h"
 
 struct GASCourseDamageStatics
 {
@@ -45,7 +47,7 @@ void UGASCourseDamageExecution::Execute_Implementation(const FGameplayEffectCust
 	FAggregatorEvaluateParameters EvaluationParameters;
 	EvaluationParameters.SourceTags = SourceTags;
 	EvaluationParameters.TargetTags = TargetTags;
-
+	
 	float Damage = 0.0f;
 	ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(DamageStatics().IncomingDamageDef, EvaluationParameters, Damage);
 
@@ -82,5 +84,15 @@ void UGASCourseDamageExecution::Execute_Implementation(const FGameplayEffectCust
 		}
 		SourceAbilitySystemComponent->HandleGameplayEvent(FGameplayTag::RequestGameplayTag(FName("Event.Gameplay.OnDamageDealt")), &DamageDealtPayload);
 		TargetAbilitySystemComponent->HandleGameplayEvent(FGameplayTag::RequestGameplayTag(FName("Event.Gameplay.OnDamageReceived")), &DamageDealtPayload);
+
+		UGASCourseGameplayEffect* GEStatusEffect = NewObject<UGASCourseGameplayEffect>(GetTransientPackage(), FName(TEXT("Status Effect")));
+		GEStatusEffect->DurationPolicy = EGameplayEffectDurationType::Infinite;
+		UTargetTagsGameplayEffectComponent& TargetTagsComponent = GEStatusEffect->AddComponent<UTargetTagsGameplayEffectComponent>();
+		FInheritedTagContainer StatusEffectTags;
+		StatusEffectTags.Added = Spec.DynamicGrantedTags;
+		TargetTagsComponent.SetAndApplyTargetTagChanges(StatusEffectTags);
+		
+		GEStatusEffect->AddComponent<UTargetTagsGameplayEffectComponent>();
+		TargetAbilitySystemComponent->ApplyGameplayEffectToSelf(GEStatusEffect, 1.0f, Spec.GetContext());
 	}
 }
