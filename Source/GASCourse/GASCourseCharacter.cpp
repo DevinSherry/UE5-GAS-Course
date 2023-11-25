@@ -84,7 +84,16 @@ void AGASCourseCharacter::InitializeAbilitySystem(UGASCourseAbilitySystemCompone
 		DefaultAbilitySet->GiveToAbilitySystem(InASC, nullptr);
 	}
 
-	InASC->SetTagRelationshipMapping(AbilityTagRelationshipMapping);
+	if(AbilityTagRelationshipMapping)
+	{
+		InASC->SetTagRelationshipMapping(AbilityTagRelationshipMapping);
+	}
+
+	if(GameplayStatusEffectTable)
+	{
+		InASC->SetGameplayEffectStatusTable(GameplayStatusEffectTable);
+	}
+
 }
 
 UGASCourseAbilitySystemComponent* AGASCourseCharacter::GetAbilitySystemComponent() const

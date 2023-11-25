@@ -4,6 +4,7 @@
 
 #include "AbilitySystemComponent.h"
 #include "Game/GameplayAbilitySystem/GASAbilityTagRelationshipMapping.h"
+#include "GameplayTagResponseTable/GASCourseStatusEffectTable.h"
 #include "GASCourseAbilitySystemComponent.generated.h"
 
 /**
@@ -57,6 +58,10 @@ public:
 	
 	/** Sets the current tag relationship mapping, if null it will clear it out */
 	void SetTagRelationshipMapping(UGASAbilityTagRelationshipMapping* NewMapping);
+
+	void SetGameplayEffectStatusTable(UGASCourseStatusEffectTable* NewStatusEffectTable);
+
+	void ApplyGameplayStatusEffect(UAbilitySystemComponent* TargetASC, UAbilitySystemComponent* InstigatorASC, const FGameplayTagContainer& StatusEffectTags) const;
 	
 	/** Looks at ability tags and gathers additional required and blocking tags */
 	void GetAdditionalActivationTagRequirements(const FGameplayTagContainer& AbilityTags, FGameplayTagContainer& OutActivationRequired, FGameplayTagContainer& OutActivationBlocked) const;
@@ -88,6 +93,9 @@ protected:
 	// If set, this table is used to look up tag relationships for activate and cancel
 	UPROPERTY()
 	TObjectPtr<UGASAbilityTagRelationshipMapping> AbilityTagRelationshipMapping;
+
+	UPROPERTY()
+	TObjectPtr<UGASCourseStatusEffectTable> GameplayStatusEffectTable;
 	
 	void TryActivateAbilitiesOnSpawn();
 	

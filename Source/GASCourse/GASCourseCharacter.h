@@ -8,6 +8,7 @@
 #include "Game/GameplayAbilitySystem/GASCourseAbilitySystemComponent.h"
 #include "Game/GameplayAbilitySystem/GASAbilityTagRelationshipMapping.h"
 #include "Game/GameplayAbilitySystem/AttributeSets/GASCourseCharBaseAttributeSet.h"
+#include "GameplayTagResponseTable/GASCourseStatusEffectTable.h"
 #include "GASCourseCharacter.generated.h"
 
 class UGASCourseGameplayAbilitySet;
@@ -103,6 +104,9 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Abilities")
 	TObjectPtr<UGASAbilityTagRelationshipMapping> AbilityTagRelationshipMapping;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Abilities")
+	TObjectPtr<UGASCourseStatusEffectTable> GameplayStatusEffectTable;
 
 public:
 	
@@ -126,6 +130,11 @@ public:
 		return (AbilityTagRelationshipMapping) ? AbilityTagRelationshipMapping : nullptr;
 	}
 
+	UFUNCTION()
+	FORCEINLINE UGASCourseStatusEffectTable* GetGameplayStatusEffectTable() const
+	{
+		return (GameplayStatusEffectTable) ? GameplayStatusEffectTable : nullptr;
+	}
 	
 protected:
 

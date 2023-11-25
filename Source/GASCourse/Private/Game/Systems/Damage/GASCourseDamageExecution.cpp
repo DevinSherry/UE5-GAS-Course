@@ -4,6 +4,7 @@
 #include "Game/Systems/Damage/GASCourseDamageExecution.h"
 #include "Game/GameplayAbilitySystem/AttributeSets/GASCourseHealthAttributeSet.h"
 #include "AbilitySystemBlueprintLibrary.h"
+#include "GASCourseAbilitySystemComponent.h"
 #include "GASCourseGameplayEffect.h"
 #include "TargetTagsGameplayEffectComponent.h"
 
@@ -32,8 +33,8 @@ void UGASCourseDamageExecution::Execute_Implementation(const FGameplayEffectCust
 	FGameplayEffectCustomExecutionOutput& OutExecutionOutput) const
 {
 	
-	UAbilitySystemComponent* TargetAbilitySystemComponent = ExecutionParams.GetTargetAbilitySystemComponent();
-	UAbilitySystemComponent* SourceAbilitySystemComponent = ExecutionParams.GetSourceAbilitySystemComponent();
+	UGASCourseAbilitySystemComponent* TargetAbilitySystemComponent = Cast<UGASCourseAbilitySystemComponent>(ExecutionParams.GetTargetAbilitySystemComponent());
+	UGASCourseAbilitySystemComponent* SourceAbilitySystemComponent = Cast<UGASCourseAbilitySystemComponent>(ExecutionParams.GetSourceAbilitySystemComponent());
 
 	AActor* SourceActor = SourceAbilitySystemComponent ? SourceAbilitySystemComponent->GetAvatarActor() : nullptr;
 	AActor* TargetActor = TargetAbilitySystemComponent ? TargetAbilitySystemComponent->GetAvatarActor() : nullptr;
@@ -82,17 +83,12 @@ void UGASCourseDamageExecution::Execute_Implementation(const FGameplayEffectCust
 		{
 			return;
 		}
+		
 		SourceAbilitySystemComponent->HandleGameplayEvent(FGameplayTag::RequestGameplayTag(FName("Event.Gameplay.OnDamageDealt")), &DamageDealtPayload);
 		TargetAbilitySystemComponent->HandleGameplayEvent(FGameplayTag::RequestGameplayTag(FName("Event.Gameplay.OnDamageReceived")), &DamageDealtPayload);
 
-		UGASCourseGameplayEffect* GEStatusEffect = NewObject<UGASCourseGameplayEffect>(GetTransientPackage(), FName(TEXT("Status Effect")));
-		GEStatusEffect->DurationPolicy = EGameplayEffectDurationType::Infinite;
-		UTargetTagsGameplayEffectComponent& TargetTagsComponent = GEStatusEffect->AddComponent<UTargetTagsGameplayEffectComponent>();
-		FInheritedTagContainer StatusEffectTags;
-		StatusEffectTags.Added = Spec.DynamicGrantedTags;
-		TargetTagsComponent.SetAndApplyTargetTagChanges(StatusEffectTags);
-		
-		GEStatusEffect->AddComponent<UTargetTagsGameplayEffectComponent>();
-		TargetAbilitySystemComponent->ApplyGameplayEffectToSelf(GEStatusEffect, 1.0f, Spec.GetContext());
+		//TODO: Instead of sending event, pass in status effect tag into gameplay status table
+		TargetAbilitySystemComponent->ApplyGameplayStatusEffect(TargetAbilitySystemComponent, SourceAbilitySystemComponent, Spec.DynamicGrantedTags);
 	}
 }
+ 

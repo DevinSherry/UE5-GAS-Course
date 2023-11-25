@@ -108,8 +108,28 @@ void UGASCourseAbilitySystemComponent::SetTagRelationshipMapping(UGASAbilityTagR
 	AbilityTagRelationshipMapping = NewMapping;
 }
 
+void UGASCourseAbilitySystemComponent::SetGameplayEffectStatusTable(UGASCourseStatusEffectTable* NewStatusEffectTable)
+{
+	if(NewStatusEffectTable)
+	{
+		GameplayStatusEffectTable = NewStatusEffectTable;
+	}
+}
+
+void UGASCourseAbilitySystemComponent::ApplyGameplayStatusEffect(UAbilitySystemComponent* TargetASC,
+	UAbilitySystemComponent* InstigatorASC, const FGameplayTagContainer& StatusEffectTags) const
+{
+	if(const AGASCourseCharacter* OwningCharacter = Cast<AGASCourseCharacter>(GetOwnerActor()))
+	{
+		if(OwningCharacter->GetGameplayStatusEffectTable())
+		{
+			GameplayStatusEffectTable->ApplyGameplayStatusEffect(TargetASC, InstigatorASC, StatusEffectTags);
+		}
+	}
+}
+
 void UGASCourseAbilitySystemComponent::GetAdditionalActivationTagRequirements(const FGameplayTagContainer& AbilityTags,
-	FGameplayTagContainer& OutActivationRequired, FGameplayTagContainer& OutActivationBlocked) const
+                                                                              FGameplayTagContainer& OutActivationRequired, FGameplayTagContainer& OutActivationBlocked) const
 {
 	if (AbilityTagRelationshipMapping)
 	{

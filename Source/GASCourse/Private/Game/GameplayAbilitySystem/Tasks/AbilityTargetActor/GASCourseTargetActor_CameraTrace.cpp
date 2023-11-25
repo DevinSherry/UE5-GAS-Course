@@ -39,6 +39,17 @@ void AGASCourseTargetActor_CameraTrace::ConfirmTargetingAndContinue()
 	}
 }
 
+void AGASCourseTargetActor_CameraTrace::ConfirmTargeting()
+{
+	check(ShouldProduceTargetData());
+	if (SourceActor)
+	{
+		const FVector Origin = PerformTrace(SourceActor).Location;
+		FGameplayAbilityTargetDataHandle Handle = MakeTargetData(PerformOverlap(Origin), Origin);
+		TargetDataReadyDelegate.Broadcast(Handle);
+	}
+}
+
 void AGASCourseTargetActor_CameraTrace::CancelTargeting()
 {
 	Super::CancelTargeting();

@@ -20,6 +20,7 @@ public:
 
 	virtual void StartTargeting(UGameplayAbility* InAbility) override;
 	virtual void ConfirmTargetingAndContinue() override;
+	virtual void ConfirmTargeting() override;
 	virtual void CancelTargeting();
 	virtual void Tick(float DeltaSeconds) override;
 
