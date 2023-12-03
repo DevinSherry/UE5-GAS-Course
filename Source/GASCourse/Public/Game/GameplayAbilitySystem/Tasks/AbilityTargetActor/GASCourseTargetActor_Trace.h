@@ -45,8 +45,6 @@ class GASCOURSE_API AGASCourseTargetActor_Trace : public AGameplayAbilityTargetA
 	
 public:
 	
-	class UPostProcessComponent* OutlinePostProcess;
-	
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 	virtual void CancelTargeting() override;
@@ -96,5 +94,7 @@ protected:
 protected:
 
 	FGameplayTagContainer DefaultTargetingTagContainer;
+
+	int StoredCustomDepthStencilValue = 0;
 	
 };

@@ -84,7 +84,7 @@ public:
 
 	EGASCourseAbilityActivationPolicy GetActivationPolicy() const { return ActivationPolicy; }
 
-	void TryActivateAbilityOnSpawn(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec) const;
+	void TryActivateAbilityOnSpawn(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec);
 
 	/**Returns the type of ability, see EGASCourseAbilityType*/
 	UFUNCTION(BlueprintCallable, Category="GASCourse|Ability")

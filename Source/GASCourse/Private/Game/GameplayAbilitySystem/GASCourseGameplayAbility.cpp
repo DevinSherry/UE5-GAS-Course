@@ -74,8 +74,13 @@ AGASCoursePlayerCharacter* UGASCourseGameplayAbility::GetGASCouresPlayerCharacte
 }
 
 void UGASCourseGameplayAbility::TryActivateAbilityOnSpawn(const FGameplayAbilityActorInfo* ActorInfo,
-	const FGameplayAbilitySpec& Spec) const
+	const FGameplayAbilitySpec& Spec)
 {
+	if(ActivationPolicy == EGASCourseAbilityActivationPolicy::OnSpawn)
+	{
+		const FGameplayEventData* EventData = nullptr;
+		CallActivateAbility(Spec.Handle, ActorInfo, Spec.ActivationInfo);
+	}
 }
 
 void UGASCourseGameplayAbility::DurationEffectRemoved(const FGameplayEffectRemovalInfo& GameplayEffectRemovalInfo)
@@ -137,14 +142,12 @@ void UGASCourseGameplayAbility::OnGiveAbility(const FGameplayAbilityActorInfo* A
 	Super::OnGiveAbility(ActorInfo, Spec);
 	K2_OnAbilityAdded();
 	TryActivateAbilityOnSpawn(ActorInfo, Spec);
-
-	//Maybe here wait for tag removal of cooldown tags?
-	//GetCooldownTags();
 }
 
 void UGASCourseGameplayAbility::OnRemoveAbility(const FGameplayAbilityActorInfo* ActorInfo,
 	const FGameplayAbilitySpec& Spec)
 {
+	EndAbility(Spec.Handle, ActorInfo, Spec.ActivationInfo, true, false);
 	K2_OnAbilityRemoved();
 	Super::OnRemoveAbility(ActorInfo, Spec);
 }

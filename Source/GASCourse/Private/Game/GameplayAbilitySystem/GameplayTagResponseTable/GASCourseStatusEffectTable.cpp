@@ -46,7 +46,8 @@ bool UGASCourseStatusEffectTable::HasMatchingStatusEffectTag(const FGameplayTagC
 			FoundStatusEffectEntry = Entry;
 			for(FGameplayTag StatusTag : StatusEffectTags.GetGameplayTagArray())
 			{
-				if(StatusTag.MatchesTag(FGameplayTag::RequestGameplayTag(FName("Status.Gameplay.Effect"))))
+				ensure(StatusTag.MatchesTag(FGameplayTag::RequestGameplayTag(FName("Effect.Gameplay.Status"))));
+				if(StatusTag.MatchesTag(FGameplayTag::RequestGameplayTag(FName("Effect.Gameplay.Status"))))
 				{
 					FoundTag = StatusTag;
 					bHasFoundTag = true;

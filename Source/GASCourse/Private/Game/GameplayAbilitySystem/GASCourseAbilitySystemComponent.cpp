@@ -62,7 +62,8 @@ void UGASCourseAbilitySystemComponent::TryActivateAbilitiesOnSpawn()
 	for (const FGameplayAbilitySpec& AbilitySpec : ActivatableAbilities.Items)
 	{
 		const UGASCourseGameplayAbility* AbilityCDO = CastChecked<UGASCourseGameplayAbility>(AbilitySpec.Ability);
-		AbilityCDO->TryActivateAbilityOnSpawn(AbilityActorInfo.Get(), AbilitySpec);
+		TryActivateAbility(AbilitySpec.Handle);
+		//AbilityCDO->TryActivateAbilityOnSpawn(AbilityActorInfo.Get(), AbilitySpec);
 	}
 }
 

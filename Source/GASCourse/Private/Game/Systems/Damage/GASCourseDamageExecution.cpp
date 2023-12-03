@@ -4,9 +4,8 @@
 #include "Game/Systems/Damage/GASCourseDamageExecution.h"
 #include "Game/GameplayAbilitySystem/AttributeSets/GASCourseHealthAttributeSet.h"
 #include "AbilitySystemBlueprintLibrary.h"
-#include "GASCourseAbilitySystemComponent.h"
-#include "GASCourseGameplayEffect.h"
-#include "TargetTagsGameplayEffectComponent.h"
+#include "Game/GameplayAbilitySystem/GASCourseAbilitySystemComponent.h"
+#include "Game/GameplayAbilitySystem/GASCourseGameplayEffect.h"
 
 struct GASCourseDamageStatics
 {

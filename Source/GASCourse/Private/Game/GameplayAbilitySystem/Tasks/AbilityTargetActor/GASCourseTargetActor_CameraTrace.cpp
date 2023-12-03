@@ -2,30 +2,22 @@
 
 
 #include "Game/GameplayAbilitySystem/Tasks/AbilityTargetActor/GASCourseTargetActor_CameraTrace.h"
+#include "AbilitySystemBlueprintLibrary.h"
 #include "Abilities/GameplayAbility.h"
-#include "Components/PostProcessComponent.h"
+#include "GASCourse/GASCourse.h"
+#include "AbilitySystemGlobals.h"
+#include "AbilitySystemComponent.h"
 
 AGASCourseTargetActor_CameraTrace::AGASCourseTargetActor_CameraTrace(const FObjectInitializer& ObjectInitializer)
 : Super(ObjectInitializer)
 {
 	CollisionRadius = 50.0f;
 	CollisionHeight = 50.0f;
-	OutlinePostProcess = CreateDefaultSubobject<UPostProcessComponent>(TEXT("PostProcessComponent"));
 }
 
 void AGASCourseTargetActor_CameraTrace::StartTargeting(UGameplayAbility* InAbility)
 {
 	Super::StartTargeting(InAbility);
-	if(TargetOutlineData.OutlineMaterial)
-	{
-		UMaterialInstanceDynamic* OutlineMaterialDynamic = UMaterialInstanceDynamic::Create(TargetOutlineData.OutlineMaterial, this);
-		OutlineMaterialDynamic->SetVectorParameterValue("Color", TargetOutlineData.OutlineColor.ToFColor(true));
-		if(OutlinePostProcess)
-		{
-			OutlinePostProcess->bUnbound = true;
-			OutlinePostProcess->AddOrUpdateBlendable(OutlineMaterialDynamic, 1.0f);
-		}
-	}
 }
 
 void AGASCourseTargetActor_CameraTrace::ConfirmTargetingAndContinue()
@@ -36,6 +28,7 @@ void AGASCourseTargetActor_CameraTrace::ConfirmTargetingAndContinue()
 		const FVector Origin = PerformTrace(SourceActor).Location;
 		FGameplayAbilityTargetDataHandle Handle = MakeTargetData(PerformOverlap(Origin), Origin);
 		TargetDataReadyDelegate.Broadcast(Handle);
+		Super::ConfirmTargetingAndContinue();
 	}
 }
 
@@ -47,6 +40,7 @@ void AGASCourseTargetActor_CameraTrace::ConfirmTargeting()
 		const FVector Origin = PerformTrace(SourceActor).Location;
 		FGameplayAbilityTargetDataHandle Handle = MakeTargetData(PerformOverlap(Origin), Origin);
 		TargetDataReadyDelegate.Broadcast(Handle);
+		Super::ConfirmTargeting();
 	}
 }
 
@@ -196,6 +190,11 @@ void AGASCourseTargetActor_CameraTrace::DrawTargetOutline(TArray<TWeakObjectPtr<
 	{
 		return;
 	}
+
+	if(InHitActors.IsEmpty())
+	{
+		return;
+	}
 	
 	for(const TWeakObjectPtr<AActor>& Actor : InHitActors)
 	{
@@ -205,7 +204,7 @@ void AGASCourseTargetActor_CameraTrace::DrawTargetOutline(TArray<TWeakObjectPtr<
 			if(USkeletalMeshComponent* Mesh = Character->GetComponentByClass<USkeletalMeshComponent>())
 			{
 				Mesh->SetRenderCustomDepth(false);
-				Mesh->SetCustomDepthStencilValue(0);
+				Mesh->SetCustomDepthStencilValue(STENCIL_NONE);
 			}
 		}
 	}
@@ -218,7 +217,7 @@ void AGASCourseTargetActor_CameraTrace::DrawTargetOutline(TArray<TWeakObjectPtr<
 			if(USkeletalMeshComponent* Mesh = Character->GetComponentByClass<USkeletalMeshComponent>())
 			{
 				Mesh->SetRenderCustomDepth(true);
-				Mesh->SetCustomDepthStencilValue(2);
+				Mesh->SetCustomDepthStencilValue(STENCIL_ENEMY_OUTLINE);
 			}
 		}
 	}
@@ -239,12 +238,8 @@ void AGASCourseTargetActor_CameraTrace::ClearTargetOutline(TArray<TWeakObjectPtr
 			if(USkeletalMeshComponent* Mesh = Character->GetComponentByClass<USkeletalMeshComponent>())
 			{
 				Mesh->SetRenderCustomDepth(false);
-				Mesh->SetCustomDepthStencilValue(0);
+				Mesh->SetCustomDepthStencilValue(STENCIL_NONE);
 			}
 		}
-	}
-	if(OutlinePostProcess)
-	{
-		OutlinePostProcess->MarkAsGarbage();
 	}
 }

@@ -13,6 +13,7 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "Camera/CameraComponent.h"
 
 #if WITH_EDITOR
 #include "Editor/EditorEngine.h"

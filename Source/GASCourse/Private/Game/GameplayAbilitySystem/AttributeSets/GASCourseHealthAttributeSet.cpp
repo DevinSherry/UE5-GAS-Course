@@ -2,6 +2,7 @@
 
 
 #include "Game/GameplayAbilitySystem/AttributeSets/GASCourseHealthAttributeSet.h"
+#include "Game/GameplayAbilitySystem/GASCourseNativeGameplayTags.h"
 #include "GameplayEffectExtension.h"
 #include "Net/UnrealNetwork.h"
 
@@ -40,7 +41,7 @@ void UGASCourseHealthAttributeSet::PostGameplayEffectExecute(const FGameplayEffe
 		SetIncomingDamage(0.0f);
 		SetCurrentHealth(GetCurrentHealth() - LocalDamage);
 
-		if(GetCurrentHealth() <= 0.0f)
+		if(GetCurrentHealth() <= 0.0f && !GetOwningAbilitySystemComponent()->HasMatchingGameplayTag(Status_Death))
 		{
 			FGameplayEventData OnDeathPayload;
 			OnDeathPayload.Instigator = Data.EffectSpec.GetContext().GetOriginalInstigator();

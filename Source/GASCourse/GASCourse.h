@@ -2,6 +2,13 @@
 
 #pragma once
 
+/* Stencil index mapping to PP_OutlineColored */
+#define STENCIL_NONE 0
+#define STENCIL_ENEMY_OUTLINE 1
+#define STENCIL_FRIENDLY_OUTLINE 2
+#define STENCIL_STATUS_BURN_OUTLINE 3
+#define STENCIL_STATUS_FROZEN_OUTLINE 4
+
 //Current Class Name + Function Name where this is called!
 #define GASCOURSE_CUR_CLASS_FUNC (FString(__FUNCTION__))
 
