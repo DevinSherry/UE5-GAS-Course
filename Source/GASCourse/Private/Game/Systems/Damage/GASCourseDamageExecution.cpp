@@ -6,6 +6,7 @@
 #include "AbilitySystemBlueprintLibrary.h"
 #include "Game/GameplayAbilitySystem/GASCourseAbilitySystemComponent.h"
 #include "Game/GameplayAbilitySystem/GASCourseGameplayEffect.h"
+#include "Game/GameplayAbilitySystem/GASCourseNativeGameplayTags.h"
 
 struct GASCourseDamageStatics
 {
@@ -52,7 +53,7 @@ void UGASCourseDamageExecution::Execute_Implementation(const FGameplayEffectCust
 	ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(DamageStatics().IncomingDamageDef, EvaluationParameters, Damage);
 
 	// Add SetByCaller damage if it exists
-	Damage += FMath::Max<float>(Spec.GetSetByCallerMagnitude(FGameplayTag::RequestGameplayTag(FName("Data.IncomingDamage")), false, -1.0f), 0.0f);
+	Damage += FMath::Max<float>(Spec.GetSetByCallerMagnitude(Data_IncomingDamage, false, -1.0f), 0.0f);
 
 	float UnmitigatedDamage = Damage; // Can multiply any damage boosters here
 	

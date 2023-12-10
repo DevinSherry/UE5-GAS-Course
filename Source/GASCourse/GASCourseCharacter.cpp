@@ -1,11 +1,9 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "GASCourseCharacter.h"
-#include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
-#include "GameFramework/SpringArmComponent.h"
 #include "Game/GameplayAbilitySystem/GASCourseGameplayAbilitySet.h"
 #include "Game/GameplayAbilitySystem/GASCourseNativeGameplayTags.h"
 #include "Game/Character/Components/GASCourseMovementComponent.h"
@@ -57,6 +55,8 @@ AGASCourseCharacter::AGASCourseCharacter(const class FObjectInitializer& ObjectI
 	// Activate ticking in order to update the cursor every frame.
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.bStartWithTickEnabled = true;
+
+	GameplayEffectAssetTagsToRemove.AddTag(FGameplayTag::RequestGameplayTag(FName("Effect.AssetTag.Status")));
 	
 }
 
@@ -94,6 +94,20 @@ void AGASCourseCharacter::InitializeAbilitySystem(UGASCourseAbilitySystemCompone
 		InASC->SetGameplayEffectStatusTable(GameplayStatusEffectTable);
 	}
 
+	if(InASC)
+	{
+		InASC->AddGameplayEventTagContainerDelegate(FGameplayTagContainer(Event_OnDeath), FGameplayEventTagMulticastDelegate::FDelegate::CreateUObject(this, &ThisClass::CharacterDeathGameplayEventCallback));
+	}
+
+}
+
+void AGASCourseCharacter::CharacterDeathGameplayEventCallback(FGameplayTag MatchingTag,
+	const FGameplayEventData* Payload)
+{
+	if(UGASCourseAbilitySystemComponent* InASC = GetAbilitySystemComponent())
+	{
+		InASC->RemoveActiveEffectsWithTags(GameplayEffectAssetTagsToRemove);
+	}
 }
 
 UGASCourseAbilitySystemComponent* AGASCourseCharacter::GetAbilitySystemComponent() const

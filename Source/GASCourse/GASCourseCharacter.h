@@ -108,7 +108,13 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Abilities")
 	TObjectPtr<UGASCourseStatusEffectTable> GameplayStatusEffectTable;
 
+	/** Remove gameplay effects with these Asset Tags on Character Death */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GASCourse|GameplayTags", DisplayName = "GameplayEffectsToRemoveOnDeath")
+	FGameplayTagContainer GameplayEffectAssetTagsToRemove;
+
 public:
+	
+	void CharacterDeathGameplayEventCallback(FGameplayTag MatchingTag, const FGameplayEventData* Payload);
 	
 	virtual UGASCourseAbilitySystemComponent* GetAbilitySystemComponent() const override;
 	

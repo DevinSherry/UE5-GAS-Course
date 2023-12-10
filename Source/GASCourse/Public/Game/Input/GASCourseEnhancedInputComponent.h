@@ -24,9 +24,10 @@ class GASCOURSE_API UGASCourseEnhancedInputComponent : public UEnhancedInputComp
 	
 public:
 
+
 	template<class UserClass, typename FuncType>
 	void BindActionByTag(const UGASCourseInputConfig* InputConfig, const FGameplayTag& InputTag, ETriggerEvent TriggerEvent, UserClass* Object, FuncType Func);
-	
+
 	template<class UserClass, typename PressedFuncType,typename ReleasedFuncType>
 	void BindAbilityActions(const UGASCourseInputConfig* InputConfig, UserClass* Object, PressedFuncType PressedFunc, ReleasedFuncType ReleasedFunc, TArray<uint32>& BindHandles);
 };

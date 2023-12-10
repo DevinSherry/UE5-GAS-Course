@@ -33,4 +33,10 @@ UE_DEFINE_GAMEPLAY_TAG(Status_Block_MovementInput, "Status.Block.Input.Movement"
 UE_DEFINE_GAMEPLAY_TAG(Status_Block_AbilityInput, "Status.Block.Input.AbilityActivation")
 UE_DEFINE_GAMEPLAY_TAG(Status_Death, "Status.Death")
 
+UE_DEFINE_GAMEPLAY_TAG(Data_IncomingDamage, "Data.IncomingDamage")
+UE_DEFINE_GAMEPLAY_TAG(Event_OnDeath, "Event.Gameplay.OnDeath")
+UE_DEFINE_GAMEPLAY_TAG(DamageType_Physical, "Damage.Type.Physical")
+UE_DEFINE_GAMEPLAY_TAG(DamageType_Elemental_Fire, "Damage.Type.Elemental.Fire")
+UE_DEFINE_GAMEPLAY_TAG(DamageType_Status_Burn, "Damage.Type.Status.Burn")
+
 FGASCourseNativeGameplayTags FGASCourseNativeGameplayTags::GameplayTags;

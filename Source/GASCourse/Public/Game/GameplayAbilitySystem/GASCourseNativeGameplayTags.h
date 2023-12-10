@@ -41,6 +41,13 @@ UE_DECLARE_GAMEPLAY_TAG_EXTERN(Status_Gameplay_Targeting);
 UE_DECLARE_GAMEPLAY_TAG_EXTERN(Status_Block_PointClickMovementInput);
 UE_DECLARE_GAMEPLAY_TAG_EXTERN(Status_Death);
 
+UE_DECLARE_GAMEPLAY_TAG_EXTERN(Data_IncomingDamage);
+UE_DECLARE_GAMEPLAY_TAG_EXTERN(Event_OnDeath);
+UE_DECLARE_GAMEPLAY_TAG_EXTERN(DamageType_Physical);
+UE_DECLARE_GAMEPLAY_TAG_EXTERN(DamageType_Elemental_Fire);
+UE_DECLARE_GAMEPLAY_TAG_EXTERN(DamageType_Status_Burn);
+
+
 struct FGASCourseNativeGameplayTags
 {
 	

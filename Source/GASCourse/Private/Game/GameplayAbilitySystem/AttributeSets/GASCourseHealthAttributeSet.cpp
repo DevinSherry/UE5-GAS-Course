@@ -48,7 +48,7 @@ void UGASCourseHealthAttributeSet::PostGameplayEffectExecute(const FGameplayEffe
 			OnDeathPayload.Target = GetOwningActor();
 			OnDeathPayload.ContextHandle = Data.EffectSpec.GetContext();
 			OnDeathPayload.EventMagnitude = LocalDamage;
-			GetOwningAbilitySystemComponent()->HandleGameplayEvent(FGameplayTag::RequestGameplayTag(FName("Event.Gameplay.OnDeath")), &OnDeathPayload);
+			GetOwningAbilitySystemComponent()->HandleGameplayEvent(Event_OnDeath, &OnDeathPayload);
 		}
 	}
 }

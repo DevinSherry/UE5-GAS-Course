@@ -47,7 +47,15 @@ class GASCOURSE_API UGASCourseInputConfig : public UDataAsset
 	GENERATED_BODY()
 
 public:
-	// Returns the first Input Action associated with a given tag.
+	
+	/**
+	 * FindInputActionForTag
+	 *
+	 * Finds and returns the UInputAction associated with the given FGameplayTag.
+	 *
+	 * @param   InputTag   The FGameplayTag used to search for the UInputAction.
+	 * @return             The UInputAction associated with the InputTag, or nullptr if not found.
+	 */
 	const UInputAction* FindInputActionForTag(const FGameplayTag& InputTag) const;
 
 public:

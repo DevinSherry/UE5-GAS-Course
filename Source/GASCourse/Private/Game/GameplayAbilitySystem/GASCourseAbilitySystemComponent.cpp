@@ -63,7 +63,6 @@ void UGASCourseAbilitySystemComponent::TryActivateAbilitiesOnSpawn()
 	{
 		const UGASCourseGameplayAbility* AbilityCDO = CastChecked<UGASCourseGameplayAbility>(AbilitySpec.Ability);
 		TryActivateAbility(AbilitySpec.Handle);
-		//AbilityCDO->TryActivateAbilityOnSpawn(AbilityActorInfo.Get(), AbilitySpec);
 	}
 }
 
@@ -79,8 +78,6 @@ void UGASCourseAbilitySystemComponent::ApplyAbilityBlockAndCancelTags(const FGam
 	}
 
 	Super::ApplyAbilityBlockAndCancelTags(AbilityTags, RequestingAbility, bEnableBlockTags, ModifiedBlockTags, bExecuteCancelTags, ModifiedCancelTags);
-
-	//@TODO: Apply any special logic like blocking input or movement
 }
 
 void UGASCourseAbilitySystemComponent::HandleChangeAbilityCanBeCanceled(const FGameplayTagContainer& AbilityTags, UGameplayAbility* RequestingAbility, bool bCanBeCanceled)
