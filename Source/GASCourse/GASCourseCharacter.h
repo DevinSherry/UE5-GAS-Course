@@ -177,9 +177,7 @@ public:
 	}
 	
 protected:
-
-	UFUNCTION()
-	virtual void Call_OnRep_ReplicatedAnimMontage() override;
+	
 	
 	UPROPERTY(ReplicatedUsing = Call_OnRep_ReplicatedAnimMontage)
 	FGameplayAbilityRepAnimMontage RepAnimMontageInfo;
@@ -217,6 +215,9 @@ protected:
 	virtual void NetMulticast_InvokeGameplayCuesAddedAndWhileActive_WithParams(const FGameplayTagContainer GameplayCueTags, FPredictionKey PredictionKey, FGameplayCueParameters GameplayCueParameters) override;
 	  
 	virtual FGameplayAbilityRepAnimMontage& Call_GetRepAnimMontageInfo_Mutable() override;
+
+	UFUNCTION()
+	virtual void Call_OnRep_ReplicatedAnimMontage() override;
 	
 };
 
