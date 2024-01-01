@@ -65,6 +65,16 @@ public:
 	
 	UFUNCTION(BlueprintPure, Category = "GASCourse|Ability|Tags")
 	void GetAbilityDurationTags(FGameplayTagContainer& DurationTags) const;
+
+	/**
+	 * @brief Get the granted by effect duration.
+	 *
+	 * This method returns the duration of the effect granted by the ability.
+	 *
+	 * @return The duration of the effect granted by the ability.
+	 */
+	UFUNCTION(BlueprintCallable, Category = Ability)
+	float GetGrantedbyEffectDuration() const;
 	
 public:
 
@@ -84,7 +94,7 @@ public:
 
 	EGASCourseAbilityActivationPolicy GetActivationPolicy() const { return ActivationPolicy; }
 
-	void TryActivateAbilityOnSpawn(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec);
+	void TryActivateAbilityOnSpawn(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec) const;
 
 	/**Returns the type of ability, see EGASCourseAbilityType*/
 	UFUNCTION(BlueprintCallable, Category="GASCourse|Ability")

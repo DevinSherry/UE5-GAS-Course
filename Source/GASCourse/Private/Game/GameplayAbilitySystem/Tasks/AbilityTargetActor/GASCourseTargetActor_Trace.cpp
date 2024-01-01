@@ -252,6 +252,12 @@ void AGASCourseTargetActor_Trace::ConfirmTargeting()
 	ClearTargetOutline(ActorsToOutline);
 }
 
+bool AGASCourseTargetActor_Trace::IsNetRelevantFor(const AActor* RealViewer, const AActor* ViewTarget,
+	const FVector& SrcLocation) const
+{
+	return Super::IsNetRelevantFor(RealViewer, ViewTarget, SrcLocation);
+}
+
 void AGASCourseTargetActor_Trace::UpdateLooseGameplayTagsDuringTargeting(FGameplayTag InGameplayTag, int32 InCount)
 {
 	if(UAbilitySystemComponent* ASC = OwningAbility->GetCurrentActorInfo()->AbilitySystemComponent.Get())

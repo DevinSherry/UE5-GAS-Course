@@ -51,12 +51,15 @@ AGASCourseCharacter::AGASCourseCharacter(const class FObjectInitializer& ObjectI
 	//Initialize AbilitySystemComponent
 	AbilitySystemComponent = CreateDefaultSubobject<UGASCourseAbilitySystemComponent>(TEXT("AbilitySystemComponent"));
 	AbilitySystemComponent->SetIsReplicated(true);
+	AbilitySystemComponent->SetReplicationMode(EGameplayEffectReplicationMode::Mixed);
+
+	// AbilitySystemComponent needs to be updated at a high frequency.
+	NetUpdateFrequency = 100.0f;
 
 	// Activate ticking in order to update the cursor every frame.
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.bStartWithTickEnabled = true;
-
-	GameplayEffectAssetTagsToRemove.AddTag(FGameplayTag::RequestGameplayTag(FName("Effect.AssetTag.Status")));
+	
 	
 }
 
@@ -65,12 +68,15 @@ void AGASCourseCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(AGASCourseCharacter, ReplicationVarList);
 	DOREPLIFETIME(AGASCourseCharacter, RepAnimMontageInfo);
+	DOREPLIFETIME(AGASCourseCharacter, RotateToDirection);
 }
 
 void AGASCourseCharacter::BeginPlay()
 {
 	// Call the base class  
 	Super::BeginPlay();
+
+	GameplayEffectAssetTagsToRemove.AddTag(FGameplayTag::RequestGameplayTag(FName("Effect.AssetTag.Status")));
 }
 
 void AGASCourseCharacter::InitializeAbilitySystem(UGASCourseAbilitySystemComponent* InASC)
@@ -98,7 +104,6 @@ void AGASCourseCharacter::InitializeAbilitySystem(UGASCourseAbilitySystemCompone
 	{
 		InASC->AddGameplayEventTagContainerDelegate(FGameplayTagContainer(Event_OnDeath), FGameplayEventTagMulticastDelegate::FDelegate::CreateUObject(this, &ThisClass::CharacterDeathGameplayEventCallback));
 	}
-
 }
 
 void AGASCourseCharacter::CharacterDeathGameplayEventCallback(FGameplayTag MatchingTag,
@@ -278,6 +283,14 @@ void AGASCourseCharacter::Jump()
 	Super::Jump();
 }
 
+void AGASCourseCharacter::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+
+	check(AbilitySystemComponent);
+	AbilitySystemComponent->InitAbilityActorInfo(this, this);
+}
+
 
 FReplicationProxyVarList& AGASCourseCharacter::Call_GetReplicationProxyVarList_Mutable()
 {
@@ -306,6 +319,35 @@ void AGASCourseCharacter::OnRep_ReplicationVarList()
 		}
 	}
 
+}
+
+void AGASCourseCharacter::SetCharacterRotation_Client_Implementation(FRotator InRotation)
+{
+	RotateToDirection = InRotation;
+	SetActorRotation(RotateToDirection);
+	ForceNetUpdate();
+	
+	if(GetLocalRole() == ROLE_Authority)
+	{
+		SetActorRotation(RotateToDirection);
+		ForceReplication();
+	}
+	else
+	{
+		SetCharacterRotation_Server(RotateToDirection);
+	}
+}
+
+void AGASCourseCharacter::SetCharacterRotation_Server_Implementation(FRotator InRotation)
+{
+	SetCharacterRotation_Multicast(InRotation);
+	ForceReplication();
+}
+
+void AGASCourseCharacter::SetCharacterRotation_Multicast_Implementation(FRotator InRotation)
+{
+	SetActorRotation(InRotation);
+	ForceReplication();
 }
 
 void AGASCourseCharacter::ForceReplication()

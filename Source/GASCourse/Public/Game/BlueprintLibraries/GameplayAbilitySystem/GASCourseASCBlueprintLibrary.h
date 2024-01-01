@@ -3,6 +3,7 @@
 #pragma once
 
 #include "AbilitySystemBlueprintLibrary.h"
+#include "GameplayEffect.h"
 #include "Game/GameplayAbilitySystem/GASCourseNativeGameplayTags.h"
 #include "GASCourseASCBlueprintLibrary.generated.h"
 
@@ -29,6 +30,31 @@ public:
 };
 
 /**
+ *  @struct FDamageOverTimeContext
+ *  @brief Structure representing the context for damage over time.
+ *
+ *  Structure that holds the parameters necessary for applying damage over time.
+ *
+ *  @remark This structure is blueprintable.
+ */
+USTRUCT(blueprintable)
+struct FDamageOverTimeContext
+{
+	GENERATED_USTRUCT_BODY()
+
+public:
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float DamagePeriod = -1.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta=(Categories="Damage.Type"))
+	float DamageDuration = -1.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite )
+	bool bApplyDamageOnApplication = true;
+};
+
+/**
  * UGASCourseASCBlueprintLibrary is a blueprint library that provides utility functions for applying damage to target actors.
  */
 
@@ -51,6 +77,20 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "GASCourse|AbilitySystem|Damage")
 	static bool ApplyDamageToTarget(AActor* Target, AActor* Instigator, float Damage, const FDamageContext& DamageContext);
+
+	/**
+	 * Applies damage over time to a target actor.
+	 *
+	 * @param Target                      The actor to apply damage over time to.
+	 * @param Instigator                  The actor that caused the damage over time.
+	 * @param Damage                      The amount of damage to apply over time.
+	 * @param DamageContext               The context of the damage being applied.
+	 * @param DamageOverTimeContext       The context of the damage over time being applied.
+	 *
+	 * @return                            Returns true if the damage over time was successfully applied, false otherwise.
+	 */
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "GASCourse|AbilitySystem|Damage")
+	static bool ApplyDamageOverTimeToTarget(AActor* Target, AActor* Instigator, float Damage, const FDamageContext& DamageContext, const FDamageOverTimeContext& DamageOverTimeContext);
 
 	/**
 	 * Applies physical damage to the specified target.
@@ -82,15 +122,20 @@ public:
 	static bool ApplyFireDamageToTarget(AActor* Target, AActor* Instigator, float Damage, const FHitResult& HitResult, FDamageContext& DamageContext, bool bApplyBurnStack = true);
 
 	/**
-	 * Applies damage to a target actor.
+	 * Applies damage to a target actor using a gameplay effect.
 	 *
-	 * @param Target The actor being damaged.
-	 * @param Instigator The actor causing the damage.
-	 * @param Damage The amount of damage to be applied.
-	 * @param DamageContext Additional context information for the damage.
+	 * @param Target           The actor to apply damage to.
+	 * @param Instigator       The actor causing the damage.
+	 * @param Damage           The amount of damage to apply.
+	 * @param DamageContext    The context of the damage.
+	 * @param GameplayEffect   The gameplay effect to apply.
 	 *
-	 * @return True if the damage was successfully applied, false otherwise.
+	 * @return True if the damage is successfully applied, false otherwise.
 	 */
-	static bool ApplyDamageToTarget_Internal(AActor* Target, AActor* Instigator, float Damage, const FDamageContext& DamageContext);
-	
+	static bool ApplyDamageToTarget_Internal(AActor* Target, AActor* Instigator, float Damage, const FDamageContext& DamageContext, UGameplayEffect* GameplayEffect);
+
+	static UGameplayEffect* ConstructDamageGameplayEffect(EGameplayEffectDurationType DurationType, const FDamageOverTimeContext& DamageOverTimeContext);
+
+	UFUNCTION(BlueprintPure, Category = "GASCourse|AbilitySystem|Damage")
+	static bool FindDamageTypeTagInContainer(const FGameplayTagContainer& InContainer, FGameplayTag& DamageTypeTag);
 };

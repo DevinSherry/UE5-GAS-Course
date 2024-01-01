@@ -61,7 +61,6 @@ public:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	
 	FReplicationProxyVarList& Call_GetReplicationProxyVarList_Mutable();
-
 protected:
 
 	/** Called for movement input */
@@ -81,12 +80,47 @@ protected:
 	//Override these functions in order to jump while crouched, if movement component allows for it.
 	virtual bool CanJumpInternal_Implementation() const override;
 	virtual void Jump() override;
+
+	virtual void PostInitializeComponents() override;
 	
 	UFUNCTION()
 	void OnRep_ReplicationVarList();
 	
 	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_ReplicationVarList)
 	FReplicationProxyVarList ReplicationVarList;
+
+	/**
+	 * Sets the rotation of the character for the client.
+	 *
+	 * @param InRotation The new rotation of the character.
+	 */
+	UFUNCTION(BlueprintCallable, Reliable, Client)
+	void SetCharacterRotation_Client(FRotator InRotation);
+
+	/**
+	 * Sets the rotation of the character on the server.
+	 *
+	 * @param InRotation The new rotation of the character.
+	 */
+	UFUNCTION(Reliable, Server)
+	void SetCharacterRotation_Server(FRotator InRotation);
+
+	/**
+	 * Sets the rotation of the character for all clients.
+	 *
+	 * @param InRotation - The new rotation of the character.
+	 */
+	UFUNCTION(Reliable, NetMulticast)
+	void SetCharacterRotation_Multicast(FRotator InRotation);
+
+	/**
+	 * @brief FRotator variable that represents the rotation to be applied to an object in order to face a given direction.
+	 *
+	 * This variable is decorated with UPROPERTY to ensure replication and provide read-only access. It is also marked as Transient to prevent saving its value in the editor.
+	 * Use this variable to rotate an object based on a specified direction.
+	 */
+	UPROPERTY(Replicated, BlueprintReadOnly, Transient)
+	FRotator RotateToDirection;
 
 	
 protected:

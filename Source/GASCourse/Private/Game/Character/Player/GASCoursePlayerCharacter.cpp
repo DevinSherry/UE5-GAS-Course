@@ -118,12 +118,6 @@ void AGASCoursePlayerCharacter::SetupPlayerInputComponent(UInputComponent* Playe
 			EnhancedInputComponent->BindActionByTag(InputConfig, InputTag_PointClickMovement, ETriggerEvent::Canceled, this, &ThisClass::PointClickMovementCompleted);
 			EnhancedInputComponent->BindActionByTag(InputConfig, InputTag_PointClickMovement, ETriggerEvent::Completed, this, &ThisClass::PointClickMovementCompleted);
 
-			if(UGASCourseAbilitySystemComponent* MyASC = CastChecked<UGASCourseAbilitySystemComponent>( GetAbilitySystemComponent()))
-			{
-				EnhancedInputComponent->BindActionByTag(InputConfig, InputTag_ConfirmTargetData, ETriggerEvent::Triggered, MyASC, &UGASCourseAbilitySystemComponent::LocalInputConfirm);
-				EnhancedInputComponent->BindActionByTag(InputConfig, InputTag_CancelTargetData, ETriggerEvent::Triggered, MyASC, &UGASCourseAbilitySystemComponent::LocalInputCancel);
-			}
-
 			//Looking
 			EnhancedInputComponent->BindActionByTag(InputConfig, InputTag_Look_Stick, ETriggerEvent::Triggered, this, &ThisClass::Look);
 
@@ -142,6 +136,13 @@ void AGASCoursePlayerCharacter::SetupPlayerInputComponent(UInputComponent* Playe
 
 			TArray<uint32> BindHandles;
 			EnhancedInputComponent->BindAbilityActions(InputConfig, this, &ThisClass::Input_AbilityInputTagPressed, &ThisClass::Input_AbilityInputTagReleased, /*out*/ BindHandles);
+
+			if(UGASCourseAbilitySystemComponent* MyASC = CastChecked<UGASCourseAbilitySystemComponent>( GetAbilitySystemComponent()))
+			{
+				EnhancedInputComponent->BindActionByTag(InputConfig, InputTag_ConfirmTargetData, ETriggerEvent::Triggered, MyASC, &UGASCourseAbilitySystemComponent::LocalInputConfirm);
+				EnhancedInputComponent->BindActionByTag(InputConfig, InputTag_CancelTargetData, ETriggerEvent::Triggered, MyASC, &UGASCourseAbilitySystemComponent::LocalInputCancel);
+			}
+			
 		}
 	}
 }
@@ -149,23 +150,24 @@ void AGASCoursePlayerCharacter::SetupPlayerInputComponent(UInputComponent* Playe
 void AGASCoursePlayerCharacter::PossessedBy(AController* NewController)
 {
 	Super::PossessedBy(NewController);
-	
+
 	if(AGASCoursePlayerState* PS = GetPlayerState<AGASCoursePlayerState>())
 	{
 		AbilitySystemComponent = Cast<UGASCourseAbilitySystemComponent>(PS->GetAbilitySystemComponent());
 		PS->GetAbilitySystemComponent()->InitAbilityActorInfo(PS, this);
 		InitializeAbilitySystem(AbilitySystemComponent);
-
-		if (const APlayerController* PlayerController = Cast<APlayerController>(Controller))
-		{
-			if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
-			{
-				Subsystem->AddMappingContext(DefaultMappingContextKBM, 0);
-				Subsystem->AddMappingContext(DefaultMappingContextGamepad, 0);
-			}
-		}
 	}
 
+	if (AGASCoursePlayerController* PlayerController = Cast<AGASCoursePlayerController>(Controller))
+	{
+		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
+		{
+			Subsystem->AddMappingContext(DefaultMappingContextKBM, 0);
+			Subsystem->AddMappingContext(DefaultMappingContextGamepad, 0);
+		}
+		PlayerController->CreateHUD();
+	}
+	
 	UpdateCharacterAnimLayer(UnArmedAnimLayer);
 	InitializeCamera();
 	OnCharacterMovementUpdated.AddDynamic(this, &ThisClass::OnMovementUpdated);
@@ -174,39 +176,37 @@ void AGASCoursePlayerCharacter::PossessedBy(AController* NewController)
 void AGASCoursePlayerCharacter::OnRep_PlayerState()
 {
 	Super::OnRep_PlayerState();
-	
+
 	if(AGASCoursePlayerState* PS = GetPlayerState<AGASCoursePlayerState>())
 	{
 		AbilitySystemComponent = Cast<UGASCourseAbilitySystemComponent>(PS->GetAbilitySystemComponent());
 		PS->GetAbilitySystemComponent()->InitAbilityActorInfo(PS, this);
-		InitializeAbilitySystem(AbilitySystemComponent);
-
-		if (const APlayerController* PlayerController = Cast<APlayerController>(Controller))
+		
+		if (AGASCoursePlayerController* PlayerController = Cast<AGASCoursePlayerController>(Controller))
 		{
 			if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
 			{
 				Subsystem->AddMappingContext(DefaultMappingContextKBM, 0);
 				Subsystem->AddMappingContext(DefaultMappingContextGamepad, 0);
 			}
+			PlayerController->CreateHUD();
 		}
-
+		
 		UpdateCharacterAnimLayer(UnArmedAnimLayer);
 		InitializeCamera();
+		OnCharacterMovementUpdated.AddDynamic(this, &ThisClass::OnMovementUpdated);
 	}
 }
 
 void AGASCoursePlayerCharacter::OnRep_Controller()
 {
 	Super::OnRep_Controller();
-
-	UpdateCharacterAnimLayer(UnArmedAnimLayer);
 	
 	// Needed in case the PC wasn't valid when we Init-ed the ASC.
 	if (const AGASCoursePlayerState* PS = GetPlayerState<AGASCoursePlayerState>())
 	{
 		PS->GetAbilitySystemComponent()->RefreshAbilityActorInfo();
 	}
-	OnCharacterMovementUpdated.AddDynamic(this, &ThisClass::OnMovementUpdated);
 }
 
 void AGASCoursePlayerCharacter::BeginPlay()
@@ -518,8 +518,10 @@ void AGASCoursePlayerCharacter::CameraEdgePanning()
 	}
 
 #if WITH_EDITOR
-	const FViewport* EditorViewport = GEditor->GetPIEViewport();
-	bIsWindowFocused = EditorViewport->HasMouseCapture();
+	if(const FViewport* EditorViewport = GEditor->GetPIEViewport())
+	{
+		bIsWindowFocused = EditorViewport->HasMouseCapture();
+	}
 #endif
 
 	if(!GetWorld()->IsPlayInEditor())

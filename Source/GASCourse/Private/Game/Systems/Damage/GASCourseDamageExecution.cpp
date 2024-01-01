@@ -73,6 +73,7 @@ void UGASCourseDamageExecution::Execute_Implementation(const FGameplayEffectCust
 		DamageDealtPayload.Target = TargetAbilitySystemComponent->GetAvatarActor();
 		DamageDealtPayload.EventMagnitude = MitigatedDamage;
 		DamageDealtPayload.ContextHandle = Spec.GetContext();
+		DamageDealtPayload.InstigatorTags = Spec.DynamicGrantedTags;
 		if(Spec.GetContext().GetHitResult())
 		{
 			FHitResult HitResultFromContext = *Spec.GetContext().GetHitResult();

@@ -18,12 +18,18 @@ class GASCOURSE_API AGASCoursePlayerState : public APlayerState, public IAbility
 public:
 
 	AGASCoursePlayerState();
+
+	UFUNCTION(BlueprintCallable, Category="GASCourse|PlayerState")
+	UGASCourseAbilitySystemComponent* GetGASCourseAbilitySystemComponent() const {return AbilitySystemComponent;}
 	
 	virtual UGASCourseAbilitySystemComponent* GetAbilitySystemComponent() const override;
 	virtual bool ReplicateSubobjects(class UActorChannel *Channel, class FOutBunch *Bunch, FReplicationFlags *RepFlags) override;
-
-protected:
 	
-	UGASCourseAbilitySystemComponent* AbilitySystemComponent = nullptr;
+	virtual void PostInitializeComponents() override;
+
+private:
+
+	UPROPERTY(VisibleAnywhere, Category="GASCourse|PlayerState")
+	TObjectPtr<UGASCourseAbilitySystemComponent> AbilitySystemComponent;
 	
 };

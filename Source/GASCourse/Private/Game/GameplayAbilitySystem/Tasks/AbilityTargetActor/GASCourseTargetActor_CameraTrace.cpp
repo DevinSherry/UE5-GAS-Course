@@ -5,14 +5,17 @@
 #include "AbilitySystemBlueprintLibrary.h"
 #include "Abilities/GameplayAbility.h"
 #include "GASCourse/GASCourse.h"
-#include "AbilitySystemGlobals.h"
-#include "AbilitySystemComponent.h"
+#include "Game/Character/Player/GASCoursePlayerController.h"
 
 AGASCourseTargetActor_CameraTrace::AGASCourseTargetActor_CameraTrace(const FObjectInitializer& ObjectInitializer)
 : Super(ObjectInitializer)
 {
 	CollisionRadius = 50.0f;
 	CollisionHeight = 50.0f;
+
+	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.TickGroup = TG_PrePhysics;
+	ShouldProduceTargetDataOnServer = false;
 }
 
 void AGASCourseTargetActor_CameraTrace::StartTargeting(UGameplayAbility* InAbility)
@@ -67,6 +70,7 @@ void AGASCourseTargetActor_CameraTrace::Tick(float DeltaSeconds)
 
 FHitResult AGASCourseTargetActor_CameraTrace::PerformTrace(AActor* InSourceActor)
 {
+	
 	bool bTraceComplex = false;
 
 	FCollisionQueryParams Params(SCENE_QUERY_STAT(AGASCourseTargetActor_CameraTrace), bTraceComplex);
@@ -75,22 +79,13 @@ FHitResult AGASCourseTargetActor_CameraTrace::PerformTrace(AActor* InSourceActor
 	UWorld *ThisWorld = GetWorld();
 	FHitResult ReturnHitResult;
 	
-	APlayerController* PC = OwningAbility->GetCurrentActorInfo()->PlayerController.Get();
+	AGASCoursePlayerController* PC = Cast<AGASCoursePlayerController>(OwningAbility->GetCurrentActorInfo()->PlayerController.Get());
 	check(PC);
-
-	FVector MousePositionToWorldLocation;
-	FVector MousePositionToWorldDirection;
-
-	FVector TraceStart;
-	FVector TraceEnd;
+	
+	FVector TraceStart = PC->MousePositionDeprojectedToWorld;
+	FVector TraceEnd = TraceStart + PC->MouseDirectionDeprojectedToWorld * MaxRange;
 
 	bLastTraceWasGood = false;
-	
-	if(PC->DeprojectMousePositionToWorld(MousePositionToWorldLocation, MousePositionToWorldDirection))
-	{
-		TraceStart = MousePositionToWorldLocation;
-		TraceEnd = TraceStart + MousePositionToWorldDirection * MaxRange;
-	}
 	
 	LineTraceWithFilter(ReturnHitResult, InSourceActor->GetWorld(), Filter, TraceStart, TraceEnd, TraceChannel, Params);
 	//Default to end of trace line if we don't hit anything.
@@ -113,6 +108,7 @@ FHitResult AGASCourseTargetActor_CameraTrace::PerformTrace(AActor* InSourceActor
 	{
 		LocalReticleActor->SetIsTargetValid(bLastTraceWasGood);
 		LocalReticleActor->SetActorLocation(ReturnHitResult.Location);
+		UE_LOG(LogTemp, Warning, TEXT("%s"), *ReturnHitResult.Location.ToString());
 		LocalReticleActor->SetActorScale3D(ReticleParams.AOEScale);
 		FRotator LocalReticleRot = ReturnHitResult.Normal.Rotation();
 		LocalReticleActor->SetActorRotation(LocalReticleRot);

@@ -26,7 +26,6 @@ UE_DECLARE_GAMEPLAY_TAG_EXTERN(InputTag_EquipmentAbilityTwo)
 UE_DECLARE_GAMEPLAY_TAG_EXTERN(InputTag_ConfirmTargetData);
 UE_DECLARE_GAMEPLAY_TAG_EXTERN(InputTag_CancelTargetData);
 
-
 UE_DECLARE_GAMEPLAY_TAG_EXTERN(InputTag_MoveCamera);
 UE_DECLARE_GAMEPLAY_TAG_EXTERN(InputTag_RecenterCamera);
 UE_DECLARE_GAMEPLAY_TAG_EXTERN(InputTag_RotateCameraAxis);
@@ -46,6 +45,9 @@ UE_DECLARE_GAMEPLAY_TAG_EXTERN(Event_OnDeath);
 UE_DECLARE_GAMEPLAY_TAG_EXTERN(DamageType_Physical);
 UE_DECLARE_GAMEPLAY_TAG_EXTERN(DamageType_Elemental_Fire);
 UE_DECLARE_GAMEPLAY_TAG_EXTERN(DamageType_Status_Burn);
+
+UE_DECLARE_GAMEPLAY_TAG_EXTERN(Event_Gameplay_OnDamageDealt);
+UE_DECLARE_GAMEPLAY_TAG_EXTERN(Event_Gameplay_OnDamageReceived);
 
 
 struct FGASCourseNativeGameplayTags

@@ -20,12 +20,10 @@ void UGASCourseAbilitySystemComponent::InitAbilityActorInfo(AActor* InOwnerActor
 	const FGameplayAbilityActorInfo* ActorInfo = AbilityActorInfo.Get();
 	check(ActorInfo);
 	check(InOwnerActor);
-
-	const bool bHasNewPawnAvatar = Cast<APawn>(InAvatarActor) && (InAvatarActor != ActorInfo->AvatarActor);
-
+	
 	Super::InitAbilityActorInfo(InOwnerActor, InAvatarActor);
 
-	if (bHasNewPawnAvatar)
+	if (const bool bHasNewPawnAvatar = Cast<APawn>(InAvatarActor) && (InAvatarActor != ActorInfo->AvatarActor))
 	{
 		// Notify all abilities that a new pawn avatar has been set
 		for (const FGameplayAbilitySpec& AbilitySpec : ActivatableAbilities.Items)
@@ -46,14 +44,14 @@ void UGASCourseAbilitySystemComponent::InitAbilityActorInfo(AActor* InOwnerActor
 				AbilityCDO->OnPawnAvatarSet();
 			}
 		}
-		
-		TryActivateAbilitiesOnSpawn();
-
-		if(UGASCourseAnimInstance* GASAnimInst = Cast<UGASCourseAnimInstance>(ActorInfo->GetAnimInstance()))
-		{
-			GASAnimInst->InitializeWithAbilitySystem(this);
-		}
 	}
+
+	if(UGASCourseAnimInstance* GASAnimInst = Cast<UGASCourseAnimInstance>(ActorInfo->GetAnimInstance()))
+	{
+		GASAnimInst->InitializeWithAbilitySystem(this);
+	}
+		
+	TryActivateAbilitiesOnSpawn();
 }
 
 void UGASCourseAbilitySystemComponent::TryActivateAbilitiesOnSpawn()
@@ -62,7 +60,7 @@ void UGASCourseAbilitySystemComponent::TryActivateAbilitiesOnSpawn()
 	for (const FGameplayAbilitySpec& AbilitySpec : ActivatableAbilities.Items)
 	{
 		const UGASCourseGameplayAbility* AbilityCDO = CastChecked<UGASCourseGameplayAbility>(AbilitySpec.Ability);
-		TryActivateAbility(AbilitySpec.Handle);
+		AbilityCDO->TryActivateAbilityOnSpawn(AbilityActorInfo.Get(), AbilitySpec);
 	}
 }
 
