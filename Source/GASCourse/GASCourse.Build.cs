@@ -6,6 +6,7 @@ public class GASCourse : ModuleRules
 {
 	public GASCourse(ReadOnlyTargetRules Target) : base(Target)
 	{
+		SetupGameplayDebuggerSupport(Target);
 		SetupIrisSupport(Target);
 		
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;

@@ -50,11 +50,6 @@ AGASCourseCharacter::AGASCourseCharacter(const class FObjectInitializer& ObjectI
 
 	//Initialize AbilitySystemComponent
 	AbilitySystemComponent = ObjectInitializer.CreateDefaultSubobject<UGASCourseAbilitySystemComponent>(this, TEXT("AbilitySystemComponent"));
-	AbilitySystemComponent->SetIsReplicated(true);
-	AbilitySystemComponent->SetReplicationMode(EGameplayEffectReplicationMode::Mixed);
-
-	// AbilitySystemComponent needs to be updated at a high frequency.
-	NetUpdateFrequency = 100.0f;
 
 	// Activate ticking in order to update the cursor every frame.
 	PrimaryActorTick.bCanEverTick = true;
@@ -287,7 +282,8 @@ void AGASCourseCharacter::PostInitializeComponents()
 	Super::PostInitializeComponents();
 
 	check(AbilitySystemComponent);
-	AbilitySystemComponent->InitAbilityActorInfo(this, this);
+	AbilitySystemComponent->SetIsReplicated(true);
+	AbilitySystemComponent->SetReplicationMode(EGameplayEffectReplicationMode::Mixed);
 }
 
 
@@ -317,7 +313,6 @@ void AGASCourseCharacter::OnRep_ReplicationVarList()
 			ASC->RemoveLooseGameplayTag(FGameplayTag::RequestGameplayTag("Data.Sample"));
 		}
 	}
-
 }
 
 void AGASCourseCharacter::SetCharacterRotation_Client_Implementation(FRotator InRotation)
@@ -329,7 +324,7 @@ void AGASCourseCharacter::SetCharacterRotation_Client_Implementation(FRotator In
 	if(GetLocalRole() == ROLE_Authority)
 	{
 		SetActorRotation(RotateToDirection);
-		ForceReplication();
+		ForceNetUpdate();
 	}
 	else
 	{
@@ -340,13 +335,13 @@ void AGASCourseCharacter::SetCharacterRotation_Client_Implementation(FRotator In
 void AGASCourseCharacter::SetCharacterRotation_Server_Implementation(FRotator InRotation)
 {
 	SetCharacterRotation_Multicast(InRotation);
-	ForceReplication();
+	ForceNetUpdate();
 }
 
 void AGASCourseCharacter::SetCharacterRotation_Multicast_Implementation(FRotator InRotation)
 {
 	SetActorRotation(InRotation);
-	ForceReplication();
+	ForceNetUpdate();
 }
 
 void AGASCourseCharacter::ForceReplication()

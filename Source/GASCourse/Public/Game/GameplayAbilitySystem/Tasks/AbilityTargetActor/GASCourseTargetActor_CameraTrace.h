@@ -21,7 +21,7 @@ public:
 	virtual void StartTargeting(UGameplayAbility* InAbility) override;
 	virtual void ConfirmTargetingAndContinue() override;
 	virtual void ConfirmTargeting() override;
-	virtual void CancelTargeting();
+	virtual void CancelTargeting() override;
 	virtual void Tick(float DeltaSeconds) override;
 
 	/** Radius for a sphere or capsule. */

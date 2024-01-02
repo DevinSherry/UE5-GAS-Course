@@ -58,6 +58,13 @@ void AGASCoursePlayerController::OnPossess(APawn* InPawn)
 {
 	Super::OnPossess(InPawn);
 
+	AGASCoursePlayerState* PS = GetPlayerState<AGASCoursePlayerState>();
+	if (PS)
+	{
+		// Init ASC with PS (Owner) and our new Pawn (AvatarActor)
+		PS->GetAbilitySystemComponent()->InitAbilityActorInfo(PS, InPawn);
+	}
+
 	if(UGASCourseAbilitySystemComponent* ASC = GetGASCourseAbilitySystemComponent())
 	{
 		ASC->GenericGameplayEventCallbacks.FindOrAdd(Event_Gameplay_OnDamageDealt).AddUObject(this, &AGASCoursePlayerController::OnDamageDealtCallback);
@@ -127,6 +134,12 @@ void AGASCoursePlayerController::StopMovement_Multicast_Implementation()
 void AGASCoursePlayerController::OnRep_PlayerState()
 {
 	Super::OnRep_PlayerState();
+	// Needed in case the PC wasn't valid when we Init-ed the ASC.
+	if (AGASCoursePlayerState* PS = GetPlayerState<AGASCoursePlayerState>())
+	{
+		PS->GetAbilitySystemComponent()->InitAbilityActorInfo(PS, GetPawn());
+	}
+	CreateHUD();
 }
 
 void AGASCoursePlayerController::OnRep_Pawn()

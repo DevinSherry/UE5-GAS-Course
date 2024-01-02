@@ -196,17 +196,18 @@ void AGASCoursePlayerCharacter::OnRep_PlayerState()
 		InitializeCamera();
 		OnCharacterMovementUpdated.AddDynamic(this, &ThisClass::OnMovementUpdated);
 	}
+	
+	AbilitySystemComponent->RefreshAbilityActorInfo();
 }
 
 void AGASCoursePlayerCharacter::OnRep_Controller()
 {
 	Super::OnRep_Controller();
-	
-	// Needed in case the PC wasn't valid when we Init-ed the ASC.
-	if (const AGASCoursePlayerState* PS = GetPlayerState<AGASCoursePlayerState>())
+	if(AbilitySystemComponent)
 	{
-		PS->GetAbilitySystemComponent()->RefreshAbilityActorInfo();
+		AbilitySystemComponent->RefreshAbilityActorInfo();
 	}
+	
 }
 
 void AGASCoursePlayerCharacter::BeginPlay()

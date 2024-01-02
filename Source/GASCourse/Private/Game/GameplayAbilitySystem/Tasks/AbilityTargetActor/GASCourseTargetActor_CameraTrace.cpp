@@ -16,6 +16,7 @@ AGASCourseTargetActor_CameraTrace::AGASCourseTargetActor_CameraTrace(const FObje
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.TickGroup = TG_PrePhysics;
 	ShouldProduceTargetDataOnServer = false;
+	SetReplicates(true);
 }
 
 void AGASCourseTargetActor_CameraTrace::StartTargeting(UGameplayAbility* InAbility)

@@ -11,8 +11,8 @@
 UGASCourseAbilitySystemComponent::UGASCourseAbilitySystemComponent(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
-	ReplicationMode = EGameplayEffectReplicationMode::Mixed;
 	ReplicationProxyEnabled = true;
+	SetIsReplicated(true);
 }
 
 void UGASCourseAbilitySystemComponent::InitAbilityActorInfo(AActor* InOwnerActor, AActor* InAvatarActor)
@@ -20,10 +20,12 @@ void UGASCourseAbilitySystemComponent::InitAbilityActorInfo(AActor* InOwnerActor
 	const FGameplayAbilityActorInfo* ActorInfo = AbilityActorInfo.Get();
 	check(ActorInfo);
 	check(InOwnerActor);
-	
+
+	const bool bHasNewPawnAvatar = Cast<APawn>(InAvatarActor) && (InAvatarActor != ActorInfo->AvatarActor);
+		
 	Super::InitAbilityActorInfo(InOwnerActor, InAvatarActor);
 
-	if (const bool bHasNewPawnAvatar = Cast<APawn>(InAvatarActor) && (InAvatarActor != ActorInfo->AvatarActor))
+	if (bHasNewPawnAvatar)
 	{
 		// Notify all abilities that a new pawn avatar has been set
 		for (const FGameplayAbilitySpec& AbilitySpec : ActivatableAbilities.Items)

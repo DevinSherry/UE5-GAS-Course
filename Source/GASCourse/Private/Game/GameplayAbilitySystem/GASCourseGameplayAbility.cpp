@@ -174,41 +174,38 @@ void UGASCourseGameplayAbility::ActivateAbility(const FGameplayAbilitySpecHandle
 	const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo,
 	const FGameplayEventData* TriggerEventData)
 {
-	if(HasAuthorityOrPredictionKey(ActorInfo, &ActivationInfo))
+	
+	if(ActorInfo->IsNetAuthority() || HasAuthorityOrPredictionKey(ActorInfo, &ActivationInfo))
 	{
-		if(!ActorInfo->IsNetAuthority())
+		switch (AbilityType)
 		{
-			return;
-		}
-	}
-
-	switch (AbilityType)
-	{
-	case EGASCourseAbilityType::Duration:
-		if(bAutoApplyDurationEffect)
-		{
-			if(!ApplyDurationEffect())
+		case EGASCourseAbilityType::Duration:
+			if(bAutoApplyDurationEffect)
 			{
-				EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
+				if(!ApplyDurationEffect())
+				{
+					EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
+				}
 			}
-		}
-	case EGASCourseAbilityType::Instant:
-		{
+		case EGASCourseAbilityType::Instant:
+			{
+				break;
+			}
+		case EGASCourseAbilityType::AimCast:
+			{
+				break;
+			}
+		default:
 			break;
 		}
-	case EGASCourseAbilityType::AimCast:
+
+		if(bAutoCommitAbilityOnActivate)
 		{
-			break;
+			CommitAbility(Handle, ActorInfo, ActivationInfo);
 		}
-	default:
-		break;
+		Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
 	}
 
-	if(bAutoCommitAbilityOnActivate)
-	{
-		CommitAbility(Handle, ActorInfo, ActivationInfo);
-	}
-	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
 }
 
 void UGASCourseGameplayAbility::EndAbility(const FGameplayAbilitySpecHandle Handle,
@@ -398,20 +395,21 @@ void UGASCourseGameplayAbility::CommitExecute(const FGameplayAbilitySpecHandle H
 void UGASCourseGameplayAbility::ApplyCooldown(const FGameplayAbilitySpecHandle Handle,
 	const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo) const
 {
+	Super::ApplyCooldown(Handle, ActorInfo, ActivationInfo);
 
-	if(!GetActorInfo().IsNetAuthority() || !HasAuthorityOrPredictionKey(CurrentActorInfo, &CurrentActivationInfo))
+	check(ActorInfo);
+
+	if(ActorInfo->IsNetAuthority() || HasAuthorityOrPredictionKey(ActorInfo, &ActivationInfo))
 	{
-		Super::ApplyCooldown(Handle, ActorInfo, ActivationInfo);
-	}
-	
-	if (const UGameplayEffect* CooldownGE = GetCooldownGameplayEffect())
-	{
-		const FActiveGameplayEffectHandle CooldownActiveGEHandle = ApplyGameplayEffectToOwner(Handle, ActorInfo, ActivationInfo, CooldownGE, GetAbilityLevel(Handle, ActorInfo));
-		if(CooldownActiveGEHandle.WasSuccessfullyApplied())
+		if (const UGameplayEffect* CooldownGE = GetCooldownGameplayEffect())
 		{
-			if(UGASCourseAbilitySystemComponent* ASC = GetGASCourseAbilitySystemComponentFromActorInfo())
+			const FActiveGameplayEffectHandle CooldownActiveGEHandle = ApplyGameplayEffectToOwner(Handle, ActorInfo, ActivationInfo, CooldownGE, GetAbilityLevel(Handle, ActorInfo));
+			if(CooldownActiveGEHandle.WasSuccessfullyApplied())
 			{
-				ASC->WaitForAbilityCooldownEnd(const_cast<UGASCourseGameplayAbility*>(this), CooldownActiveGEHandle);
+				if(UGASCourseAbilitySystemComponent* ASC = GetGASCourseAbilitySystemComponentFromActorInfo())
+				{
+					ASC->WaitForAbilityCooldownEnd(const_cast<UGASCourseGameplayAbility*>(this), CooldownActiveGEHandle);
+				}
 			}
 		}
 	}
@@ -457,12 +455,9 @@ void UGASCourseGameplayAbility::OnPawnAvatarSet()
 
 bool UGASCourseGameplayAbility::ApplyDurationEffect()
 {
-	if(!GetActorInfo().IsNetAuthority() || !HasAuthorityOrPredictionKey(CurrentActorInfo, &CurrentActivationInfo))
-	{
-		return false;
-	}
 	bool bSuccess = false;
-	if((DurationEffect))
+	
+	if((DurationEffect) && HasAuthorityOrPredictionKey(CurrentActorInfo, &CurrentActivationInfo))
 	{
 		if(const UGameplayEffect* DurationEffectObject = DurationEffect.GetDefaultObject())
 		{
@@ -483,12 +478,10 @@ bool UGASCourseGameplayAbility::ApplyDurationEffect()
 				return bSuccess;
 			}
 			UE_LOG(LogBlueprint, Error, TEXT("%s: SUPPLIED GAMEPLAY EFFECT {%s} HAS INVALID DURATION POLICY {%s}."),*GASCOURSE_CUR_CLASS_FUNC, *DurationEffectObject->GetName(), *UEnum::GetValueAsString(DurationEffectObject->DurationPolicy));
-			EndAbility(CurrentSpecHandle, CurrentActorInfo,CurrentActivationInfo, true, true);
 			return bSuccess;
 		}
 	}
 	
 	UE_LOG(LogBlueprint, Error, TEXT("%s: NO VALID DURATION EFFECT DEFINED IN DEFAULT SETTINGS"),*GASCOURSE_CUR_CLASS_FUNC);
-	EndAbility(CurrentSpecHandle, CurrentActorInfo,CurrentActivationInfo, true, true);
 	return bSuccess;
 }
