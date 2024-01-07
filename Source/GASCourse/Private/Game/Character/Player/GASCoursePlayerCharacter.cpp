@@ -137,11 +137,7 @@ void AGASCoursePlayerCharacter::SetupPlayerInputComponent(UInputComponent* Playe
 			TArray<uint32> BindHandles;
 			EnhancedInputComponent->BindAbilityActions(InputConfig, this, &ThisClass::Input_AbilityInputTagPressed, &ThisClass::Input_AbilityInputTagReleased, /*out*/ BindHandles);
 
-			if(UGASCourseAbilitySystemComponent* MyASC = CastChecked<UGASCourseAbilitySystemComponent>( GetAbilitySystemComponent()))
-			{
-				EnhancedInputComponent->BindActionByTag(InputConfig, InputTag_ConfirmTargetData, ETriggerEvent::Triggered, MyASC, &UGASCourseAbilitySystemComponent::LocalInputConfirm);
-				EnhancedInputComponent->BindActionByTag(InputConfig, InputTag_CancelTargetData, ETriggerEvent::Triggered, MyASC, &UGASCourseAbilitySystemComponent::LocalInputCancel);
-			}
+			BindASCInput();
 			
 		}
 	}
@@ -189,7 +185,9 @@ void AGASCoursePlayerCharacter::OnRep_PlayerState()
 				Subsystem->AddMappingContext(DefaultMappingContextKBM, 0);
 				Subsystem->AddMappingContext(DefaultMappingContextGamepad, 0);
 			}
+			
 			PlayerController->CreateHUD();
+			BindASCInput();
 		}
 		
 		UpdateCharacterAnimLayer(UnArmedAnimLayer);
@@ -278,6 +276,23 @@ void AGASCoursePlayerCharacter::Input_AbilityInputTagReleased(FGameplayTag Input
 			return;
 		}
 		ASC->AbilityInputTagReleased(InputTag);
+	}
+}
+
+void AGASCoursePlayerCharacter::BindASCInput()
+{
+	if (IsValid(InputComponent))
+	{
+		if(UGASCourseAbilitySystemComponent* MyASC = CastChecked<UGASCourseAbilitySystemComponent>( GetAbilitySystemComponent()))
+		{
+			// Set up action bindings
+			if (UGASCourseEnhancedInputComponent* EnhancedInputComponent = CastChecked<UGASCourseEnhancedInputComponent>(InputComponent))
+			{
+				check(EnhancedInputComponent);
+				EnhancedInputComponent->BindActionByTag(InputConfig, InputTag_ConfirmTargetData, ETriggerEvent::Triggered, MyASC, &UGASCourseAbilitySystemComponent::LocalInputConfirm);
+				EnhancedInputComponent->BindActionByTag(InputConfig, InputTag_CancelTargetData, ETriggerEvent::Triggered, MyASC, &UGASCourseAbilitySystemComponent::LocalInputCancel);
+			}
+		}
 	}
 }
 

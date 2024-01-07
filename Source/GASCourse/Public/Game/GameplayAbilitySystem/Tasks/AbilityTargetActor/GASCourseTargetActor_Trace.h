@@ -93,10 +93,13 @@ protected:
 	virtual void DrawTargetOutline(TArray<TWeakObjectPtr<AActor> > InHitActors,  TArray<TWeakObjectPtr<AActor>> InLatestHitActors);
 	virtual void ClearTargetOutline(TArray<TWeakObjectPtr<AActor> > InHitActors);
 
+	virtual void SendTargetDataBacktoServer(const FGameplayAbilityTargetDataHandle& InData, FGameplayTag ApplicationTag);
+
 protected:
 
 	FGameplayTagContainer DefaultTargetingTagContainer;
 
 	int StoredCustomDepthStencilValue = 0;
+	bool bHasDataBeenSentToServer = false;
 	
 };

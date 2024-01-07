@@ -125,6 +125,8 @@ protected:
 	void Input_AbilityInputTagPressed(FGameplayTag InputTag);
 	void Input_AbilityInputTagReleased(FGameplayTag InputTag);
 
+	void BindASCInput();
+
 	void Move(const FInputActionValue& Value) override;
 
 	void Input_CameraZoom(const FInputActionInstance& InputActionInstance);

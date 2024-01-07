@@ -174,7 +174,10 @@ void AGASCourseTargetActor_Trace::ShowMouseCursor(bool bShowCursor)
 {
 	if(AGASCoursePlayerController* SourcePC = Cast<AGASCoursePlayerController>(OwningAbility->GetCurrentActorInfo()->PlayerController.Get()))
 	{
-		SourcePC->bShowMouseCursor = bShowCursor;
+		if(SourcePC->IsLocalController())
+		{
+			SourcePC->bShowMouseCursor = bShowCursor;
+		}
 	}
 }
 
@@ -191,15 +194,23 @@ void AGASCourseTargetActor_Trace::DrawTargetOutline(TArray<TWeakObjectPtr<AActor
 
 void AGASCourseTargetActor_Trace::ClearTargetOutline(TArray<TWeakObjectPtr<AActor>> InHitActors)
 {
+	
+}
 
+void AGASCourseTargetActor_Trace::SendTargetDataBacktoServer(const FGameplayAbilityTargetDataHandle& InData,
+	FGameplayTag ApplicationTag)
+{
+	
 }
 
 void AGASCourseTargetActor_Trace::StartTargeting(UGameplayAbility* InAbility)
 {
 	Super::StartTargeting(InAbility);
 	SourceActor = InAbility->GetCurrentActorInfo()->AvatarActor.Get();
+	
 	UpdateLooseGameplayTagsDuringTargeting(Status_Block_PointClickMovementInput, 1);
 	UpdateLooseGameplayTagsDuringTargeting(Status_Gameplay_Targeting, 1);
+	
 	ShowMouseCursor(false);
 	
 	if (ReticleClass)
@@ -227,10 +238,12 @@ void AGASCourseTargetActor_Trace::StartTargeting(UGameplayAbility* InAbility)
 void AGASCourseTargetActor_Trace::ConfirmTargetingAndContinue()
 {
 	Super::ConfirmTargetingAndContinue();
+	
 	UpdateLooseGameplayTagsDuringTargeting(Status_Block_PointClickMovementInput, 0);
 	UpdateLooseGameplayTagsDuringTargeting(Status_Gameplay_Targeting, 0);
 	ShowMouseCursor(true);
 	ClearTargetOutline(ActorsToOutline);
+	
 }
 
 void AGASCourseTargetActor_Trace::CancelTargeting()
@@ -245,7 +258,7 @@ void AGASCourseTargetActor_Trace::CancelTargeting()
 void AGASCourseTargetActor_Trace::ConfirmTargeting()
 {
 	Super::ConfirmTargeting();
-	Super::ConfirmTargetingAndContinue();
+
 	UpdateLooseGameplayTagsDuringTargeting(Status_Block_PointClickMovementInput, 0);
 	UpdateLooseGameplayTagsDuringTargeting(Status_Gameplay_Targeting, 0);
 	ShowMouseCursor(true);

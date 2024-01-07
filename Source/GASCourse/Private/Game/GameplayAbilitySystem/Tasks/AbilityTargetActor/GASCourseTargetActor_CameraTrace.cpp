@@ -3,9 +3,11 @@
 
 #include "Game/GameplayAbilitySystem/Tasks/AbilityTargetActor/GASCourseTargetActor_CameraTrace.h"
 #include "AbilitySystemBlueprintLibrary.h"
+#include "GASCourseGameplayAbility.h"
 #include "Abilities/GameplayAbility.h"
 #include "GASCourse/GASCourse.h"
 #include "Game/Character/Player/GASCoursePlayerController.h"
+#include "GameplayAbilities/Aimcast/GASCourseAimcastGameplayAbility.h"
 
 AGASCourseTargetActor_CameraTrace::AGASCourseTargetActor_CameraTrace(const FObjectInitializer& ObjectInitializer)
 : Super(ObjectInitializer)
@@ -32,6 +34,7 @@ void AGASCourseTargetActor_CameraTrace::ConfirmTargetingAndContinue()
 		const FVector Origin = PerformTrace(SourceActor).Location;
 		FGameplayAbilityTargetDataHandle Handle = MakeTargetData(PerformOverlap(Origin), Origin);
 		TargetDataReadyDelegate.Broadcast(Handle);
+		SendTargetDataBacktoServer(Handle, FGameplayTag());
 		Super::ConfirmTargetingAndContinue();
 	}
 }
@@ -44,6 +47,7 @@ void AGASCourseTargetActor_CameraTrace::ConfirmTargeting()
 		const FVector Origin = PerformTrace(SourceActor).Location;
 		FGameplayAbilityTargetDataHandle Handle = MakeTargetData(PerformOverlap(Origin), Origin);
 		TargetDataReadyDelegate.Broadcast(Handle);
+		SendTargetDataBacktoServer(Handle, FGameplayTag());
 		Super::ConfirmTargeting();
 	}
 }
@@ -67,6 +71,22 @@ void AGASCourseTargetActor_CameraTrace::Tick(float DeltaSeconds)
 			ActorsToOutline = PerformOverlap(EndPoint);
 		}
 	}
+}
+
+void AGASCourseTargetActor_CameraTrace::SendTargetDataBacktoServer(const FGameplayAbilityTargetDataHandle& InData,
+	FGameplayTag ApplicationTag)
+{
+	if(bHasDataBeenSentToServer)
+	{
+		return;
+	}
+	
+	if(UGASCourseAimcastGameplayAbility* LocalAbility = Cast<UGASCourseAimcastGameplayAbility>(OwningAbility))
+	{
+		LocalAbility->OnTargetDataReadyCallback(InData, ApplicationTag);
+		bHasDataBeenSentToServer = true;
+	}
+	Super::SendTargetDataBacktoServer(InData, ApplicationTag);
 }
 
 FHitResult AGASCourseTargetActor_CameraTrace::PerformTrace(AActor* InSourceActor)

@@ -5,10 +5,8 @@
 #include "AbilitySystemGlobals.h"
 #include "AbilitySystemBlueprintLibrary.h"
 #include "Game/GameplayAbilitySystem/GASCourseNativeGameplayTags.h"
-#include "GASCourse/GASCourse.h"
 #include "GameplayEffect.h"
 #include "GameplayEffectTypes.h"
-#include "Abilities/Tasks/AbilityTask_WaitGameplayEffectRemoved.h"
 
 UGASCourseGameplayAbility::UGASCourseGameplayAbility(const FObjectInitializer& ObjectInitializer)
 {
@@ -18,14 +16,8 @@ UGASCourseGameplayAbility::UGASCourseGameplayAbility(const FObjectInitializer& O
 	NetSecurityPolicy = EGameplayAbilityNetSecurityPolicy::ClientOrServer;
 
 	ActivationPolicy = EGASCourseAbilityActivationPolicy::OnInputTriggered;
-	AbilityType = EGASCourseAbilityType::Instant;
-
-	//EGASCourseAbilityType::Duration initialized variables
-	bAutoEndAbilityOnDurationEnd = true;
-	bAutoCommitCooldownOnDurationEnd = true;
 
 	bAutoCommitAbilityOnActivate = true;
-	bAutoApplyDurationEffect = true;
 }
 
 UGASCourseAbilitySystemComponent* UGASCourseGameplayAbility::GetGASCourseAbilitySystemComponentFromActorInfo() const
@@ -101,37 +93,6 @@ void UGASCourseGameplayAbility::TryActivateAbilityOnSpawn(const FGameplayAbility
 	}
 }
 
-void UGASCourseGameplayAbility::DurationEffectRemoved(const FGameplayEffectRemovalInfo& GameplayEffectRemovalInfo)
-{
-	if(HasAuthorityOrPredictionKey(CurrentActorInfo, &CurrentActivationInfo))
-	{
-		if(AbilityType == EGASCourseAbilityType::Duration)
-		{
-			if(bAutoCommitCooldownOnDurationEnd)
-			{
-				CommitAbilityCooldown(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true);
-			}
-		
-			if(bAutoEndAbilityOnDurationEnd)
-			{
-				EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, true);
-			}
-		}
-	}
-}
-
-UGameplayEffect* UGASCourseGameplayAbility::GetDurationGameplayEffect() const
-{
-	if ( DurationEffect )
-	{
-		return DurationEffect->GetDefaultObject<UGameplayEffect>();
-	}
-	else
-	{
-		return nullptr;
-	}
-}
-
 bool UGASCourseGameplayAbility::CanActivateAbility(const FGameplayAbilitySpecHandle Handle,
                                                    const FGameplayAbilityActorInfo* ActorInfo, const FGameplayTagContainer* SourceTags,
                                                    const FGameplayTagContainer* TargetTags, FGameplayTagContainer* OptionalRelevantTags) const
@@ -174,38 +135,13 @@ void UGASCourseGameplayAbility::ActivateAbility(const FGameplayAbilitySpecHandle
 	const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo,
 	const FGameplayEventData* TriggerEventData)
 {
-	
-	if(ActorInfo->IsNetAuthority() || HasAuthorityOrPredictionKey(ActorInfo, &ActivationInfo))
+
+	if(bAutoCommitAbilityOnActivate)
 	{
-		switch (AbilityType)
-		{
-		case EGASCourseAbilityType::Duration:
-			if(bAutoApplyDurationEffect)
-			{
-				if(!ApplyDurationEffect())
-				{
-					EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
-				}
-			}
-		case EGASCourseAbilityType::Instant:
-			{
-				break;
-			}
-		case EGASCourseAbilityType::AimCast:
-			{
-				break;
-			}
-		default:
-			break;
-		}
-
-		if(bAutoCommitAbilityOnActivate)
-		{
-			CommitAbility(Handle, ActorInfo, ActivationInfo);
-		}
-		Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
+		CommitAbility(Handle, ActorInfo, ActivationInfo);
 	}
-
+	
+	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
 }
 
 void UGASCourseGameplayAbility::EndAbility(const FGameplayAbilitySpecHandle Handle,
@@ -225,29 +161,6 @@ void UGASCourseGameplayAbility::ApplyCost(const FGameplayAbilitySpecHandle Handl
 	const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo) const
 {
 	Super::ApplyCost(Handle, ActorInfo, ActivationInfo);
-
-	check(ActorInfo);
-
-	// Used to determine if the ability actually hit a target (as some costs are only spent on successful attempts)
-	auto DetermineIfAbilityHitTarget = [&]()
-	{
-		if (ActorInfo->IsNetAuthority())
-		{
-			if (UGASCourseAbilitySystemComponent* ASC = Cast<UGASCourseAbilitySystemComponent>(ActorInfo->AbilitySystemComponent.Get()))
-			{
-				FGameplayAbilityTargetDataHandle TargetData;
-				ASC->GetAbilityTargetData(Handle, ActivationInfo, TargetData);
-				for (int32 TargetDataIdx = 0; TargetDataIdx < TargetData.Data.Num(); ++TargetDataIdx)
-				{
-					if (UAbilitySystemBlueprintLibrary::TargetDataHasHitResult(TargetData, TargetDataIdx))
-					{
-						return true;
-					}
-				}
-			}
-		}
-		return false;
-	};
 }
 
 FGameplayEffectContextHandle UGASCourseGameplayAbility::MakeEffectContext(const FGameplayAbilitySpecHandle Handle,
@@ -381,15 +294,7 @@ bool UGASCourseGameplayAbility::CommitAbility(const FGameplayAbilitySpecHandle H
 void UGASCourseGameplayAbility::CommitExecute(const FGameplayAbilitySpecHandle Handle,
 	const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo)
 {
-	if(AbilityType == EGASCourseAbilityType::Duration && bAutoCommitCooldownOnDurationEnd)
-	{
-		//Only Apply Cost, don't apply cooldown.
-		ApplyCost(Handle,ActorInfo, ActivationInfo);
-	}
-	else
-	{
-		Super::CommitExecute(Handle, ActorInfo, ActivationInfo);
-	}
+	Super::CommitExecute(Handle, ActorInfo, ActivationInfo);
 }
 
 void UGASCourseGameplayAbility::ApplyCooldown(const FGameplayAbilitySpecHandle Handle,
@@ -425,15 +330,6 @@ void UGASCourseGameplayAbility::GetAbilityCooldownTags(FGameplayTagContainer& Co
 	}
 }
 
-void UGASCourseGameplayAbility::GetAbilityDurationTags(FGameplayTagContainer& DurationTags) const
-{
-	DurationTags.Reset();
-	if(const UGameplayEffect* DurationGE = GetDurationGameplayEffect())
-	{
-		DurationTags.AppendTags(DurationGE->GetGrantedTags());
-	}
-}
-
 float UGASCourseGameplayAbility::GetGrantedbyEffectDuration() const
 {
 	check(CurrentActorInfo);
@@ -451,37 +347,4 @@ float UGASCourseGameplayAbility::GetGrantedbyEffectDuration() const
 
 void UGASCourseGameplayAbility::OnPawnAvatarSet()
 {
-}
-
-bool UGASCourseGameplayAbility::ApplyDurationEffect()
-{
-	bool bSuccess = false;
-	
-	if((DurationEffect) && HasAuthorityOrPredictionKey(CurrentActorInfo, &CurrentActivationInfo))
-	{
-		if(const UGameplayEffect* DurationEffectObject = DurationEffect.GetDefaultObject())
-		{
-			if(DurationEffectObject->DurationPolicy == EGameplayEffectDurationType::HasDuration)
-			{
-				//TODO: Apply Player Level Info Here
-				DurationEffectHandle = ApplyGameplayEffectToOwner(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, DurationEffectObject, 1.0);
-				if(DurationEffectHandle.WasSuccessfullyApplied())
-				{
-					bSuccess = true;
-					
-					if(UAbilityTask_WaitGameplayEffectRemoved* DurationEffectRemovalTask = UAbilityTask_WaitGameplayEffectRemoved::WaitForGameplayEffectRemoved(this, DurationEffectHandle))
-					{
-						DurationEffectRemovalTask->OnRemoved.AddDynamic(this, &UGASCourseGameplayAbility::DurationEffectRemoved);
-						DurationEffectRemovalTask->Activate();
-					} 
-				}
-				return bSuccess;
-			}
-			UE_LOG(LogBlueprint, Error, TEXT("%s: SUPPLIED GAMEPLAY EFFECT {%s} HAS INVALID DURATION POLICY {%s}."),*GASCOURSE_CUR_CLASS_FUNC, *DurationEffectObject->GetName(), *UEnum::GetValueAsString(DurationEffectObject->DurationPolicy));
-			return bSuccess;
-		}
-	}
-	
-	UE_LOG(LogBlueprint, Error, TEXT("%s: NO VALID DURATION EFFECT DEFINED IN DEFAULT SETTINGS"),*GASCOURSE_CUR_CLASS_FUNC);
-	return bSuccess;
 }

@@ -12,7 +12,6 @@
  */
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FGASCourseAbilityCommitSignature, bool, CommitAbility);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FGASCourseAbilityCooldownCommitSignature);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FGASCourseAbilityDurationRemoved);
 
 
 /**
@@ -33,19 +32,6 @@ enum class EGASCourseAbilityActivationPolicy : uint8
 	OnSpawn
 };
 
-UENUM(BlueprintType)
-enum class EGASCourseAbilityType : uint8
-{
-	// Instant ability, immediately goes into cool-down.
-	Instant,
-
-	// Must have duration gameplay effect class, ability automatically ends on duration end.
-	Duration,
-
-	// Instantiates target data aiming.
-	AimCast
-};
-
 /**
  * 
  */
@@ -62,9 +48,6 @@ public:
 
 	UFUNCTION(BlueprintPure, Category = "GASCourse|Ability|Tags")
 	void GetAbilityCooldownTags(FGameplayTagContainer& CooldownTags) const;
-	
-	UFUNCTION(BlueprintPure, Category = "GASCourse|Ability|Tags")
-	void GetAbilityDurationTags(FGameplayTagContainer& DurationTags) const;
 
 	/**
 	 * @brief Get the granted by effect duration.
@@ -95,24 +78,6 @@ public:
 	EGASCourseAbilityActivationPolicy GetActivationPolicy() const { return ActivationPolicy; }
 
 	void TryActivateAbilityOnSpawn(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec) const;
-
-	/**Returns the type of ability, see EGASCourseAbilityType*/
-	UFUNCTION(BlueprintCallable, Category="GASCourse|Ability")
-	FORCEINLINE EGASCourseAbilityType GetAbilityType() const
-	{
-		return AbilityType;
-	}
-
-	//Callback for when applied duration effect is removed. Ability must be of type EGASCourseAbilityType::Duration
-	UFUNCTION()
-	void DurationEffectRemoved(const FGameplayEffectRemovalInfo& GameplayEffectRemovalInfo);
-
-	/**
-	 * @brief Helper function to get a reference to the Duration Effect class.
-	 * @return 
-	 */
-	UFUNCTION(BlueprintCallable)
-	UGameplayEffect* GetDurationGameplayEffect() const;
 
 protected:
 
@@ -147,50 +112,15 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent, Category = Ability, DisplayName = "OnPawnAvatarSet")
 	void K2_OnPawnAvatarSet();
 
-
 protected:
 
 	// Defines how this ability is meant to activate.
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "GASCourse|Ability|Activation")
 	EGASCourseAbilityActivationPolicy ActivationPolicy;
 
-	// Defines how this ability is meant to activate.
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "GASCourse|Ability")
-	EGASCourseAbilityType AbilityType;
-
-	//The duration effect to be applied, dictates how long the ability will last for.
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "GASCourse|Ability|Duration", meta=(EditCondition="AbilityType==EGASCourseAbilityType::Duration", EditConditionHides))
-	TSubclassOf<UGameplayEffect> DurationEffect;
-
-	/*Auto apply the duration effect on ability activation, otherwise use function Apply Duration Effect**/
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "GASCourse|Ability|Duration", meta=(EditCondition="AbilityType==EGASCourseAbilityType::Duration", EditConditionHides))
-	bool bAutoApplyDurationEffect;
-
-	/*Manually apply either class duration effect, or custom duration effect**/
-	UFUNCTION(BlueprintCallable, Category = "GASCourse|Ability|Duration")
-	UPARAM(DisplayName= "bDurationEffectApplied") bool ApplyDurationEffect();
-	
-
 	/**
 	 * @brief Should the ability automatically commit when activated? If false, blueprint or child classes must call CommitAbility() manually.
 	 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "GASCourse|Ability")
 	bool bAutoCommitAbilityOnActivate;
-
-	/**
-	 * @brief Should the ability automatically commit cooldown when the duration effect ends?
-	 */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "GASCourse|Ability|Duration", meta=(EditCondition="AbilityType==EGASCourseAbilityType::Duration", EditConditionHides))
-	bool bAutoCommitCooldownOnDurationEnd;
-
-	/**
- * @brief Should the ability automatically end when the duration effect ends?
- */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "GASCourse|Ability|Duration", meta=(EditCondition="AbilityType==EGASCourseAbilityType::Duration", EditConditionHides))
-	bool bAutoEndAbilityOnDurationEnd;
-
-private:
-	
-	FActiveGameplayEffectHandle DurationEffectHandle;
-	
 };
