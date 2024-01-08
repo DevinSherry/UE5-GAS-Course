@@ -25,6 +25,7 @@ public:
 	virtual void Tick(float DeltaSeconds) override;
 
 	virtual void SendTargetDataBacktoServer(const FGameplayAbilityTargetDataHandle& InData, FGameplayTag ApplicationTag) override;
+	virtual void SendCancelledTargetDataBackToServer(const FGameplayAbilityTargetDataHandle& InData) override;
 
 	/** Radius for a sphere or capsule. */
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (ExposeOnSpawn = true), Category = Targeting)

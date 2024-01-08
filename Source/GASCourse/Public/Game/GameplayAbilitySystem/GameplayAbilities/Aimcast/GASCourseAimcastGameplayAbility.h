@@ -20,8 +20,28 @@ class GASCOURSE_API UGASCourseAimcastGameplayAbility : public UGASCourseGameplay
 	GENERATED_BODY()
 
 public:
+	
+	UGASCourseAimcastGameplayAbility(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 
+	/**
+	 * @brief Callback function invoked when the aim cast target data is ready to be processed.
+	 *
+	 * This function is called when the aim cast target data is ready to be processed. It takes in the aim cast target data handle and the application tag.
+	 *
+	 * @param InData The target data handle containing the aim cast target data.
+	 * @param ApplicationTag The tag of the ability application that caused the target data to be ready.
+	 */
 	void OnTargetDataReadyCallback(const FGameplayAbilityTargetDataHandle& InData, FGameplayTag ApplicationTag);
+
+	/**
+	 * @brief Callback function invoked when the aim cast target data is cancelled.
+	 *
+	 * This function is called when the aim cast target data is cancelled. It takes in the target data handle as the parameter.
+	 *
+	 * @param Data The handle containing the aim cast target data that was cancelled.
+	 */
+	void OnTargetDataCancelledCallback(const FGameplayAbilityTargetDataHandle& Data);
+
 
 protected:
 
@@ -43,10 +63,44 @@ protected:
 	//~End of UGameplayAbility interface
 
 	virtual void OnPawnAvatarSet();
-	
-	// Called when target data is ready
+
+	/**
+	 * @brief Event called when the aim cast target data is ready.
+	 *
+	 * This event is blueprint implementable, allowing developers to define their own functionality in blueprint.
+	 * It is called when the aim cast target data is ready to be processed.
+	 *
+	 * @param TargetData The target data handle containing the aim cast target data.
+	 */
 	UFUNCTION(BlueprintImplementableEvent)
 	void OnAimCastTargetDataReady(const FGameplayAbilityTargetDataHandle& TargetData);
+
+	/**
+	 * @brief Event called when the aim cast target data is cancelled.
+	 *
+	 * This event is blueprint implementable, allowing developers to define their own functionality in blueprint.
+	 * It is called when the aim cast target data is cancelled.
+	 */
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnAimCastTargetDataCancelled();
+
+protected:
+	
+	/**
+	 * Whether the ability should be ended if the target data is cancelled.
+	 * If false, make sure to manually handle End Ability in your ability.
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="GASCourse|Ability|AimCast")
+	bool bEndAbilityOnTargetDataCancelled;
+
+	/**
+	 * Whether the ability should send target data to the server when it is cancelled.
+	 * If true, target data will be sent to the server. If false, target data will not be sent.
+	 * If the ability is interrupted and bEndAbilityOnTargetDataCancelled is true, the ability will be automatically ended.
+	 * If the ability is interrupted and bEndAbilityOnTargetDataCancelled is false, the ability must be manually ended.
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="GASCourse|Ability|AimCast")
+	bool bSendTargetDataToServerOnCancelled;
 
 private:
 	

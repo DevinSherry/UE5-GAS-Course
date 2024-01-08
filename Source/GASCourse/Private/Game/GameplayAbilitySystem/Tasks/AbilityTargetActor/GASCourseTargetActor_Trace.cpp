@@ -203,6 +203,10 @@ void AGASCourseTargetActor_Trace::SendTargetDataBacktoServer(const FGameplayAbil
 	
 }
 
+void AGASCourseTargetActor_Trace::SendCancelledTargetDataBackToServer(const FGameplayAbilityTargetDataHandle& InData)
+{
+}
+
 void AGASCourseTargetActor_Trace::StartTargeting(UGameplayAbility* InAbility)
 {
 	Super::StartTargeting(InAbility);

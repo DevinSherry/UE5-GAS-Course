@@ -16,6 +16,7 @@ UGASCourseGameplayAbility::UGASCourseGameplayAbility(const FObjectInitializer& O
 	NetSecurityPolicy = EGameplayAbilityNetSecurityPolicy::ClientOrServer;
 
 	ActivationPolicy = EGASCourseAbilityActivationPolicy::OnInputTriggered;
+	AbilityType = EGASCourseAbilityType::Instant;
 
 	bAutoCommitAbilityOnActivate = true;
 }

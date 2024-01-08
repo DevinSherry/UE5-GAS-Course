@@ -11,6 +11,8 @@ UGASCourseDurationGameplayAbility::UGASCourseDurationGameplayAbility(const FObje
 	bAutoEndAbilityOnDurationEnd = true;
 	bAutoCommitCooldownOnDurationEnd = true;
 	bAutoApplyDurationEffect = true;
+
+	AbilityType = EGASCourseAbilityType::Duration;
 }
 
 void UGASCourseDurationGameplayAbility::DurationEffectRemoved(

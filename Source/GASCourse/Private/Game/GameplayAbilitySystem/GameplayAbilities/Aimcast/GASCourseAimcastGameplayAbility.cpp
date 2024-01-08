@@ -2,8 +2,14 @@
 
 
 #include "Game/GameplayAbilitySystem/GameplayAbilities/Aimcast/GASCourseAimcastGameplayAbility.h"
-
 #include "AbilitySystemBlueprintLibrary.h"
+
+UGASCourseAimcastGameplayAbility::UGASCourseAimcastGameplayAbility(const FObjectInitializer& ObjectInitializer)
+{
+	AbilityType = EGASCourseAbilityType::AimCast;
+	bEndAbilityOnTargetDataCancelled = true;
+	bSendTargetDataToServerOnCancelled = false;
+}
 
 bool UGASCourseAimcastGameplayAbility::CanActivateAbility(const FGameplayAbilitySpecHandle Handle,
                                                           const FGameplayAbilityActorInfo* ActorInfo, const FGameplayTagContainer* SourceTags,
@@ -50,6 +56,10 @@ void UGASCourseAimcastGameplayAbility::EndAbility(const FGameplayAbilitySpecHand
 	const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo,
 	bool bReplicateEndAbility, bool bWasCancelled)
 {
+	UAbilitySystemComponent* MyAbilityComponent = CurrentActorInfo->AbilitySystemComponent.Get();
+	check(MyAbilityComponent);
+	MyAbilityComponent->SetUserAbilityActivationInhibited(false);
+
 	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
 }
 
@@ -175,3 +185,52 @@ void UGASCourseAimcastGameplayAbility::OnTargetDataReadyCallback(const FGameplay
 	MyAbilityComponent->ConsumeClientReplicatedTargetData(CurrentSpecHandle, CurrentActivationInfo.GetActivationPredictionKey());
 	MyAbilityComponent->SetUserAbilityActivationInhibited(false);
 }
+
+void UGASCourseAimcastGameplayAbility::OnTargetDataCancelledCallback(const FGameplayAbilityTargetDataHandle& Data)
+{
+	UAbilitySystemComponent* MyAbilityComponent = CurrentActorInfo->AbilitySystemComponent.Get();
+	check(MyAbilityComponent);
+
+	if(bSendTargetDataToServerOnCancelled)
+	{
+		if (const FGameplayAbilitySpec* AbilitySpec = MyAbilityComponent->FindAbilitySpecFromHandle(CurrentSpecHandle))
+		{
+			FScopedPredictionWindow	ScopedPrediction(MyAbilityComponent);
+
+			// Take ownership of the target data to make sure no callbacks into game code invalidate it out from under us
+			const FGameplayAbilityTargetDataHandle LocalTargetDataHandle(MoveTemp(const_cast<FGameplayAbilityTargetDataHandle&>(Data)));
+			
+			if (CurrentActorInfo->IsLocallyControlled() && !CurrentActorInfo->IsNetAuthority())
+			{
+				MyAbilityComponent->CallServerSetReplicatedTargetData(CurrentSpecHandle, CurrentActivationInfo.GetActivationPredictionKey(), LocalTargetDataHandle, FGameplayTag::EmptyTag, MyAbilityComponent->ScopedPredictionKey);
+			}
+
+			const bool bIsTargetDataValid = true;
+
+#if WITH_SERVER_CODE
+			if (AController* Controller = GetControllerFromActorInfo())
+			{
+				if (Controller->GetLocalRole() == ROLE_Authority)
+				{
+					//TODO: Confirm target data somehow?
+				}
+			}
+
+#endif //WITH_SERVER_CODE
+		}
+	}
+	else
+	{
+		OnAimCastTargetDataCancelled();
+	}
+	// We've processed the data
+	MyAbilityComponent->ConsumeClientReplicatedTargetData(CurrentSpecHandle, CurrentActivationInfo.GetActivationPredictionKey());
+	MyAbilityComponent->SetUserAbilityActivationInhibited(false);
+
+	if(bEndAbilityOnTargetDataCancelled)
+	{
+		K2_EndAbility();
+	}
+}
+
+

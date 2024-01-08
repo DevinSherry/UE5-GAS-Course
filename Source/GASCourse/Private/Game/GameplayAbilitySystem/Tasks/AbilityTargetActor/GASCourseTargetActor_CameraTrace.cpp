@@ -45,7 +45,7 @@ void AGASCourseTargetActor_CameraTrace::ConfirmTargeting()
 	if (SourceActor)
 	{
 		const FVector Origin = PerformTrace(SourceActor).Location;
-		FGameplayAbilityTargetDataHandle Handle = MakeTargetData(PerformOverlap(Origin), Origin);
+		const FGameplayAbilityTargetDataHandle Handle = MakeTargetData(PerformOverlap(Origin), Origin);
 		TargetDataReadyDelegate.Broadcast(Handle);
 		SendTargetDataBacktoServer(Handle, FGameplayTag());
 		Super::ConfirmTargeting();
@@ -54,7 +54,14 @@ void AGASCourseTargetActor_CameraTrace::ConfirmTargeting()
 
 void AGASCourseTargetActor_CameraTrace::CancelTargeting()
 {
-	Super::CancelTargeting();
+	
+	if(SourceActor)
+	{
+		const FVector Origin = PerformTrace(SourceActor).Location;
+		const FGameplayAbilityTargetDataHandle Handle = MakeTargetData(PerformOverlap(Origin), Origin);
+		SendCancelledTargetDataBackToServer(Handle);
+		Super::CancelTargeting();
+	}
 }
 
 void AGASCourseTargetActor_CameraTrace::Tick(float DeltaSeconds)
@@ -87,6 +94,22 @@ void AGASCourseTargetActor_CameraTrace::SendTargetDataBacktoServer(const FGamepl
 		bHasDataBeenSentToServer = true;
 	}
 	Super::SendTargetDataBacktoServer(InData, ApplicationTag);
+}
+
+void AGASCourseTargetActor_CameraTrace::SendCancelledTargetDataBackToServer(
+	const FGameplayAbilityTargetDataHandle& InData)
+{
+	if(bHasDataBeenSentToServer)
+	{
+		return;
+	}
+	
+	if(UGASCourseAimcastGameplayAbility* LocalAbility = Cast<UGASCourseAimcastGameplayAbility>(OwningAbility))
+	{
+		LocalAbility->OnTargetDataCancelledCallback(InData);
+		bHasDataBeenSentToServer = true;
+	}
+	Super::SendCancelledTargetDataBackToServer(InData);
 }
 
 FHitResult AGASCourseTargetActor_CameraTrace::PerformTrace(AActor* InSourceActor)

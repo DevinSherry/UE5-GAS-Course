@@ -32,6 +32,17 @@ enum class EGASCourseAbilityActivationPolicy : uint8
 	OnSpawn
 };
 
+UENUM(BlueprintType)
+enum class EGASCourseAbilityType : uint8
+{
+	
+	AimCast,
+	
+	Duration,
+	
+	Instant
+};
+
 /**
  * 
  */
@@ -117,6 +128,10 @@ protected:
 	// Defines how this ability is meant to activate.
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "GASCourse|Ability|Activation")
 	EGASCourseAbilityActivationPolicy ActivationPolicy;
+
+	// Defines how this ability is meant to activate.
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "GASCourse|Ability|Activation")
+	EGASCourseAbilityType AbilityType;
 
 	/**
 	 * @brief Should the ability automatically commit when activated? If false, blueprint or child classes must call CommitAbility() manually.

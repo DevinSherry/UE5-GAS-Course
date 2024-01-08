@@ -14,6 +14,10 @@ class GASCOURSE_API UGASCourseInstantGameplayAbility : public UGASCourseGameplay
 {
 	GENERATED_BODY()
 
+public:
+
+	UGASCourseInstantGameplayAbility(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
+
 protected:
 
 	//~UGameplayAbility interface

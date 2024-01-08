@@ -95,6 +95,8 @@ protected:
 
 	virtual void SendTargetDataBacktoServer(const FGameplayAbilityTargetDataHandle& InData, FGameplayTag ApplicationTag);
 
+	virtual void SendCancelledTargetDataBackToServer(const FGameplayAbilityTargetDataHandle& InData);
+
 protected:
 
 	FGameplayTagContainer DefaultTargetingTagContainer;

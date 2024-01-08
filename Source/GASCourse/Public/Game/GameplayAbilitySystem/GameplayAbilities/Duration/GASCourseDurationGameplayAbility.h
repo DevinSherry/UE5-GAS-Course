@@ -13,7 +13,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FGASCourseAbilityDurationRemoved);
  *
  * A duration-based gameplay ability is an ability that has a specific duration during which it remains active.
  * This class provides functions for applying and handling the duration effect, as well as managing cooldown and
- * ability activation.
+ * ability activation. 
  */
 UCLASS()
 class GASCOURSE_API UGASCourseDurationGameplayAbility : public UGASCourseGameplayAbility
