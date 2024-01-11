@@ -7,6 +7,7 @@
 #include "Components/TimelineComponent.h"
 #include "Tasks/Task.h"
 #include "InputAction.h"
+#include "Game/Data/Camera/GASCoursePlayerCameraSettings.h"
 #include "GASCoursePlayerCharacter.generated.h"
 
 /**
@@ -32,6 +33,9 @@ class GASCOURSE_API AGASCoursePlayerCharacter : public AGASCourseCharacter
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* FollowCamera;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GASCourse|Camera Settings", meta = (AllowPrivateAccess = "true"))
+	UGASCoursePlayerCameraSettings* CameraSettingsData;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GASCourse|Camera Settings", meta = (AllowPrivateAccess = "true"))
 	float MaxCameraBoomDistance = 500.0f;
 	
@@ -91,6 +95,22 @@ class GASCOURSE_API AGASCoursePlayerCharacter : public AGASCourseCharacter
 
 	UPROPERTY(EditAnywhere,BlueprintReadOnly, Category = "GASCourse|Camera Settings", meta = (AllowPrivateAccess = "true"))
 	float CameraTargetOffsetZDownTraceRadius = 30.0f;
+
+	/**
+	 * Minimum distance at which the camera is detached from the character.
+	 *
+	 * This variable controls the minimum distance at which the camera can detach from the character and start moving independently.
+	 * It is used to determine if the camera should snap back and attach to the character, if they try to move, while within this minimum distance.
+	 *
+	 * @see AGASCoursePlayerCharacter
+	 * @see CameraBoom
+	 * @see FollowCamera
+	 */
+	UPROPERTY(EditAnywhere,BlueprintReadOnly, Category = "GASCourse|Camera Settings", meta = (AllowPrivateAccess = "true"))
+	float MinDistanceToDetachCamera = 300.0f;
+
+	UPROPERTY(EditAnywhere,BlueprintReadOnly, Category = "GASCourse|Camera Settings", meta = (AllowPrivateAccess = "true"))
+	bool bAutoReAttachCameraWithinMinDistance = true;
 
 public:
 
@@ -179,6 +199,11 @@ protected:
 	UFUNCTION()
 	void OnMovementUpdated(float DeltaSeconds, FVector OldLocation, FVector OldVelocity);
 
+	UFUNCTION()
+	bool StopPointClickCharacterMovement();
+
+	void AutoAttachCameraWithinMinDistance();
+
 public:
 
 	UE::Tasks::TTask<FVector> MultithreadTask;
@@ -203,5 +228,7 @@ private:
 	float CurrentCameraRotationSpeed;
 	bool bCameraRotationTimelineFinished;
 	bool bCameraRotationTimelineActivated;
+
+	bool bHasPointClickMovementTarget = false;
 	
 };

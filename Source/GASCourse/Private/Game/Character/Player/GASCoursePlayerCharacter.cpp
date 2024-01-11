@@ -313,20 +313,27 @@ void AGASCoursePlayerCharacter::Move(const FInputActionValue& Value)
 			if(MovementVector.Length() > 0.0f)
 			{
 				GASCourseASC->SetLooseGameplayTagCount(Status_IsMoving, 1);
-			}
-			// find out which way is forward
-			const FRotator Rotation = GetCameraBoom()->GetRelativeRotation();
-			const FRotator YawRotation(0, Rotation.Yaw, 0);
+				// find out which way is forward
+				const FRotator Rotation = GetCameraBoom()->GetRelativeRotation();
+				const FRotator YawRotation(0, Rotation.Yaw, 0);
 
-			// get forward vector
-			const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
+				// get forward vector
+				const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
 	
-			// get right vector 
-			const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
+				// get right vector 
+				const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
 
-			// add movement 
-			AddMovementInput(ForwardDirection, MovementVector.Y);
-			AddMovementInput(RightDirection, MovementVector.X);
+				// add movement 
+				AddMovementInput(ForwardDirection, MovementVector.Y);
+				AddMovementInput(RightDirection, MovementVector.X);
+
+				if(bHasPointClickMovementTarget)
+				{
+					StopPointClickCharacterMovement();
+				}
+
+				AutoAttachCameraWithinMinDistance();
+			}
 		}
 	}
 }
@@ -432,10 +439,8 @@ void AGASCoursePlayerCharacter::PointClickMovementStarted(const FInputActionValu
 	{
 		return;
 	}
-	if(AGASCoursePlayerController* PC = Cast<AGASCoursePlayerController>(Controller))
-	{
-		PC->StopMovement();
-	}
+	
+	StopPointClickCharacterMovement();
 }
 
 void AGASCoursePlayerCharacter::PointClickMovementCompleted(const FInputActionInstance& InputActionInstance)
@@ -473,6 +478,8 @@ void AGASCoursePlayerCharacter::MoveToMouseHitResultLocation()
 
 				const FVector WorldDirection = MultithreadTask.GetResult();
 				AddMovementInput(WorldDirection, 1.0f, false);
+				bHasPointClickMovementTarget = true;
+				AutoAttachCameraWithinMinDistance();
 				
 				if(MultithreadTask.IsCompleted())
 				{
@@ -663,12 +670,14 @@ void AGASCoursePlayerCharacter::UpdateCameraTargetOffsetZ()
 
 float AGASCoursePlayerCharacter::GetEdgePanningSpeedBasedOnZoomDistance() const
 {
-	return UKismetMathLibrary::MapRangeClamped(GetCameraBoom()->TargetArmLength, MinCameraBoomDistance, MaxCameraBoomDistance, EdgePanningSpeedMin, EdgePanningSpeedMax);
+	return UKismetMathLibrary::MapRangeClamped(GetCameraBoom()->TargetArmLength,
+		MinCameraBoomDistance, MaxCameraBoomDistance, EdgePanningSpeedMin, EdgePanningSpeedMax);
 }
 
 float AGASCoursePlayerCharacter::GetCameraMovementSpeedBasedOnZoomDistance() const
 {
-	return UKismetMathLibrary::MapRangeClamped(GetCameraBoom()->TargetArmLength, MinCameraBoomDistance, MaxCameraBoomDistance, CameraMovementSpeedMin, CameraMovementSpeedMax);
+	return UKismetMathLibrary::MapRangeClamped(GetCameraBoom()->TargetArmLength,
+		MinCameraBoomDistance, MaxCameraBoomDistance, CameraMovementSpeedMin, CameraMovementSpeedMax);
 }
 
 void AGASCoursePlayerCharacter::OnMovementUpdated(float DeltaSeconds, FVector OldLocation, FVector OldVelocity)
@@ -683,5 +692,29 @@ void AGASCoursePlayerCharacter::OnMovementUpdated(float DeltaSeconds, FVector Ol
 	if((MovementHeightDelta > 0.0f && GetMesh()->GetComponentLocation().Z > CombinedCameraBoomLocation.Z) || (MovementHeightDelta < 0.0f && CombinedCameraBoomLocation.Z > GetMesh()->GetComponentLocation().Z))
 	{
 		GetCameraBoom()->TargetOffset.Z += MovementHeightDelta;
+	}
+}
+
+bool AGASCoursePlayerCharacter::StopPointClickCharacterMovement()
+{
+	if(AGASCoursePlayerController* PC = Cast<AGASCoursePlayerController>(Controller))
+	{
+		PC->StopMovement();
+		bHasPointClickMovementTarget = false;
+		return true;
+	}
+
+	return false;
+}
+
+void AGASCoursePlayerCharacter::AutoAttachCameraWithinMinDistance()
+{
+	if(bAutoReAttachCameraWithinMinDistance &&!GetCameraBoom()->IsAttachedTo(RootComponent) && !ResetCameraOffsetTimeline.IsPlaying())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Distance to Camera: %f"), (GetMesh()->GetComponentLocation() - (GetCameraBoom()->GetComponentLocation() + GetCameraBoom()->TargetOffset)).Size2D());
+		if((GetMesh()->GetComponentLocation() - (GetCameraBoom()->GetComponentLocation() + GetCameraBoom()->TargetOffset)).Size2D() <= MinDistanceToDetachCamera)
+		{
+			ResetCameraOffsetTimeline.PlayFromStart();
+		}
 	}
 }

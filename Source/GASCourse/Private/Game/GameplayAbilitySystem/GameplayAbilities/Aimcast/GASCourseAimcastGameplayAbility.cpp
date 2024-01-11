@@ -56,10 +56,6 @@ void UGASCourseAimcastGameplayAbility::EndAbility(const FGameplayAbilitySpecHand
 	const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo,
 	bool bReplicateEndAbility, bool bWasCancelled)
 {
-	UAbilitySystemComponent* MyAbilityComponent = CurrentActorInfo->AbilitySystemComponent.Get();
-	check(MyAbilityComponent);
-	MyAbilityComponent->SetUserAbilityActivationInhibited(false);
-
 	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
 }
 
@@ -132,6 +128,15 @@ void UGASCourseAimcastGameplayAbility::ApplyCooldown(const FGameplayAbilitySpecH
 	const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo) const
 {
 	Super::ApplyCooldown(Handle, ActorInfo, ActivationInfo);
+}
+
+void UGASCourseAimcastGameplayAbility::K2_EndAbility()
+{
+	UAbilitySystemComponent* MyAbilityComponent = CurrentActorInfo->AbilitySystemComponent.Get();
+	check(MyAbilityComponent);
+	MyAbilityComponent->SetUserAbilityActivationInhibited(false);
+	
+	Super::K2_EndAbility();
 }
 
 void UGASCourseAimcastGameplayAbility::OnPawnAvatarSet()
