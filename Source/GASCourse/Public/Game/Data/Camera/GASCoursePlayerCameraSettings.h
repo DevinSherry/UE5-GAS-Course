@@ -44,10 +44,16 @@ public:
 	UCurveFloat* RotateCameraCurve;
 
 	UPROPERTY(EditAnywhere,BlueprintReadOnly, Category = "GASCourse|Camera Settings", meta = (AllowPrivateAccess = "true"))
+	UCurveFloat* CameraEdgePanningCurve;
+
+	UPROPERTY(EditAnywhere,BlueprintReadOnly, Category = "GASCourse|Camera Settings", meta = (AllowPrivateAccess = "true"))
 	float RecenterCameraInterpSpeed = 0.1f;
 	
 	UPROPERTY(EditAnywhere,BlueprintReadOnly, Category = "GASCourse|Camera Settings", meta = (AllowPrivateAccess = "true"))
 	float MoveCameraInterpSpeed = 0.1f;
+
+	UPROPERTY(EditAnywhere,BlueprintReadOnly, Category = "GASCourse|Camera Settings", meta = (AllowPrivateAccess = "true"))
+	float CameraEdgePanningInterpSpeed = 0.1f;
 
 	UPROPERTY(EditAnywhere,BlueprintReadOnly, Category = "GASCourse|Camera Settings", meta = (AllowPrivateAccess = "true"))
 	float MinCameraPitchAngle = -10.0f;

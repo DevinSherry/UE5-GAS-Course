@@ -54,7 +54,6 @@ void AGASCourseTargetActor_CameraTrace::ConfirmTargeting()
 
 void AGASCourseTargetActor_CameraTrace::CancelTargeting()
 {
-	
 	if(SourceActor)
 	{
 		const FVector Origin = PerformTrace(SourceActor).Location;

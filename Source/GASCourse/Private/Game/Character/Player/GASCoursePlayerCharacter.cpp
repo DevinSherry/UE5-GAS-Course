@@ -41,10 +41,6 @@ Super(ObjectInitializer)
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
 	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
-	
-	//Set camera boom arm length and socket offset Z to default max camera boom distance.
-	CameraBoom->TargetArmLength = MaxCameraBoomDistance;
-	CameraBoom->SocketOffset.Z = MaxCameraBoomDistance;
 }
 
 void AGASCoursePlayerCharacter::UpdateCharacterAnimLayer(TSubclassOf<UAnimInstance> NewAnimLayer) const
@@ -57,8 +53,8 @@ void AGASCoursePlayerCharacter::UpdateCharacterAnimLayer(TSubclassOf<UAnimInstan
 
 void AGASCoursePlayerCharacter::InitializeCamera()
 {
-	GetCameraBoom()->TargetArmLength = MaxCameraBoomDistance/2.0f;
-	GetCameraBoom()->SocketOffset = FVector(0.0f,0.0f, MaxCameraBoomDistance/2.0f);
+	GetCameraBoom()->TargetArmLength = CameraSettingsData->MaxCameraBoomDistance/2.0f;
+	GetCameraBoom()->SocketOffset = FVector(0.0f,0.0f, CameraSettingsData->MaxCameraBoomDistance/2.0f);
 }
 
 void AGASCoursePlayerCharacter::OnWindowFocusChanged(bool bIsInFocus)
@@ -70,8 +66,9 @@ void AGASCoursePlayerCharacter::OnWindowFocusChanged(bool bIsInFocus)
 void AGASCoursePlayerCharacter::UpdateCameraMovementSpeed()
 {
 	const float TimelineValue = MoveCameraTimeline.GetPlaybackPosition();
-	const float CurveFloatValue = MoveCameraCurve->GetFloatValue(TimelineValue);
-	CurrentCameraMovementSpeed = (FMath::FInterpTo(0.0f, GetCameraMovementSpeedBasedOnZoomDistance(), CurveFloatValue, MoveCameraInterpSpeed));
+	const float CurveFloatValue = CameraSettingsData->MoveCameraCurve->GetFloatValue(TimelineValue);
+	CurrentCameraMovementSpeed = (FMath::FInterpTo(0.0f, GetCameraMovementSpeedBasedOnZoomDistance(), CurveFloatValue,
+		CameraSettingsData->MoveCameraInterpSpeed));
 }
 
 void AGASCoursePlayerCharacter::UpdateCameraMovementSpeedTimelineFinished()
@@ -82,13 +79,28 @@ void AGASCoursePlayerCharacter::UpdateCameraMovementSpeedTimelineFinished()
 void AGASCoursePlayerCharacter::UpdateCameraRotationSpeed()
 {
 	const float TimelineValue = RotateCameraTimeline.GetPlaybackPosition();
-	const float CurveFloatValue =RotateCameraCurve->GetFloatValue(TimelineValue);
+	const float CurveFloatValue = CameraSettingsData->RotateCameraCurve->GetFloatValue(TimelineValue);
 
-	CurrentCameraRotationSpeed = (FMath::FInterpTo(CurrentCameraRotationSpeed, CameraRotationSpeedMultiplier, CurveFloatValue, RotateCameraInterpSpeed));
+	CurrentCameraRotationSpeed = (FMath::FInterpTo(CurrentCameraRotationSpeed, CameraSettingsData->CameraRotationSpeedMultiplier,
+		CurveFloatValue, CameraSettingsData->RotateCameraInterpSpeed));
 }
 
 void AGASCoursePlayerCharacter::UpdateCameraRotationSpeedTimelineFinished()
 {
+	//TODO: Implement something here?
+}
+
+void AGASCoursePlayerCharacter::UpdateCameraEdgePanningSpeed()
+{
+	const float TimelineValue = CameraEdgePanningTimeline.GetPlaybackPosition();
+	const float CurveFloatValue = CameraSettingsData->CameraEdgePanningCurve->GetFloatValue(TimelineValue);
+	CurrentCameraEdgePanningSpeed = (FMath::FInterpTo(0.0f, GetEdgePanningSpeedBasedOnZoomDistance(), CurveFloatValue,
+		CameraSettingsData->CameraEdgePanningInterpSpeed));
+}
+
+void AGASCoursePlayerCharacter::UpdateCameraEdgePanningSpeedTimelineFinished()
+{
+	bCameraEdgePanningTimelineFinished = true;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -205,41 +217,50 @@ void AGASCoursePlayerCharacter::OnRep_Controller()
 	{
 		AbilitySystemComponent->RefreshAbilityActorInfo();
 	}
-	
 }
 
 void AGASCoursePlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-
-	if(RecenterCameraCurve)
+	
+	if(CameraSettingsData->RecenterCameraCurve)
 	{
 		FOnTimelineFloat TimelineCallback;
 		FOnTimelineEvent TimelineFinishedFunc;
 		TimelineFinishedFunc.BindUFunction(this,FName("RecenterCameraBoomTimelineFinished"));
 		ResetCameraOffsetTimeline.SetTimelineFinishedFunc(TimelineFinishedFunc);
 		TimelineCallback.BindUFunction(this, FName("RecenterCameraBoomTargetOffset"));
-		ResetCameraOffsetTimeline.AddInterpFloat(RecenterCameraCurve, TimelineCallback);
+		ResetCameraOffsetTimeline.AddInterpFloat(CameraSettingsData->RecenterCameraCurve, TimelineCallback);
 	}
-
-	if(MoveCameraCurve)
+	
+	if(CameraSettingsData->MoveCameraCurve)
 	{
 		FOnTimelineFloat TimelineCallback;
 		FOnTimelineEvent TimelineFinishedFunc;
 		TimelineFinishedFunc.BindUFunction(this, FName("UpdateCameraMovementSpeedTimelineFinished"));
 		MoveCameraTimeline.SetTimelineFinishedFunc(TimelineFinishedFunc);
 		TimelineCallback.BindUFunction(this, FName("UpdateCameraMovementSpeed"));
-		MoveCameraTimeline.AddInterpFloat(MoveCameraCurve, TimelineCallback);
+		MoveCameraTimeline.AddInterpFloat(CameraSettingsData->MoveCameraCurve, TimelineCallback);
 	}
 
-	if(RotateCameraCurve)
+	if(CameraSettingsData->RotateCameraCurve)
 	{
 		FOnTimelineFloat TimelineCallback;
 		FOnTimelineEvent TimelineFinishedFunc;
 		TimelineFinishedFunc.BindUFunction(this, FName("UpdateCameraRotationSpeedTimelineFinished"));
 		RotateCameraTimeline.SetTimelineFinishedFunc(TimelineFinishedFunc);
 		TimelineCallback.BindUFunction(this, FName("UpdateCameraRotationSpeed"));
-		RotateCameraTimeline.AddInterpFloat(RotateCameraCurve, TimelineCallback);
+		RotateCameraTimeline.AddInterpFloat(CameraSettingsData->RotateCameraCurve, TimelineCallback);
+	}
+
+	if(CameraSettingsData->CameraEdgePanningCurve)
+	{
+		FOnTimelineFloat TimelineCallback;
+		FOnTimelineEvent TimelineFinishedFunc;
+		TimelineFinishedFunc.BindUFunction(this, FName("UpdateCameraEdgePanningSpeedTimelineFinished"));
+		CameraEdgePanningTimeline.SetTimelineFinishedFunc(TimelineFinishedFunc);
+		TimelineCallback.BindUFunction(this, FName("UpdateCameraEdgePanningSpeed"));
+		CameraEdgePanningTimeline.AddInterpFloat(CameraSettingsData->CameraEdgePanningCurve, TimelineCallback);
 	}
 
 	FSlateApplication::Get().OnApplicationActivationStateChanged().AddUObject(this, &ThisClass::OnWindowFocusChanged);
@@ -248,9 +269,11 @@ void AGASCoursePlayerCharacter::BeginPlay()
 void AGASCoursePlayerCharacter::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
+	
 	ResetCameraOffsetTimeline.TickTimeline(DeltaSeconds);
 	MoveCameraTimeline.TickTimeline(DeltaSeconds);
 	RotateCameraTimeline.TickTimeline(DeltaSeconds);
+	CameraEdgePanningTimeline.TickTimeline(DeltaSeconds);
 
 	CameraEdgePanning();
 }
@@ -344,9 +367,9 @@ void AGASCoursePlayerCharacter::Input_CameraZoom(const FInputActionInstance& Inp
 	
 	if(USpringArmComponent* CameraRef = GetCameraBoom())
 	{
-		const float Step = CameraZoomDistanceStep * AxisValue;
+		const float Step = CameraSettingsData->CameraZoomDistanceStep * AxisValue;
 		const float CurrentTargetArmLength = FMath::Clamp((CameraRef->TargetArmLength - Step),
-		MinCameraBoomDistance, MaxCameraBoomDistance);
+		CameraSettingsData->MinCameraBoomDistance, CameraSettingsData->MaxCameraBoomDistance);
 					
 		CameraRef->TargetArmLength = CurrentTargetArmLength;
 		CameraRef->SocketOffset.Z = CurrentTargetArmLength;
@@ -391,7 +414,8 @@ void AGASCoursePlayerCharacter::Input_MoveCameraCompleted(const FInputActionInst
 void AGASCoursePlayerCharacter::UpdateCameraBoomTargetOffset(const FVector& InCameraBoomTargetOffset) const
 {
 	const FVector NewTargetOffset = GetCameraBoom()->TargetOffset + (InCameraBoomTargetOffset.GetSafeNormal2D() * CurrentCameraMovementSpeed);
-	GetCameraBoom()->TargetOffset = FVector(NewTargetOffset.X, NewTargetOffset.Y, GetCameraBoom()->TargetOffset.Z).GetClampedToSize(-CameraMaxVectorDistance, CameraMaxVectorDistance);
+	GetCameraBoom()->TargetOffset = FVector(NewTargetOffset.X, NewTargetOffset.Y, GetCameraBoom()->TargetOffset.Z).GetClampedToSize(-CameraSettingsData->CameraMaxVectorDistance,
+		CameraSettingsData->CameraMaxVectorDistance);
 }
 
 void AGASCoursePlayerCharacter::Input_RecenterCamera(const FInputActionInstance& InputActionInstance)
@@ -410,7 +434,8 @@ void AGASCoursePlayerCharacter::Input_RotateCameraAxis(const FInputActionInstanc
 	const float CameraRotationX = CameraRotation.X * CurrentCameraRotationSpeed;
 	const float CameraRotationY = CameraRotation.Y * CurrentCameraRotationSpeed;
 	
-	const FRotator NewCameraRelativeRotation = FRotator(FMath::ClampAngle((GetCameraBoom()->GetRelativeRotation().Pitch + CameraRotationX), MinCameraPitchAngle, MaxCameraPitchAngle),
+	const FRotator NewCameraRelativeRotation = FRotator(FMath::ClampAngle((GetCameraBoom()->GetRelativeRotation().Pitch + CameraRotationX),
+		CameraSettingsData->MinCameraPitchAngle, CameraSettingsData->MaxCameraPitchAngle),
 		GetCameraBoom()->GetRelativeRotation().Yaw + CameraRotationY, 0.0f);
 	
 	GetCameraBoom()->SetRelativeRotation(NewCameraRelativeRotation);
@@ -500,12 +525,14 @@ FVector AGASCoursePlayerCharacter::GetWorldDirection(const FVector& CachedDirect
 void AGASCoursePlayerCharacter::RecenterCameraBoomTargetOffset()
 {
 	const float TimelineValue = ResetCameraOffsetTimeline.GetPlaybackPosition();
-	const float CurveFloatValue = RecenterCameraCurve->GetFloatValue(TimelineValue);
+	const float CurveFloatValue = CameraSettingsData->RecenterCameraCurve->GetFloatValue(TimelineValue);
 	const FVector CurrentCameraTargetOffset = GetCameraBoom()->TargetOffset;
 	const FVector CurrentCameraLocation = GetCameraBoom()->GetComponentLocation();
 	
-	GetCameraBoom()->TargetOffset = (FMath::VInterpTo(CurrentCameraTargetOffset, FVector(0.0f), CurveFloatValue, RecenterCameraInterpSpeed));
-	GetCameraBoom()->SetWorldLocation(FMath::VInterpTo(CurrentCameraLocation, GetActorLocation(), CurveFloatValue, RecenterCameraInterpSpeed));
+	GetCameraBoom()->TargetOffset = (FMath::VInterpTo(CurrentCameraTargetOffset, FVector(0.0f), CurveFloatValue,
+		CameraSettingsData->RecenterCameraInterpSpeed));
+	GetCameraBoom()->SetWorldLocation(FMath::VInterpTo(CurrentCameraLocation, GetActorLocation(), CurveFloatValue,
+		CameraSettingsData->RecenterCameraInterpSpeed));
 }
 
 void AGASCoursePlayerCharacter::RecenterCameraBoomTimelineFinished()
@@ -526,15 +553,20 @@ void AGASCoursePlayerCharacter::CameraEdgePanning()
 	bool bIsEnableRotateCameraAxis = false;
 	bIsWindowFocused = true;
 
+	if(!IsLocallyControlled())
+	{
+		return;
+	}
+
 	//TODO: Move this check somewhere else?
 	if(InputComponent)
 	{
-		if(EnableRotateCameraAxis)
+		if(CameraSettingsData->EnableRotateCameraAxis)
 		{
 			if (UGASCourseEnhancedInputComponent* EnhancedInputComponent = CastChecked<UGASCourseEnhancedInputComponent>(InputComponent))
 			{
 				check(EnhancedInputComponent);
-				const FEnhancedInputActionValueBinding* EnableRotateAxisBinding = &EnhancedInputComponent->BindActionValue(EnableRotateCameraAxis);
+				const FEnhancedInputActionValueBinding* EnableRotateAxisBinding = &EnhancedInputComponent->BindActionValue(CameraSettingsData->EnableRotateCameraAxis);
 				bIsEnableRotateCameraAxis = EnableRotateAxisBinding->GetValue().Get<bool>();
 			}
 		}
@@ -569,13 +601,25 @@ void AGASCoursePlayerCharacter::CameraEdgePanning()
 		if(!bIsEnableRotateCameraAxis && bIsWindowFocused)
 		{
 			const FVector OffsetDirection = GetCameraBoom()->GetRelativeRotation().RotateVector(FVector(MappedNormalizedRangeY, MappedNormalizedRangeX, 0.0f)).GetSafeNormal2D();
-			const FVector NewTargetOffset = GetCameraBoom()->TargetOffset + (OffsetDirection * GetEdgePanningSpeedBasedOnZoomDistance());
-			GetCameraBoom()->TargetOffset = NewTargetOffset.GetClampedToSize(-CameraMaxVectorDistance, CameraMaxVectorDistance);
+			const FVector NewTargetOffset = GetCameraBoom()->TargetOffset + (OffsetDirection * CurrentCameraEdgePanningSpeed);
+			GetCameraBoom()->TargetOffset = NewTargetOffset.GetClampedToSize(-CameraSettingsData->CameraMaxVectorDistance,
+				CameraSettingsData->CameraMaxVectorDistance);
 
-			if(!MoveCameraTimeline.IsPlaying() && !bCameraSpeedTimelineFinished && !bCameraSpeedTimelineActivated)
+			if(!CameraEdgePanningTimeline.IsPlaying() && !bCameraEdgePanningTimelineFinished && !bCameraEdgePanningTimelineActivated)
 			{
-				MoveCameraTimeline.PlayFromStart();
-				bCameraSpeedTimelineActivated = true;
+				CameraEdgePanningTimeline.PlayFromStart();
+				bCameraEdgePanningTimelineActivated = true;
+			}
+
+			if(MoveCameraTimeline.IsPlaying())
+			{
+				MoveCameraTimeline.Stop();
+			}
+
+			//Stop reset curve if playing.
+			if(ResetCameraOffsetTimeline.IsPlaying())
+			{
+				ResetCameraOffsetTimeline.Stop();
 			}
 
 			if(GetCameraBoom()->IsAttachedTo(RootComponent))
@@ -590,14 +634,13 @@ void AGASCoursePlayerCharacter::CameraEdgePanning()
 	}
 	else
 	{
-		if(bCameraSpeedTimelineActivated)
+		if(bCameraEdgePanningTimelineActivated)
 		{
-			MoveCameraTimeline.Stop();
-			bCameraSpeedTimelineFinished = false;
-			bCameraSpeedTimelineActivated = false;
-			CurrentCameraMovementSpeed = 0.0f;
+			CameraEdgePanningTimeline.Stop();
+			bCameraEdgePanningTimelineFinished = false;
+			bCameraEdgePanningTimelineActivated = false;
+			CurrentCameraEdgePanningSpeed = 0.0f;
 		}
-
 	}
 }
 
@@ -628,56 +671,62 @@ void AGASCoursePlayerCharacter::UpdateCameraTargetOffsetZ()
 {
 	if(const UWorld* World = GetWorld())
 	{
-		const FVector CameraBoomLocation = GetCameraBoom()->GetComponentLocation() + GetCameraBoom()->TargetOffset;
+		if(IsLocallyControlled())
+		{
+			const FVector CameraBoomLocation = GetCameraBoom()->GetComponentLocation() + GetCameraBoom()->TargetOffset;
 #if WITH_EDITOR
-		DrawDebugSphere(GetWorld(), CameraBoomLocation, 15.f, 8, FColor::Blue);
-		DrawDebugLine(GetWorld(), CameraBoomLocation, CameraBoomLocation + (GetActorUpVector() * 1000.0f), FColor::Red);
+			DrawDebugSphere(GetWorld(), CameraBoomLocation, 15.f, 8, FColor::Blue);
+			DrawDebugLine(GetWorld(), CameraBoomLocation, CameraBoomLocation + (GetActorUpVector() * 1000.0f), FColor::Red);
 #endif
 
-		if(GetCameraBoom()->IsAttachedTo(RootComponent))
-		{
-			return;
+			if(GetCameraBoom()->IsAttachedTo(RootComponent))
+			{
+				return;
+			}
+
+			SCOPED_NAMED_EVENT(AGASCourseCharacter_UpdateCameraTargetOffsetZMultithread, FColor::Blue)
+			HitResultMultithreadTask = UE::Tasks::Launch(UE_SOURCE_LOCATION, [this]
+			{
+				const UWorld* World = GetWorld();
+				const FVector TraceStart = GetCameraBoom()->GetComponentLocation() + GetCameraBoom()->TargetOffset;
+				const FVector TraceEnd = TraceStart + (GetActorUpVector() * CameraSettingsData->CameraTargetOffsetZDownTraceLength);
+				TArray<AActor*> ActorsToIgnore;
+				ActorsToIgnore.Add(this);
+				FHitResult OutHitResult;
+				UKismetSystemLibrary::SphereTraceSingle(World, TraceStart, TraceEnd, CameraSettingsData->CameraTargetOffsetZDownTraceRadius,
+				                                        UEngineTypes::ConvertToTraceType(ECC_Camera), true,
+				                                        ActorsToIgnore, EDrawDebugTrace::ForOneFrame, OutHitResult, true);
+				return OutHitResult;
+			});
+		
+			const FHitResult MultiThreadHitResult = HitResultMultithreadTask.GetResult();
+			const float HitLocationZ = MultiThreadHitResult.ImpactPoint.Z;
+			const float CharacterMeshLocationZ = GetMesh()->GetComponentLocation().Z;
+		
+			const float ZDifference = (HitLocationZ - CharacterMeshLocationZ) - GetCameraBoom()->TargetOffset.Z;
+			GetCameraBoom()->TargetOffset.Z += ZDifference;
+		
+			if(HitResultMultithreadTask.IsCompleted())
+			{
+				HitResultMultithreadTask = {};
+			}
 		}
-		
-		SCOPED_NAMED_EVENT(AGASCourseCharacter_UpdateCameraTargetOffsetZMultithread, FColor::Blue)
-		HitResultMultithreadTask = UE::Tasks::Launch(UE_SOURCE_LOCATION, [this]
-		{
-			const UWorld* World = GetWorld();
-			const FVector TraceStart = GetCameraBoom()->GetComponentLocation() + GetCameraBoom()->TargetOffset;
-			const FVector TraceEnd = TraceStart + (GetActorUpVector() * CameraTargetOffsetZDownTraceLength);
-			TArray<AActor*> ActorsToIgnore;
-			ActorsToIgnore.Add(this);
-			FHitResult OutHitResult;
-			UKismetSystemLibrary::SphereTraceSingle(World, TraceStart, TraceEnd, CameraTargetOffsetZDownTraceRadius, UEngineTypes::ConvertToTraceType(ECC_Camera), true,
-			ActorsToIgnore, EDrawDebugTrace::ForOneFrame, OutHitResult, true);
-			return OutHitResult;
-		});
-		
-		const FHitResult MultiThreadHitResult = HitResultMultithreadTask.GetResult();
-		const float HitLocationZ = MultiThreadHitResult.ImpactPoint.Z;
-		const float CharacterMeshLocationZ = GetMesh()->GetComponentLocation().Z;
-		
-		const float ZDifference = (HitLocationZ - CharacterMeshLocationZ) - GetCameraBoom()->TargetOffset.Z;
-		GetCameraBoom()->TargetOffset.Z += ZDifference;
-		
-		if(HitResultMultithreadTask.IsCompleted())
-		{
-			HitResultMultithreadTask = {};
-		}
+		HitResultMultithreadTask = {};
 	}
-	HitResultMultithreadTask = {};
 }
 
 float AGASCoursePlayerCharacter::GetEdgePanningSpeedBasedOnZoomDistance() const
 {
 	return UKismetMathLibrary::MapRangeClamped(GetCameraBoom()->TargetArmLength,
-		MinCameraBoomDistance, MaxCameraBoomDistance, EdgePanningSpeedMin, EdgePanningSpeedMax);
+		CameraSettingsData->MinCameraBoomDistance, CameraSettingsData->MaxCameraBoomDistance,
+		CameraSettingsData->EdgePanningSpeedMin, CameraSettingsData->EdgePanningSpeedMax);
 }
 
 float AGASCoursePlayerCharacter::GetCameraMovementSpeedBasedOnZoomDistance() const
 {
 	return UKismetMathLibrary::MapRangeClamped(GetCameraBoom()->TargetArmLength,
-		MinCameraBoomDistance, MaxCameraBoomDistance, CameraMovementSpeedMin, CameraMovementSpeedMax);
+		CameraSettingsData->MinCameraBoomDistance, CameraSettingsData->MaxCameraBoomDistance,
+		CameraSettingsData->CameraMovementSpeedMin, CameraSettingsData->CameraMovementSpeedMax);
 }
 
 void AGASCoursePlayerCharacter::OnMovementUpdated(float DeltaSeconds, FVector OldLocation, FVector OldVelocity)
@@ -709,10 +758,9 @@ bool AGASCoursePlayerCharacter::StopPointClickCharacterMovement()
 
 void AGASCoursePlayerCharacter::AutoAttachCameraWithinMinDistance()
 {
-	if(bAutoReAttachCameraWithinMinDistance &&!GetCameraBoom()->IsAttachedTo(RootComponent) && !ResetCameraOffsetTimeline.IsPlaying())
+	if(CameraSettingsData->bAutoReAttachCameraWithinMinDistance &&!GetCameraBoom()->IsAttachedTo(RootComponent) && !ResetCameraOffsetTimeline.IsPlaying())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Distance to Camera: %f"), (GetMesh()->GetComponentLocation() - (GetCameraBoom()->GetComponentLocation() + GetCameraBoom()->TargetOffset)).Size2D());
-		if((GetMesh()->GetComponentLocation() - (GetCameraBoom()->GetComponentLocation() + GetCameraBoom()->TargetOffset)).Size2D() <= MinDistanceToDetachCamera)
+		if((GetMesh()->GetComponentLocation() - (GetCameraBoom()->GetComponentLocation() + GetCameraBoom()->TargetOffset)).Size2D() <= CameraSettingsData->MinDistanceToDetachCamera)
 		{
 			ResetCameraOffsetTimeline.PlayFromStart();
 		}
