@@ -44,6 +44,24 @@ enum class EGASCourseAbilityType : uint8
 };
 
 /**
+ * Represents the different slot types for a gameplay ability.
+ *
+ * The slot types are used to categorize abilities based on their usage.
+ */
+UENUM(BlueprintType)
+enum class EGASCourseAbilitySlotType : uint8
+{
+	
+	PrimarySlot,
+	
+	SecondarySlot,
+	
+	UltimateSlot,
+
+	EmptySlot,
+};
+
+/**
  * 
  */
 UCLASS(Abstract, HideCategories = Input, Meta = (ShortTooltip = "The base gameplay ability class used by this project."))
@@ -87,6 +105,15 @@ public:
 	AGASCoursePlayerCharacter* GetGASCouresPlayerCharacterFromActorInfo() const;
 
 	EGASCourseAbilityActivationPolicy GetActivationPolicy() const { return ActivationPolicy; }
+
+	/**
+	 * @brief Get the type of ability slot.
+	 *
+	 * This method returns the type of ability slot that the ability belongs to.
+	 *
+	 * @return The ability slot type (EGASCourseAbilitySlotType) of the ability.
+	 */
+	EGASCourseAbilitySlotType GetAbilitySlotType() const {return AbilitySlotType; }
 
 	void TryActivateAbilityOnSpawn(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec) const;
 
@@ -132,6 +159,10 @@ protected:
 	// Defines how this ability is meant to activate.
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "GASCourse|Ability|Activation")
 	EGASCourseAbilityType AbilityType;
+
+	// Defines how this ability is meant to activate.
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "GASCourse|Ability|Activation")
+	EGASCourseAbilitySlotType AbilitySlotType;
 
 	/**
 	 * @brief Should the ability automatically commit when activated? If false, blueprint or child classes must call CommitAbility() manually.

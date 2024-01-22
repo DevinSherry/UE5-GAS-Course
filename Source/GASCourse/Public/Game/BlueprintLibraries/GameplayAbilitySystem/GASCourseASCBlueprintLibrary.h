@@ -5,6 +5,7 @@
 #include "AbilitySystemBlueprintLibrary.h"
 #include "GameplayEffect.h"
 #include "Game/GameplayAbilitySystem/GASCourseNativeGameplayTags.h"
+#include "Game/GameplayAbilitySystem/GASCourseGameplayAbility.h"
 #include "GASCourseASCBlueprintLibrary.generated.h"
 
 /** Represents a context for applying damage to an object or character.
@@ -138,4 +139,17 @@ public:
 
 	UFUNCTION(BlueprintPure, Category = "GASCourse|AbilitySystem|Damage")
 	static bool FindDamageTypeTagInContainer(const FGameplayTagContainer& InContainer, FGameplayTag& DamageTypeTag);
+
+	/**
+	 * Retrieves the gameplay ability slot type from the specified ability spec handle.
+	 *
+	 * @param AbilitySystem The ability system component to retrieve the ability spec from.
+	 * @param AbilitySpecHandle The handle of the ability spec to retrieve the slot type from.
+	 * @return The gameplay ability slot type associated with the specified ability spec handle.
+	 */
+	UFUNCTION(BlueprintPure, Category = "GASCourse|AbilitySystem|GameplayAbility")
+	static EGASCourseAbilitySlotType GetGameplayAbilitySlotTypeFromHandle(const UAbilitySystemComponent* AbilitySystem, const FGameplayAbilitySpecHandle& AbilitySpecHandle);
+
+	UFUNCTION(BlueprintCallable, Category = "GASCourse|AbilitySystem|GameplayAbility")
+	static void GetAllAbilitiesofAbilitySlotType(const UAbilitySystemComponent* AbilitySystem, EGASCourseAbilitySlotType AbilitySlot, TArray<FGameplayAbilitySpecHandle>& OutAbilityHandles);
 };

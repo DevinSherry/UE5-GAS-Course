@@ -156,3 +156,46 @@ bool UGASCourseASCBlueprintLibrary::FindDamageTypeTagInContainer(const FGameplay
 	
 	return false;
 }
+
+EGASCourseAbilitySlotType UGASCourseASCBlueprintLibrary::GetGameplayAbilitySlotTypeFromHandle(
+	const UAbilitySystemComponent* AbilitySystem, const FGameplayAbilitySpecHandle& AbilitySpecHandle)
+{
+	EGASCourseAbilitySlotType AbilitySlot = EGASCourseAbilitySlotType::EmptySlot;
+	// validate the ASC
+	if (!AbilitySystem)
+	{
+		return AbilitySlot;
+	}
+
+	// get and validate the ability spec
+	const FGameplayAbilitySpec* AbilitySpec = AbilitySystem->FindAbilitySpecFromHandle(AbilitySpecHandle);
+	if (!AbilitySpec)
+	{
+		return AbilitySlot;
+	}
+
+	// try to get the ability instance
+	if(const UGASCourseGameplayAbility* AbilityInstance = Cast<UGASCourseGameplayAbility>(AbilitySpec->GetPrimaryInstance()))
+	{
+		AbilitySlot = AbilityInstance->GetAbilitySlotType();
+	}
+
+	return AbilitySlot;
+}
+
+void UGASCourseASCBlueprintLibrary::GetAllAbilitiesofAbilitySlotType(const UAbilitySystemComponent* AbilitySystem,  EGASCourseAbilitySlotType AbilitySlot, 
+	TArray<FGameplayAbilitySpecHandle>& OutAbilityHandles)
+{
+	if(AbilitySystem)
+	{
+		OutAbilityHandles.Empty(AbilitySystem->GetActivatableAbilities().Num());
+		for (const FGameplayAbilitySpec& Spec : AbilitySystem->GetActivatableAbilities())
+		{
+			if(GetGameplayAbilitySlotTypeFromHandle(AbilitySystem, Spec.Handle) == AbilitySlot)
+			{
+				// add the spec handle to the list
+				OutAbilityHandles.Add(Spec.Handle);
+			}
+		}
+	}
+}

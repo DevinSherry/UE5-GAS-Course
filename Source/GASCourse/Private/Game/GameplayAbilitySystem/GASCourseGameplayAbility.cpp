@@ -17,6 +17,7 @@ UGASCourseGameplayAbility::UGASCourseGameplayAbility(const FObjectInitializer& O
 
 	ActivationPolicy = EGASCourseAbilityActivationPolicy::OnInputTriggered;
 	AbilityType = EGASCourseAbilityType::Instant;
+	AbilitySlotType = EGASCourseAbilitySlotType::PrimarySlot;
 
 	bAutoCommitAbilityOnActivate = true;
 }
