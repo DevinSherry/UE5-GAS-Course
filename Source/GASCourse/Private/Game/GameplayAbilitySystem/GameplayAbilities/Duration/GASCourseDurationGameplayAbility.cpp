@@ -2,6 +2,8 @@
 
 
 #include "Game/GameplayAbilitySystem/GameplayAbilities/Duration/GASCourseDurationGameplayAbility.h"
+
+#include "AbilityTask_WaitInputPress.h"
 #include "GASCourse.h"
 #include "Abilities/Tasks/AbilityTask_WaitGameplayEffectRemoved.h"
 
@@ -11,6 +13,7 @@ UGASCourseDurationGameplayAbility::UGASCourseDurationGameplayAbility(const FObje
 	bAutoEndAbilityOnDurationEnd = true;
 	bAutoCommitCooldownOnDurationEnd = true;
 	bAutoApplyDurationEffect = true;
+	bCancelAbilityOnReactivation = true;
 
 	AbilityType = EGASCourseAbilityType::Duration;
 }
@@ -70,13 +73,18 @@ void UGASCourseDurationGameplayAbility::ActivateAbility(const FGameplayAbilitySp
 	const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo,
 	const FGameplayEventData* TriggerEventData)
 {
-
 	if(bAutoApplyDurationEffect)
 	{
 		if(!ApplyDurationEffect())
 		{
 			EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
 		}
+	}
+
+	if(UAbilityTask_WaitInputPress* WaitInputPressTask = UAbilityTask_WaitInputPress::WaitInputPress(this, false))
+	{
+		WaitInputPressTask->OnPress.AddDynamic(this, &ThisClass::OnAbilityInputPressed);
+		WaitInputPressTask->Activate();
 	}
 	
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
@@ -192,5 +200,20 @@ void UGASCourseDurationGameplayAbility::GetAbilityDurationTags(FGameplayTagConta
 	if(const UGameplayEffect* DurationGE = GetDurationGameplayEffect())
 	{
 		DurationTags.AppendTags(DurationGE->GetGrantedTags());
+	}
+}
+
+void UGASCourseDurationGameplayAbility::OnAbilityInputPressed(float InTimeWaited)
+{
+	if(HasAuthorityOrPredictionKey(CurrentActorInfo, &CurrentActivationInfo))
+	{
+		if(bAutoCommitCooldownOnDurationEnd || bAutoEndAbilityOnDurationEnd)
+		{
+			BP_RemoveGameplayEffectFromOwnerWithHandle(DurationEffectHandle);
+		}
+		else
+		{
+			EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, true);
+		}
 	}
 }

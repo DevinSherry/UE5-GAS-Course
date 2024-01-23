@@ -149,6 +149,9 @@ protected:
 public:
 	
 	void CharacterDeathGameplayEventCallback(FGameplayTag MatchingTag, const FGameplayEventData* Payload);
+
+	UFUNCTION()
+	void IgnorePawnCollisionGameplayTagEventCallback(FGameplayTag MatchingTag, int32 NewCount);
 	
 	virtual UGASCourseAbilitySystemComponent* GetAbilitySystemComponent() const override;
 	
@@ -218,6 +221,10 @@ protected:
 
 	UFUNCTION()
 	virtual void Call_OnRep_ReplicatedAnimMontage() override;
+
+private:
+
+	ECollisionResponse DefaultCollisionResponseToPawn;
 	
 };
 

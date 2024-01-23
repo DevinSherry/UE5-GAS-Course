@@ -99,6 +99,7 @@ void AGASCourseCharacter::InitializeAbilitySystem(UGASCourseAbilitySystemCompone
 	if(InASC)
 	{
 		InASC->AddGameplayEventTagContainerDelegate(FGameplayTagContainer(Event_OnDeath), FGameplayEventTagMulticastDelegate::FDelegate::CreateUObject(this, &ThisClass::CharacterDeathGameplayEventCallback));
+		InASC->RegisterGameplayTagEvent(FGameplayTag(Collision_IgnorePawn), EGameplayTagEventType::NewOrRemoved).AddUObject(this, &AGASCourseCharacter::IgnorePawnCollisionGameplayTagEventCallback);
 	}
 }
 
@@ -108,6 +109,21 @@ void AGASCourseCharacter::CharacterDeathGameplayEventCallback(FGameplayTag Match
 	if(UGASCourseAbilitySystemComponent* InASC = GetAbilitySystemComponent())
 	{
 		InASC->RemoveActiveEffectsWithTags(GameplayEffectAssetTagsToRemove);
+	}
+}
+
+void AGASCourseCharacter::IgnorePawnCollisionGameplayTagEventCallback(FGameplayTag MatchingTag, int32 NewCount)
+{
+	if(MatchingTag == Collision_IgnorePawn)
+	{
+		if(NewCount > 0)
+		{
+			GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
+		}
+		else
+		{
+			GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Pawn, DefaultCollisionResponseToPawn);
+		}
 	}
 }
 
@@ -284,6 +300,9 @@ void AGASCourseCharacter::PostInitializeComponents()
 	Super::PostInitializeComponents();
 
 	check(AbilitySystemComponent);
+	check(GetCapsuleComponent());
+
+	DefaultCollisionResponseToPawn = GetCapsuleComponent()->GetCollisionResponseToChannel(ECC_Pawn);
 }
 
 

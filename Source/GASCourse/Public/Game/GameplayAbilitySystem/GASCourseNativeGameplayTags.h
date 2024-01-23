@@ -50,6 +50,8 @@ UE_DECLARE_GAMEPLAY_TAG_EXTERN(DamageType_Status_Burn);
 UE_DECLARE_GAMEPLAY_TAG_EXTERN(Event_Gameplay_OnDamageDealt);
 UE_DECLARE_GAMEPLAY_TAG_EXTERN(Event_Gameplay_OnDamageReceived);
 
+UE_DECLARE_GAMEPLAY_TAG_EXTERN(Collision_IgnorePawn);
+
 
 struct FGASCourseNativeGameplayTags
 {

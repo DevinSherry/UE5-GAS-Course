@@ -72,6 +72,9 @@ protected:
 	UPARAM(DisplayName= "bDurationEffectApplied")
 	bool ApplyDurationEffect();
 
+	UFUNCTION()
+	void OnAbilityInputPressed(float InTimeWaited);
+
 	/**
  * @brief Should the ability automatically commit cooldown when the duration effect ends?
  */
@@ -83,6 +86,16 @@ protected:
  */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "GASCourse|Ability|Duration", meta=(EditCondition="AbilityType==EGASCourseAbilityType::Duration", EditConditionHides))
 	bool bAutoEndAbilityOnDurationEnd;
+
+	/**
+	 * @brief Indicates whether the ability should be canceled upon reactivation.
+	 *
+	 * If this flag is set to true, the ability will be canceled if it is reactivated while it is still active. By default, this flag is true, meaning the ability will continue to run even
+	 * if it is reactivated.
+	 *
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "GASCourse|Ability|Duration")
+	bool bCancelAbilityOnReactivation;
 
 private:
 	

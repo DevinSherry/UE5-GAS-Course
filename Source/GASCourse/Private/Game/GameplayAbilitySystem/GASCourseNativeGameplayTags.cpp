@@ -43,4 +43,6 @@ UE_DEFINE_GAMEPLAY_TAG(Event_OnDeath, "Event.Gameplay.OnDeath")
 UE_DEFINE_GAMEPLAY_TAG(Event_Gameplay_OnDamageDealt, "Event.Gameplay.OnDamageDealt")
 UE_DEFINE_GAMEPLAY_TAG(Event_Gameplay_OnDamageReceived, "Event.Gameplay.OnDamageReceived")
 
+UE_DEFINE_GAMEPLAY_TAG(Collision_IgnorePawn, "Collision.Ignore.Pawn")
+
 FGASCourseNativeGameplayTags FGASCourseNativeGameplayTags::GameplayTags;
