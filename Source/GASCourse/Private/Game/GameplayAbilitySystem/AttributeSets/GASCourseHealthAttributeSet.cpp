@@ -8,6 +8,7 @@
 
 UGASCourseHealthAttributeSet::UGASCourseHealthAttributeSet()
 {
+
 }
 
 void UGASCourseHealthAttributeSet::PreAttributeChange(const FGameplayAttribute& Attribute, float& NewValue)
@@ -50,6 +51,12 @@ void UGASCourseHealthAttributeSet::PostGameplayEffectExecute(const FGameplayEffe
 			OnDeathPayload.EventMagnitude = LocalDamage;
 			GetOwningAbilitySystemComponent()->HandleGameplayEvent(Event_OnDeath, &OnDeathPayload);
 		}
+	}
+	else if (Data.EvaluatedData.Attribute == GetCurrentHealthAttribute())
+	{
+		// Handle other health changes.
+		// Health loss should go through Damage.
+		SetCurrentHealth(FMath::Clamp(GetCurrentHealth(), 0.0f, GetMaxHealth()));
 	}
 }
 

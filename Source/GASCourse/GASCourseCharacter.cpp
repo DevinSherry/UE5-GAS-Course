@@ -51,7 +51,7 @@ AGASCourseCharacter::AGASCourseCharacter(const class FObjectInitializer& ObjectI
 	//Initialize AbilitySystemComponent
 	AbilitySystemComponent = ObjectInitializer.CreateDefaultSubobject<UGASCourseAbilitySystemComponent>(this, TEXT("AbilitySystemComponent"));
 	AbilitySystemComponent->SetIsReplicated(true);
-	AbilitySystemComponent->SetReplicationMode(EGameplayEffectReplicationMode::Mixed);
+	AbilitySystemComponent->SetReplicationMode(EGameplayEffectReplicationMode::Full);
 
 	// Activate ticking in order to update the cursor every frame.
 	PrimaryActorTick.bCanEverTick = true;

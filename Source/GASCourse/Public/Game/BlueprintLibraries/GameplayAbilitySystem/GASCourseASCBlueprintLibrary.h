@@ -80,6 +80,19 @@ public:
 	static bool ApplyDamageToTarget(AActor* Target, AActor* Instigator, float Damage, const FDamageContext& DamageContext);
 
 	/**
+	 * Applies damage to multiple targets using the provided target data handle and damage context.
+	 *
+	 * @param TargetHandle - The gameplay ability target data handle representing the targets to apply damage to.
+	 * @param Instigator - The actor that caused the damage.
+	 * @param Damage - The amount of damage to apply.
+	 * @param DamageContext - The context for applying the damage, containing information about the damage event.
+	 *
+	 * @return True if the damage was successfully applied to at least one target, false otherwise.
+	 */
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "GASCourse|AbilitySystem|Damage")
+	static bool ApplyDamageToTargetDataHandle(FGameplayAbilityTargetDataHandle TargetHandle, AActor* Instigator, float Damage, const FDamageContext& DamageContext);
+
+	/**
 	 * Applies damage over time to a target actor.
 	 *
 	 * @param Target                      The actor to apply damage over time to.
@@ -152,4 +165,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "GASCourse|AbilitySystem|GameplayAbility")
 	static void GetAllAbilitiesofAbilitySlotType(const UAbilitySystemComponent* AbilitySystem, EGASCourseAbilitySlotType AbilitySlot, TArray<FGameplayAbilitySpecHandle>& OutAbilityHandles);
+
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "GASCourse|AbilitySystem|Damage")
+	static void SendGameplayEventToTargetDataHandle(FGameplayAbilityTargetDataHandle TargetHandle, FGameplayTag EventTag, FGameplayEventData Payload);
 };

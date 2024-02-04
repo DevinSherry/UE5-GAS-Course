@@ -2,8 +2,7 @@
 
 
 #include "Game/GameplayAbilitySystem/GameplayAbilities/Duration/GASCourseDurationGameplayAbility.h"
-
-#include "AbilityTask_WaitInputPress.h"
+#include "Abilities/Tasks/AbilityTask_WaitInputPress.h"
 #include "GASCourse.h"
 #include "Abilities/Tasks/AbilityTask_WaitGameplayEffectRemoved.h"
 
@@ -81,10 +80,13 @@ void UGASCourseDurationGameplayAbility::ActivateAbility(const FGameplayAbilitySp
 		}
 	}
 
-	if(UAbilityTask_WaitInputPress* WaitInputPressTask = UAbilityTask_WaitInputPress::WaitInputPress(this, false))
+	if(bCancelAbilityOnReactivation)
 	{
-		WaitInputPressTask->OnPress.AddDynamic(this, &ThisClass::OnAbilityInputPressed);
-		WaitInputPressTask->Activate();
+		if(UAbilityTask_WaitInputPress* WaitInputPressTask = UAbilityTask_WaitInputPress::WaitInputPress(this, false))
+		{
+			WaitInputPressTask->OnPress.AddDynamic(this, &ThisClass::OnAbilityInputPressed);
+			WaitInputPressTask->Activate();
+		}
 	}
 	
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);

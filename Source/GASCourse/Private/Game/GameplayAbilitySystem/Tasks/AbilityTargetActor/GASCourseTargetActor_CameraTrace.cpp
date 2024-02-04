@@ -3,11 +3,11 @@
 
 #include "Game/GameplayAbilitySystem/Tasks/AbilityTargetActor/GASCourseTargetActor_CameraTrace.h"
 #include "AbilitySystemBlueprintLibrary.h"
-#include "GASCourseGameplayAbility.h"
+#include "Game/GameplayAbilitySystem/GASCourseGameplayAbility.h"
 #include "Abilities/GameplayAbility.h"
 #include "GASCourse/GASCourse.h"
 #include "Game/Character/Player/GASCoursePlayerController.h"
-#include "GameplayAbilities/Aimcast/GASCourseAimcastGameplayAbility.h"
+#include "Game/GameplayAbilitySystem/GameplayAbilities/Aimcast/GASCourseAimcastGameplayAbility.h"
 
 AGASCourseTargetActor_CameraTrace::AGASCourseTargetActor_CameraTrace(const FObjectInitializer& ObjectInitializer)
 : Super(ObjectInitializer)

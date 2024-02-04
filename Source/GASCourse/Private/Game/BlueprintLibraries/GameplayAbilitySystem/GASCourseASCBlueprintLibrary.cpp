@@ -15,8 +15,21 @@ bool UGASCourseASCBlueprintLibrary::ApplyDamageToTarget(AActor* Target, AActor* 
 	return ApplyDamageToTarget_Internal(Target, Instigator, Damage, DamageContext, DamageEffect);
 }
 
+bool UGASCourseASCBlueprintLibrary::ApplyDamageToTargetDataHandle(FGameplayAbilityTargetDataHandle TargetHandle,
+	AActor* Instigator, float Damage, const FDamageContext& DamageContext)
+{
+	TArray<AActor*> Targets = GetAllActorsFromTargetData(TargetHandle);
+	bool bDamageApplied = false;
+	
+	for(AActor* Target: Targets)
+	{
+		bDamageApplied = ApplyDamageToTarget(Target, Instigator, Damage, DamageContext);
+	}
+	return bDamageApplied;
+}
+
 bool UGASCourseASCBlueprintLibrary::ApplyDamageOverTimeToTarget(AActor* Target, AActor* Instigator, float Damage,
-	const FDamageContext& DamageContext, const FDamageOverTimeContext& DamageOverTimeContext)
+                                                                const FDamageContext& DamageContext, const FDamageOverTimeContext& DamageOverTimeContext)
 {
 	UGameplayEffect* DamageEffect = ConstructDamageGameplayEffect(EGameplayEffectDurationType::HasDuration, DamageOverTimeContext);
 	return ApplyDamageToTarget_Internal(Target, Instigator, Damage, DamageContext, DamageEffect);
@@ -197,5 +210,15 @@ void UGASCourseASCBlueprintLibrary::GetAllAbilitiesofAbilitySlotType(const UAbil
 				OutAbilityHandles.Add(Spec.Handle);
 			}
 		}
+	}
+}
+
+void UGASCourseASCBlueprintLibrary::SendGameplayEventToTargetDataHandle(FGameplayAbilityTargetDataHandle TargetHandle,
+	FGameplayTag EventTag, FGameplayEventData Payload)
+{
+	TArray<AActor*> Targets = GetAllActorsFromTargetData(TargetHandle);
+	for(AActor* Target : Targets)
+	{
+		SendGameplayEventToActor(Target, EventTag, Payload);
 	}
 }
