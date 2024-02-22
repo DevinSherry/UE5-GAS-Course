@@ -17,5 +17,11 @@ class GASCOURSE_API UGASCourseGameplayEffectUIData : public UGameplayEffectUIDat
 public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Data, meta = (MultiLine = "true"))
 	TSoftObjectPtr<UMaterialInterface> StatusIcon;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Data, meta = (MultiLine = "true"))
+	FText StatusDescription;
+
+	UFUNCTION(BlueprintCallable)
+	FText ConstructStatusDescription();
 	
 };

@@ -1,6 +1,7 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "GASCourseCharacter.h"
+#include "GASCStatusEffectListenerComp.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
@@ -53,6 +54,9 @@ AGASCourseCharacter::AGASCourseCharacter(const class FObjectInitializer& ObjectI
 	AbilitySystemComponent->SetIsReplicated(true);
 	AbilitySystemComponent->SetReplicationMode(EGameplayEffectReplicationMode::Full);
 
+	StatusEffectListenerComp = ObjectInitializer.CreateDefaultSubobject<UGASCStatusEffectListenerComp>(this, TEXT("StatusEffectListenerComp"));
+	StatusEffectListenerComp->SetIsReplicated(true);
+
 	// Activate ticking in order to update the cursor every frame.
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.bStartWithTickEnabled = true;
@@ -71,8 +75,9 @@ void AGASCourseCharacter::BeginPlay()
 {
 	// Call the base class  
 	Super::BeginPlay();
-
+	
 	GameplayEffectAssetTagsToRemove.AddTag(FGameplayTag::RequestGameplayTag(FName("Effect.AssetTag.Status")));
+	StatusEffectListenerComp->ApplyDefaultActiveStatusEffects();
 }
 
 void AGASCourseCharacter::InitializeAbilitySystem(UGASCourseAbilitySystemComponent* InASC)
@@ -103,8 +108,18 @@ void AGASCourseCharacter::InitializeAbilitySystem(UGASCourseAbilitySystemCompone
 	}
 }
 
+void AGASCourseCharacter::OnStatusEffectApplied(FActiveGameplayEffectHandle InStatusEffectApplied)
+{
+	OnStatusEffectApplied_Event(InStatusEffectApplied);
+}
+
+void AGASCourseCharacter::OnStatusEffectRemoved(FActiveGameplayEffectHandle InStatusEffectRemoved)
+{
+	OnStatusEffectRemoved_Event(InStatusEffectRemoved);
+}
+
 void AGASCourseCharacter::CharacterDeathGameplayEventCallback(FGameplayTag MatchingTag,
-	const FGameplayEventData* Payload)
+                                                              const FGameplayEventData* Payload)
 {
 	if(UGASCourseAbilitySystemComponent* InASC = GetAbilitySystemComponent())
 	{
@@ -302,14 +317,22 @@ void AGASCourseCharacter::PostInitializeComponents()
 	check(AbilitySystemComponent);
 	check(GetCapsuleComponent());
 
+	check(StatusEffectListenerComp);
+	StatusEffectListenerComp->OnStatusEffectAppliedHandle.AddDynamic(this, &ThisClass::OnStatusEffectApplied);
+	StatusEffectListenerComp->OnStatusEffectRemovedHandle.AddDynamic(this, &ThisClass::OnStatusEffectRemoved);
+
 	DefaultCollisionResponseToPawn = GetCapsuleComponent()->GetCollisionResponseToChannel(ECC_Pawn);
 }
-
 
 FReplicationProxyVarList& AGASCourseCharacter::Call_GetReplicationProxyVarList_Mutable()
 {
 	MARK_PROPERTY_DIRTY_FROM_NAME(AGASCourseCharacter, ReplicationVarList, this);
 	return ReplicationVarList;
+}
+
+void AGASCourseCharacter::PossessedBy(AController* NewController)
+{
+	Super::PossessedBy(NewController);
 }
 
 void AGASCourseCharacter::OnRep_ReplicationVarList()

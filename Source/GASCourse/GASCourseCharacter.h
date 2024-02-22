@@ -53,6 +53,9 @@ class AGASCourseCharacter : public ACharacter, public IAbilitySystemInterface, p
 {
 	GENERATED_BODY()
 
+	/** Camera boom positioning the camera behind the character */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	class UGASCStatusEffectListenerComp* StatusEffectListenerComp;
 
 public:
 	
@@ -61,6 +64,9 @@ public:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	
 	FReplicationProxyVarList& Call_GetReplicationProxyVarList_Mutable();
+
+	void PossessedBy(AController* NewController) override;
+	
 protected:
 
 	/** Called for movement input */
@@ -147,6 +153,18 @@ protected:
 	FGameplayTagContainer GameplayEffectAssetTagsToRemove;
 
 public:
+
+	UFUNCTION()
+	void OnStatusEffectApplied(FActiveGameplayEffectHandle InStatusEffectApplied);
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnStatusEffectApplied_Event(FActiveGameplayEffectHandle InStatusEffectApplied);
+
+	UFUNCTION()
+	void OnStatusEffectRemoved(FActiveGameplayEffectHandle InStatusEffectRemoved);
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnStatusEffectRemoved_Event(FActiveGameplayEffectHandle InStatusEffectRemoved);
 	
 	void CharacterDeathGameplayEventCallback(FGameplayTag MatchingTag, const FGameplayEventData* Payload);
 
