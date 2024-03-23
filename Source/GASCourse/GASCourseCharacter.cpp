@@ -116,6 +116,15 @@ void AGASCourseCharacter::OnStatusEffectApplied(FActiveGameplayEffectHandle InSt
 void AGASCourseCharacter::OnStatusEffectRemoved(FActiveGameplayEffectHandle InStatusEffectRemoved)
 {
 	OnStatusEffectRemoved_Event(InStatusEffectRemoved);
+	if(HasAuthority())
+	{
+		OnStatusEffectRemoved_Multicast(InStatusEffectRemoved);
+	}
+}
+
+void AGASCourseCharacter::OnStatusEffectRemoved_Multicast_Implementation(FActiveGameplayEffectHandle InStatusEffectRemoved)
+{
+	OnStatusEffectRemoved_Event(InStatusEffectRemoved);
 }
 
 void AGASCourseCharacter::CharacterDeathGameplayEventCallback(FGameplayTag MatchingTag,

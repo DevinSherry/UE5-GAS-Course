@@ -13,10 +13,8 @@ UGASCStatusEffectListenerComp::UGASCStatusEffectListenerComp()
 
 	// ...
 }
-
 void UGASCStatusEffectListenerComp::OnStatusEffectRemoved_Implementation(const FActiveGameplayEffect& ActiveGameplayEffect)
 {
-	//TODO: Filter for only gameplay effects with the status effect asset tag
 	FGameplayTagContainer GameplayEffectAssetTags;
 	ActiveGameplayEffect.Spec.GetAllAssetTags(GameplayEffectAssetTags);
 
@@ -28,7 +26,6 @@ void UGASCStatusEffectListenerComp::OnStatusEffectRemoved_Implementation(const F
 	if(GameplayEffectAssetTags.HasTag(StatusEffectAssetTag))
 	{
 		OnStatusEffectRemovedHandle.Broadcast(ActiveGameplayEffect.Handle);
-		//TODO: Try GetContext? ActiveGameplayEffect.Spec.GetContext()
 	}
 }
 
@@ -45,9 +42,7 @@ void UGASCStatusEffectListenerComp::OnStatusEffectApplied_Implementation(UAbilit
 	if(GameplayEffectAssetTags.HasTag(StatusEffectAssetTag))
 	{
 		OnStatusEffectAppliedHandle.Broadcast(ActiveGameplayEffectHandle);
-		//TODO: Try GetContext? GameplayEffectSpec.GetContext()
 	}
-
 }
 
 void UGASCStatusEffectListenerComp::ApplyDefaultActiveStatusEffects()

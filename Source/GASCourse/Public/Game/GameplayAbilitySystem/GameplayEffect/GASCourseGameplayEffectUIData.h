@@ -2,8 +2,9 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
 #include "GameplayEffectUIData.h"
+#include "GASCourseEffectDescriptor.h"
+#include "Game/GameplayAbilitySystem/GASAbilityTagRelationshipMapping.h"
 #include "GASCourseGameplayEffectUIData.generated.h"
 
 /**
@@ -15,13 +16,28 @@ class GASCOURSE_API UGASCourseGameplayEffectUIData : public UGameplayEffectUIDat
 	GENERATED_BODY()
 
 public:
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Data, meta = (MultiLine = "true"))
+
+	UGASCourseGameplayEffectUIData();
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Data)
 	TSoftObjectPtr<UMaterialInterface> StatusIcon;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Data, meta = (MultiLine = "true"))
 	FText StatusDescription;
 
 	UFUNCTION(BlueprintCallable)
-	FText ConstructStatusDescription();
+	FText ConstructStatusDescription(FActiveGameplayEffectHandle GameplayEffectHandle);
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Data)
+	TSubclassOf<UGASCourseEffectDescriptor> EffectDescriptor;
+
+	UFUNCTION(BlueprintCallable, meta = (WorldContext))
+	UGASCourseEffectDescriptor* InitializeDescriptor(UObject* WorldContextObject);
+
+private:
+
+	UGASCourseEffectDescriptor* EffectDescriptorObj = nullptr;
+
+	virtual void OnGameplayEffectExecuted(FActiveGameplayEffectsContainer& ActiveGEContainer, FGameplayEffectSpec& GESpec, FPredictionKey& PredictionKey) const override;
 	
 };

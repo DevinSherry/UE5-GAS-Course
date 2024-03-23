@@ -162,6 +162,9 @@ public:
 
 	UFUNCTION()
 	void OnStatusEffectRemoved(FActiveGameplayEffectHandle InStatusEffectRemoved);
+	
+	UFUNCTION(NetMulticast, Reliable)
+	void OnStatusEffectRemoved_Multicast(FActiveGameplayEffectHandle InStatusEffectRemoved);
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void OnStatusEffectRemoved_Event(FActiveGameplayEffectHandle InStatusEffectRemoved);

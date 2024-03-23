@@ -22,7 +22,7 @@ public:
 	UFUNCTION(NetMulticast, Reliable)
 	void OnStatusEffectApplied(UAbilitySystemComponent* Source, const FGameplayEffectSpec& GameplayEffectSpec, FActiveGameplayEffectHandle ActiveGameplayEffectHandle);
 
-	UFUNCTION(NetMulticast, Reliable)
+	UFUNCTION(Server, Reliable)
 	void OnStatusEffectRemoved(const FActiveGameplayEffect& ActiveGameplayEffect);
 	
 	UPROPERTY(BlueprintAssignable)
