@@ -4,7 +4,6 @@
 
 #include "GameplayEffectUIData.h"
 #include "GASCourseEffectDescriptor.h"
-#include "Game/GameplayAbilitySystem/GASAbilityTagRelationshipMapping.h"
 #include "GASCourseGameplayEffectUIData.generated.h"
 
 /**

@@ -168,4 +168,8 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "GASCourse|AbilitySystem|Damage")
 	static void SendGameplayEventToTargetDataHandle(FGameplayAbilityTargetDataHandle TargetHandle, FGameplayTag EventTag, FGameplayEventData Payload);
+
+	/** */
+	UFUNCTION(BlueprintCallable, Category = "GASCourse|AbilitySystem|GameplayEffect")
+	static FGameplayAttribute GetGameplayAttributeFromModifierStruct(const FGameplayModifierInfo& ModifierInfo);
 };

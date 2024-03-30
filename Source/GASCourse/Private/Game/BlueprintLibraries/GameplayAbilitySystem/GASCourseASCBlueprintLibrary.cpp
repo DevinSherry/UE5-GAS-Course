@@ -222,3 +222,16 @@ void UGASCourseASCBlueprintLibrary::SendGameplayEventToTargetDataHandle(FGamepla
 		SendGameplayEventToActor(Target, EventTag, Payload);
 	}
 }
+
+FGameplayAttribute UGASCourseASCBlueprintLibrary::GetGameplayAttributeFromModifierStruct(
+	const FGameplayModifierInfo& ModifierInfo)
+{
+	FGameplayAttribute Attribute;
+
+	if(ModifierInfo.Attribute.IsValid())
+	{
+		Attribute = ModifierInfo.Attribute;
+	}
+
+	return Attribute;
+}

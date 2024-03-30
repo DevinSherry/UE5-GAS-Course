@@ -7,7 +7,7 @@ UGASCourseEffectDescriptor::UGASCourseEffectDescriptor()
 {
 }
 
-FText UGASCourseEffectDescriptor::GetEffectDescriptor_Implementation(FActiveGameplayEffectHandle GameplayEffectHandle)
+FText UGASCourseEffectDescriptor::GetEffectDescriptor_Implementation(FActiveGameplayEffectHandle GameplayEffectHandle, FGameplayEffectSpecHandle InSpecHandle)
 {
 	FText Empty;
 	return Empty;
@@ -22,3 +22,4 @@ UWorld* UGASCourseEffectDescriptor::GetWorld() const
 
 	return nullptr;
 }
+

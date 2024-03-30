@@ -2,6 +2,8 @@
 
 
 #include "Game/GameplayAbilitySystem/GameplayEffect/GASCourseGameplayEffectUIData.h"
+
+#include "AbilitySystemComponent.h"
 #include "GameplayEffect.h"
 #include "Game/GameplayAbilitySystem/GameplayEffect/EffectDescriptor/GASCourseEffectDescriptor.h"
 
@@ -15,7 +17,10 @@ FText UGASCourseGameplayEffectUIData::ConstructStatusDescription(FActiveGameplay
 {
 	if(EffectDescriptorObj)
 	{
-		StatusDescription = EffectDescriptorObj->GetEffectDescriptor(GameplayEffectHandle);
+		const FGameplayEffectSpecHandle InSpecHandle = GameplayEffectHandle.GetOwningAbilitySystemComponent()->MakeOutgoingSpec(GetOuterUGameplayEffect()->GetClass(),
+			1.0f, GameplayEffectHandle.GetOwningAbilitySystemComponent()->GetEffectContextFromActiveGEHandle(GameplayEffectHandle));
+		
+		StatusDescription = EffectDescriptorObj->GetEffectDescriptor(GameplayEffectHandle, InSpecHandle);
 	}
 	else
 	{
@@ -31,6 +36,8 @@ UGASCourseEffectDescriptor* UGASCourseGameplayEffectUIData::InitializeDescriptor
 	if(EffectDescriptor)
 	{
 		EffectDescriptorObj = NewObject<UGASCourseEffectDescriptor>(WorldContextObject, EffectDescriptor);
+
+		//TODO: Initialize EffectDescriptor with valid SpecHandle?
 		return EffectDescriptorObj;
 	}
 
