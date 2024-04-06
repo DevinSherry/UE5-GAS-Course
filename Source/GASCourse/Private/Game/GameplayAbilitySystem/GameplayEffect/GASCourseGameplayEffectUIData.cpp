@@ -22,12 +22,7 @@ FText UGASCourseGameplayEffectUIData::ConstructStatusDescription(FActiveGameplay
 		
 		StatusDescription = EffectDescriptorObj->GetEffectDescriptor(GameplayEffectHandle, InSpecHandle);
 	}
-	else
-	{
-		const UGameplayEffect* ParentGameplayEffect = GetOwner();
-		const FText EffectPeriod = ParentGameplayEffect->DurationMagnitude.GetValueForEditorDisplay();
-		StatusDescription = EffectPeriod;
-	}
+
 	return StatusDescription;
 }
 
@@ -36,8 +31,7 @@ UGASCourseEffectDescriptor* UGASCourseGameplayEffectUIData::InitializeDescriptor
 	if(EffectDescriptor)
 	{
 		EffectDescriptorObj = NewObject<UGASCourseEffectDescriptor>(WorldContextObject, EffectDescriptor);
-
-		//TODO: Initialize EffectDescriptor with valid SpecHandle?
+		
 		return EffectDescriptorObj;
 	}
 

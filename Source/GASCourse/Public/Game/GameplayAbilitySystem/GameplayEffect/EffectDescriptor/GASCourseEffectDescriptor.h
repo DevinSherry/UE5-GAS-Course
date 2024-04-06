@@ -17,11 +17,9 @@ public:
 
 	UGASCourseEffectDescriptor();
 
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	UFUNCTION(BlueprintNativeEvent)
 	FText GetEffectDescriptor(FActiveGameplayEffectHandle GameplayEffectHandle, FGameplayEffectSpecHandle InSpecHandle);
 	
 	virtual UWorld* GetWorld() const override;
-
-	//TODO: Make Spec Handle reference variable that is set on initialization.
 
 };

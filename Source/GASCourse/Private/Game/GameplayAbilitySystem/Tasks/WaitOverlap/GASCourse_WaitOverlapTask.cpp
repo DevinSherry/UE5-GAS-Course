@@ -3,7 +3,7 @@
 
 #include "Game/GameplayAbilitySystem/Tasks/WaitOverlap/GASCourse_WaitOverlapTask.h"
 
-#include "GASCourseNPC_Base.h"
+#include "Game/Character/NPC/GASCourseNPC_Base.h"
 #include "Components/SphereComponent.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(GASCourse_WaitOverlapTask)

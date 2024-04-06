@@ -3,7 +3,7 @@
 #pragma once
 
 #include "GameplayEffectUIData.h"
-#include "GASCourseEffectDescriptor.h"
+#include "Game/GameplayAbilitySystem/GameplayEffect/EffectDescriptor/GASCourseEffectDescriptor.h"
 #include "GASCourseGameplayEffectUIData.generated.h"
 
 /**

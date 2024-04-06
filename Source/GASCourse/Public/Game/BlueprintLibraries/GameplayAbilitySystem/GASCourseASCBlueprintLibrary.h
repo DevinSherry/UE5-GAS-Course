@@ -172,4 +172,10 @@ public:
 	/** */
 	UFUNCTION(BlueprintCallable, Category = "GASCourse|AbilitySystem|GameplayEffect")
 	static FGameplayAttribute GetGameplayAttributeFromModifierStruct(const FGameplayModifierInfo& ModifierInfo);
+
+	UFUNCTION(BlueprintCallable, Category = "GASCourse|AbilitySystem|GameplayEffect")
+	static float GetModifierMagnitude(FActiveGameplayEffectHandle InGameplayEffect, FGameplayEffectSpecHandle InSpec, int32 ModifierIdx, bool bFactorInStackCount);
+
+	UFUNCTION(BlueprintCallable, Category = "GASCourse|AbilitySystem|GameplayEffect")
+	static FGameplayEffectSpec GetSpecHandleFromGameplayEffect(FActiveGameplayEffectHandle InGameplayEffect, UAbilitySystemComponent* InASC);
 };

@@ -235,3 +235,21 @@ FGameplayAttribute UGASCourseASCBlueprintLibrary::GetGameplayAttributeFromModifi
 
 	return Attribute;
 }
+
+float UGASCourseASCBlueprintLibrary::GetModifierMagnitude(FActiveGameplayEffectHandle InGameplayEffect, FGameplayEffectSpecHandle InSpec, int32 ModifierIdx,
+	bool bFactorInStackCount)
+{
+	return InSpec.Data->Modifiers[0].GetEvaluatedMagnitude();
+
+	//TODO: Find const FGameplayEffectSpec& InRelevantSpec, maybe from GameplayEffect?
+	//GetSpec
+	//InSpec.Data->Def->Modifiers[0].ModifierMagnitude.AttemptCalculateMagnitude(InSpec->H, test);
+}
+
+FGameplayEffectSpec UGASCourseASCBlueprintLibrary::GetSpecHandleFromGameplayEffect(FActiveGameplayEffectHandle InGameplayEffect, UAbilitySystemComponent* InASC)
+{
+	const FActiveGameplayEffect* Test = InASC->GetActiveGameplayEffect(InGameplayEffect);
+	const FGameplayEffectSpec& Spec = Test->Spec;
+	return Spec;
+}
+

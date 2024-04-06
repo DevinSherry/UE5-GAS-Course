@@ -1,7 +1,7 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "GASCourseCharacter.h"
-#include "GASCStatusEffectListenerComp.h"
+#include "Game/Character/Components/GASCStatusEffectListenerComp.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
