@@ -236,20 +236,44 @@ FGameplayAttribute UGASCourseASCBlueprintLibrary::GetGameplayAttributeFromModifi
 	return Attribute;
 }
 
-float UGASCourseASCBlueprintLibrary::GetModifierMagnitude(FActiveGameplayEffectHandle InGameplayEffect, FGameplayEffectSpecHandle InSpec, int32 ModifierIdx,
+float UGASCourseASCBlueprintLibrary::GetModifierMagnitudeAtIndex(FActiveGameplayEffectHandle InGameplayEffect, int32 ModifierIdx,
 	bool bFactorInStackCount)
 {
-	return InSpec.Data->Modifiers[0].GetEvaluatedMagnitude();
-
-	//TODO: Find const FGameplayEffectSpec& InRelevantSpec, maybe from GameplayEffect?
-	//GetSpec
-	//InSpec.Data->Def->Modifiers[0].ModifierMagnitude.AttemptCalculateMagnitude(InSpec->H, test);
+	float OutModifierMagnitude = 0.0f;
+	
+	const FGameplayEffectSpec& Spec = GetSpecHandleFromGameplayEffect(InGameplayEffect);
+	if(Spec.Def)
+	{
+		Spec.Def->Modifiers[ModifierIdx].ModifierMagnitude.AttemptCalculateMagnitude(Spec, OutModifierMagnitude);
+	}
+	
+	return OutModifierMagnitude;
 }
 
-FGameplayEffectSpec UGASCourseASCBlueprintLibrary::GetSpecHandleFromGameplayEffect(FActiveGameplayEffectHandle InGameplayEffect, UAbilitySystemComponent* InASC)
+FGameplayEffectSpec UGASCourseASCBlueprintLibrary::GetSpecHandleFromGameplayEffect(FActiveGameplayEffectHandle InGameplayEffect)
 {
-	const FActiveGameplayEffect* Test = InASC->GetActiveGameplayEffect(InGameplayEffect);
-	const FGameplayEffectSpec& Spec = Test->Spec;
-	return Spec;
+	FGameplayEffectSpec OutSpec;
+	if(const UAbilitySystemComponent* AbilitySystemComponent = InGameplayEffect.GetOwningAbilitySystemComponent())
+	{
+		if(const FActiveGameplayEffect* ActiveGameplayEffect = AbilitySystemComponent->GetActiveGameplayEffect(InGameplayEffect))
+		{
+			OutSpec = ActiveGameplayEffect->Spec;
+		}
+	}
+
+	return OutSpec;
+}
+
+float UGASCourseASCBlueprintLibrary::GetPeriodFromGameplayEffect(FActiveGameplayEffectHandle InGameplayEffect)
+{
+	float OutPeriod = 0.0f;
+
+	const FGameplayEffectSpec& Spec = GetSpecHandleFromGameplayEffect(InGameplayEffect);
+	if(Spec.Def)
+	{
+		OutPeriod = Spec.GetPeriod();
+	}
+	
+	return OutPeriod;
 }
 

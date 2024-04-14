@@ -169,13 +169,37 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "GASCourse|AbilitySystem|Damage")
 	static void SendGameplayEventToTargetDataHandle(FGameplayAbilityTargetDataHandle TargetHandle, FGameplayTag EventTag, FGameplayEventData Payload);
 
-	/** */
+	/**
+	 * Retrieves the gameplay attribute from a given modifier struct.
+	 *
+	 * @param ModifierInfo The gameplay modifier info struct.
+	 * @return The gameplay attribute.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "GASCourse|AbilitySystem|GameplayEffect")
 	static FGameplayAttribute GetGameplayAttributeFromModifierStruct(const FGameplayModifierInfo& ModifierInfo);
 
+	/**
+	 * Calculates the magnitude of a modifier for a given gameplay effect.
+	 *
+	 * @param InGameplayEffect The handle to the gameplay effect.
+	 * @param ModifierIdx The index of the modifier to calculate the magnitude for.
+	 * @param bFactorInStackCount Specifies whether to factor in the stack count of the gameplay effect.
+	 *
+	 * @return The magnitude of the specified modifier. If the modifier is not found or the gameplay effect is invalid,
+	 *         returns 0.0f.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "GASCourse|AbilitySystem|GameplayEffect")
-	static float GetModifierMagnitude(FActiveGameplayEffectHandle InGameplayEffect, FGameplayEffectSpecHandle InSpec, int32 ModifierIdx, bool bFactorInStackCount);
+	static float GetModifierMagnitudeAtIndex(FActiveGameplayEffectHandle InGameplayEffect, int32 ModifierIdx, bool bFactorInStackCount);
 
+	/**
+	 * Retrieves the gameplay effect specification handle associated with the given active gameplay effect handle.
+	 *
+	 * @param InGameplayEffect The active gameplay effect handle for which to retrieve the gameplay effect specification handle.
+	 * @return The gameplay effect specification handle associated with the given active gameplay effect handle.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "GASCourse|AbilitySystem|GameplayEffect")
-	static FGameplayEffectSpec GetSpecHandleFromGameplayEffect(FActiveGameplayEffectHandle InGameplayEffect, UAbilitySystemComponent* InASC);
+	static FGameplayEffectSpec GetSpecHandleFromGameplayEffect(FActiveGameplayEffectHandle InGameplayEffect);
+
+	UFUNCTION(BlueprintPure, Category =  "GASCourse|AbilitySystem|GameplayEffect")
+	static float GetPeriodFromGameplayEffect(FActiveGameplayEffectHandle InGameplayEffect);
 };

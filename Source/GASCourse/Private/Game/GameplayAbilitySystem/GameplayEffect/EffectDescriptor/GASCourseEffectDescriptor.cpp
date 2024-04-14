@@ -7,7 +7,7 @@ UGASCourseEffectDescriptor::UGASCourseEffectDescriptor()
 {
 }
 
-FText UGASCourseEffectDescriptor::GetEffectDescriptor_Implementation(FActiveGameplayEffectHandle GameplayEffectHandle, FGameplayEffectSpecHandle InSpecHandle)
+FText UGASCourseEffectDescriptor::GetEffectDescriptor_Implementation(FActiveGameplayEffectHandle GameplayEffectHandle)
 {
 	FText Empty;
 	return Empty;

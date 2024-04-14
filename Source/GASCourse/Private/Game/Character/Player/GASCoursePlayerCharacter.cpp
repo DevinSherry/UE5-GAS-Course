@@ -598,7 +598,7 @@ void AGASCoursePlayerCharacter::CameraEdgePanning()
 	
 	if(FMath::Abs(MappedNormalizedRangeX) == 1 || FMath::Abs(MappedNormalizedRangeY) == 1)
 	{
-		if(!bIsEnableRotateCameraAxis && bIsWindowFocused)
+		if(!bIsEnableRotateCameraAxis)// && bIsWindowFocused)
 		{
 			const FVector OffsetDirection = GetCameraBoom()->GetRelativeRotation().RotateVector(FVector(MappedNormalizedRangeY, MappedNormalizedRangeX, 0.0f)).GetSafeNormal2D();
 			const FVector NewTargetOffset = GetCameraBoom()->TargetOffset + (OffsetDirection * CurrentCameraEdgePanningSpeed);

@@ -14,6 +14,7 @@ AGASCourseTargetActor_CameraTrace::AGASCourseTargetActor_CameraTrace(const FObje
 {
 	CollisionRadius = 50.0f;
 	CollisionHeight = 50.0f;
+	MaxRange = 5000.0f;
 
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.TickGroup = TG_PrePhysics;
@@ -131,6 +132,8 @@ FHitResult AGASCourseTargetActor_CameraTrace::PerformTrace(AActor* InSourceActor
 	bLastTraceWasGood = false;
 	
 	LineTraceWithFilter(ReturnHitResult, InSourceActor->GetWorld(), Filter, TraceStart, TraceEnd, TraceChannel, Params);
+	//TODO: Maybe try using AimWithPlayerController?
+	//AimWithPlayerController(InSourceActor, Params, TraceStart, TraceEnd);
 	//Default to end of trace line if we don't hit anything.
 	if (ReturnHitResult.bBlockingHit)
 	{
@@ -143,15 +146,15 @@ FHitResult AGASCourseTargetActor_CameraTrace::PerformTrace(AActor* InSourceActor
 	{
 		const FVector CylinderHeight = (ReturnHitResult.Normal * CollisionHeight);
 		DrawDebugCylinder(ThisWorld, TraceEnd, TraceEnd + CylinderHeight, CollisionRadius, 10, FColor::Red, false, 1.0f, 0, 2.0f);
-		DrawDebugLine(GetWorld(), ReturnHitResult.Location, ReturnHitResult.Location + (ReturnHitResult.Normal * 500.0f), FColor::Blue, true);
+		DrawDebugLine(GetWorld(), TraceEnd, TraceEnd + (ReturnHitResult.Normal * 500.0f), FColor::Blue, true);
 	}
 #endif	
 	
 	if (AGameplayAbilityWorldReticle* LocalReticleActor = ReticleActor.Get())
 	{
 		LocalReticleActor->SetIsTargetValid(bLastTraceWasGood);
-		LocalReticleActor->SetActorLocation(ReturnHitResult.Location);
-		UE_LOG(LogTemp, Warning, TEXT("%s"), *ReturnHitResult.Location.ToString());
+		LocalReticleActor->SetActorLocation(TraceEnd);
+		UE_LOG(LogTemp, Warning, TEXT("%s"), *TraceEnd.ToString());
 		LocalReticleActor->SetActorScale3D(ReticleParams.AOEScale);
 		FRotator LocalReticleRot = ReturnHitResult.Normal.Rotation();
 		LocalReticleActor->SetActorRotation(LocalReticleRot);
