@@ -12,7 +12,8 @@
 				"Engine",
 				"GameplayAbilities",
 				"CoreUObject",
-				"EnhancedInput"
+				"EnhancedInput",
+				"TargetingSystem"
 			]
 		},
 		{
@@ -71,7 +72,7 @@
 		},
 		{
 			"Name": "ElectronicNodes",
-			"Enabled": true,
+			"Enabled": false,
 			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/content/5cb2a394d0c04e73891762be4cbd7216"
 		},
 		{
@@ -84,6 +85,22 @@
 		},
 		{
 			"Name": "TargetingSystem",
+			"Enabled": true
+		},
+		{
+			"Name": "SkeletalMeshModelingTools",
+			"Enabled": true
+		},
+		{
+			"Name": "Mover",
+			"Enabled": true
+		},
+		{
+			"Name": "MoverExamples",
+			"Enabled": true
+		},
+		{
+			"Name": "MoverTests",
 			"Enabled": true
 		}
 	]

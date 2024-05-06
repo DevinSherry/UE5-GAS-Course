@@ -53,9 +53,6 @@ class AGASCourseCharacter : public ACharacter, public IAbilitySystemInterface, p
 {
 	GENERATED_BODY()
 
-	/** Camera boom positioning the camera behind the character */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
-	class UGASCStatusEffectListenerComp* StatusEffectListenerComp;
 
 public:
 	
@@ -137,6 +134,23 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Getter=GetAbilitySystemComponent)
 	UGASCourseAbilitySystemComponent* AbilitySystemComponent = nullptr;
 
+	/** The component responsible for listening to status effect events.
+	 *
+	 * This component is used to listen to status effect events, such as when a status effect is applied or removed from the character.
+	 * It is visible anywhere and has read-only access, and falls under the StatusEffects category.
+	 * The meta flag AllowPrivateAccess is set to true, allowing private access to this component.
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = StatusEffects, meta = (AllowPrivateAccess = "true"))
+	class UGASCStatusEffectListenerComp* StatusEffectListenerComp = nullptr;
+
+	/** The component responsible for handling the camera targeting functionality.
+	 *
+	 * This component is used for camera targeting in the game. It is visible anywhere and has read-only access, and falls under the Camera category.
+	 * The meta flag AllowPrivateAccess is set to true, allowing private access to this component.
+	 */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	class USceneComponent* TargetingSceneComponent;
+
 	void InitializeAbilitySystem(UGASCourseAbilitySystemComponent* InASC);
 		
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Abilities")
@@ -154,20 +168,16 @@ protected:
 
 public:
 
-	UFUNCTION()
-	void OnStatusEffectApplied(FActiveGameplayEffectHandle InStatusEffectApplied);
-
-	UFUNCTION(BlueprintImplementableEvent)
-	void OnStatusEffectApplied_Event(FActiveGameplayEffectHandle InStatusEffectApplied);
-
-	UFUNCTION()
-	void OnStatusEffectRemoved(FActiveGameplayEffectHandle InStatusEffectRemoved);
-	
-	UFUNCTION(NetMulticast, Reliable)
-	void OnStatusEffectRemoved_Multicast(FActiveGameplayEffectHandle InStatusEffectRemoved);
-
-	UFUNCTION(BlueprintImplementableEvent)
-	void OnStatusEffectRemoved_Event(FActiveGameplayEffectHandle InStatusEffectRemoved);
+	/**
+ * @brief Get the targeting scene component.
+ *
+ * This method returns the targeting scene component, which is responsible for handling the camera targeting functionality.
+ * The component is visible anywhere and has read-only access.
+ * It falls under the Camera category and is marked with the meta flag AllowPrivateAccess set to true.
+ *
+ * @return A pointer to the targeting scene component.
+ */
+	FORCEINLINE class USceneComponent* GetTargetingSceneComponent() const { return TargetingSceneComponent; }
 	
 	void CharacterDeathGameplayEventCallback(FGameplayTag MatchingTag, const FGameplayEventData* Payload);
 

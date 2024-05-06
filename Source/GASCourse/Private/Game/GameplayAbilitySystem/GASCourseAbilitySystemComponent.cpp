@@ -356,14 +356,14 @@ float UGASCourseAbilitySystemComponent::PlayMontage(UGameplayAbility* InAnimatin
 				FGameplayAbilityRepAnimMontage& MutableRepAnimMontageInfo = ReplicationInterface ? ReplicationInterface->Call_GetRepAnimMontageInfo_Mutable() : GetRepAnimMontageInfo_Mutable();
 
 				// Those are static parameters, they are only set when the montage is played. They are not changed after that.
-				MutableRepAnimMontageInfo.AnimMontage = NewAnimMontage;
+				MutableRepAnimMontageInfo.Animation = NewAnimMontage;
 				MutableRepAnimMontageInfo.PlayInstanceId = (MutableRepAnimMontageInfo.PlayInstanceId < UINT8_MAX ? MutableRepAnimMontageInfo.PlayInstanceId + 1 : 0);
 
 				MutableRepAnimMontageInfo.SectionIdToPlay = 0;
-				if (MutableRepAnimMontageInfo.AnimMontage && StartSectionName != NAME_None)
+				if (MutableRepAnimMontageInfo.GetAnimMontage() && StartSectionName != NAME_None)
 				{
 					// we add one so INDEX_NONE can be used in the on rep
-					MutableRepAnimMontageInfo.SectionIdToPlay = MutableRepAnimMontageInfo.AnimMontage->GetSectionIndex(StartSectionName) + 1;
+					MutableRepAnimMontageInfo.SectionIdToPlay = MutableRepAnimMontageInfo.GetAnimMontage()->GetSectionIndex(StartSectionName) + 1;
 				}
 
 				// Update parameters that change during Montage life time.

@@ -16,8 +16,6 @@ class GASCOURSE_API AGASCourseNPC_Base : public AGASCourseCharacter
 public:
 	AGASCourseNPC_Base(const FObjectInitializer& ObjectInitializer);
 	
-
-	
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaSeconds) override;
 

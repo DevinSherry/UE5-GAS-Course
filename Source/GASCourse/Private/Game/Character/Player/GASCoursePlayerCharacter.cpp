@@ -6,6 +6,7 @@
 #include "Game/Input/GASCourseEnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "Blueprint/AIBlueprintHelperLibrary.h"
+#include "Blueprint/WidgetBlueprintLibrary.h"
 #include "Blueprint/WidgetLayoutLibrary.h"
 #include "Components/TimelineComponent.h"
 #include "Game/Character/Player/GASCoursePlayerController.h"
@@ -26,7 +27,6 @@
 AGASCoursePlayerCharacter::AGASCoursePlayerCharacter(const FObjectInitializer& ObjectInitializer) :
 Super(ObjectInitializer)
 {
-
 	// Create a camera boom (pulls in towards the player if there is a collision)
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(RootComponent);
@@ -139,6 +139,8 @@ void AGASCoursePlayerCharacter::SetupPlayerInputComponent(UInputComponent* Playe
 			EnhancedInputComponent->BindActionByTag(InputConfig, InputTag_RecenterCamera, ETriggerEvent::Triggered, this, &ThisClass::Input_RecenterCamera);
 			EnhancedInputComponent->BindActionByTag(InputConfig, InputTag_RotateCameraAxis, ETriggerEvent::Triggered, this, &ThisClass::Input_RotateCameraAxis);
 			EnhancedInputComponent->BindActionByTag(InputConfig, InputTag_RotateCamera,ETriggerEvent::Completed, this, &ThisClass::Input_RotateCameraCompleted);
+			EnhancedInputComponent->BindActionByTag(InputConfig, InputTag_CameraMovementChordedAction, ETriggerEvent::Triggered, this, &ThisClass::Input_ToggleCameraMovement);
+			EnhancedInputComponent->BindActionByTag(InputConfig, InputTag_CameraRotationChordedAction, ETriggerEvent::Triggered, this, &ThisClass::Input_ToggleCameraRotation);
 
 			//Crouching
 			EnhancedInputComponent->BindActionByTag(InputConfig, InputTag_Crouch, ETriggerEvent::Triggered, this, &ThisClass::Input_Crouch);
@@ -179,6 +181,8 @@ void AGASCoursePlayerCharacter::PossessedBy(AController* NewController)
 	UpdateCharacterAnimLayer(UnArmedAnimLayer);
 	InitializeCamera();
 	OnCharacterMovementUpdated.AddDynamic(this, &ThisClass::OnMovementUpdated);
+
+	FSlateApplication::Get().OnApplicationActivationStateChanged().AddUObject(this, &ThisClass::OnWindowFocusChanged);
 }
 
 void AGASCoursePlayerCharacter::OnRep_PlayerState()
@@ -262,8 +266,6 @@ void AGASCoursePlayerCharacter::BeginPlay()
 		TimelineCallback.BindUFunction(this, FName("UpdateCameraEdgePanningSpeed"));
 		CameraEdgePanningTimeline.AddInterpFloat(CameraSettingsData->CameraEdgePanningCurve, TimelineCallback);
 	}
-
-	FSlateApplication::Get().OnApplicationActivationStateChanged().AddUObject(this, &ThisClass::OnWindowFocusChanged);
 }
 
 void AGASCoursePlayerCharacter::Tick(float DeltaSeconds)
@@ -324,7 +326,7 @@ void AGASCoursePlayerCharacter::Move(const FInputActionValue& Value)
 	// input is a Vector2D
 	const FVector2D MovementVector = Value.Get<FVector2D>();
 
-	if (Controller != nullptr)
+	if (Controller != nullptr && !bCanMoveCamera)
 	{
 		if (UGASCourseAbilitySystemComponent* GASCourseASC = GetAbilitySystemComponent())
 		{
@@ -337,7 +339,7 @@ void AGASCoursePlayerCharacter::Move(const FInputActionValue& Value)
 			{
 				GASCourseASC->SetLooseGameplayTagCount(Status_IsMoving, 1);
 				// find out which way is forward
-				const FRotator Rotation = GetCameraBoom()->GetRelativeRotation();
+				const FRotator Rotation = Controller->GetControlRotation();
 				const FRotator YawRotation(0, Rotation.Yaw, 0);
 
 				// get forward vector
@@ -379,29 +381,31 @@ void AGASCoursePlayerCharacter::Input_CameraZoom(const FInputActionInstance& Inp
 void AGASCoursePlayerCharacter::Input_MoveCamera(const FInputActionInstance& InputActionInstance)
 {
 	const FVector2d CameraMovement =  InputActionInstance.GetValue().Get<FVector2D>();
-	if(CameraMovement.Length() >= 0.35f && ResetCameraOffsetTimeline.IsPlaying())
+	if(bCanMoveCamera && Controller)
 	{
-		ResetCameraOffsetTimeline.Stop();
-	}
-
-	if(CameraMovement.Length() > 0.0f)
-	{
-		UpdateCameraTargetOffsetZ();
-	}
-
-	if(!MoveCameraTimeline.IsPlaying() && !bCameraSpeedTimelineFinished)
-	{
-		if(GetCameraBoom()->IsAttachedTo(RootComponent))
+		if(CameraMovement.Length() >= 0.35f && ResetCameraOffsetTimeline.IsPlaying())
 		{
-			FDetachmentTransformRules DetachmentRules = FDetachmentTransformRules::KeepWorldTransform;
-			DetachmentRules.RotationRule = EDetachmentRule::KeepRelative;
-			GetCameraBoom()->DetachFromComponent(DetachmentRules);
+			ResetCameraOffsetTimeline.Stop();
 		}
-		MoveCameraTimeline.PlayFromStart();
-	}
 
-	const FVector RotatedVector = GetCameraBoom()->GetRelativeRotation().RotateVector(FVector(CameraMovement.Y, CameraMovement.X, 0.0f));
-	UpdateCameraBoomTargetOffset(RotatedVector);
+		if(CameraMovement.Length() > 0.0f)
+		{
+			UpdateCameraTargetOffsetZ();
+		}
+
+		if(!MoveCameraTimeline.IsPlaying() && !bCameraSpeedTimelineFinished)
+		{
+			if(GetCameraBoom()->IsAttachedTo(RootComponent))
+			{
+				FDetachmentTransformRules DetachmentRules = FDetachmentTransformRules::KeepWorldTransform;
+				DetachmentRules.RotationRule = EDetachmentRule::KeepRelative;
+				GetCameraBoom()->DetachFromComponent(DetachmentRules);
+			}
+			MoveCameraTimeline.PlayFromStart();
+		}
+		const FVector RotatedVector = Controller->GetControlRotation().RotateVector(FVector(CameraMovement.Y, CameraMovement.X, 0.0f));
+		UpdateCameraBoomTargetOffset(RotatedVector);
+	}
 }
 
 void AGASCoursePlayerCharacter::Input_MoveCameraCompleted(const FInputActionInstance& InputActionInstance)
@@ -425,20 +429,23 @@ void AGASCoursePlayerCharacter::Input_RecenterCamera(const FInputActionInstance&
 
 void AGASCoursePlayerCharacter::Input_RotateCameraAxis(const FInputActionInstance& InputActionInstance)
 {
-	if(!RotateCameraTimeline.IsPlaying())
+	if(Controller && bCanRotateCamera)
 	{
-		RotateCameraTimeline.PlayFromStart();
+		if(!RotateCameraTimeline.IsPlaying())
+		{
+			RotateCameraTimeline.PlayFromStart();
+		}
+		
+		GetCameraBoom()->bEnableCameraRotationLag = false;
+		const FVector2d CameraRotation = InputActionInstance.GetValue().Get<FVector2D>();
+		const float CameraRotationX = CameraRotation.X * CurrentCameraRotationSpeed;
+		const float CameraRotationY = CameraRotation.Y * CurrentCameraRotationSpeed;
+		
+		const FRotator NewCameraControlRotation = FRotator(FMath::ClampAngle((Controller->GetControlRotation().Pitch + CameraRotationX),
+			CameraSettingsData->MinCameraPitchAngle, CameraSettingsData->MaxCameraPitchAngle),Controller->GetControlRotation().Yaw + CameraRotationY, 0.0f);
+		
+		Controller->SetControlRotation(NewCameraControlRotation);
 	}
-	GetCameraBoom()->bEnableCameraRotationLag = false;
-	const FVector2d CameraRotation = InputActionInstance.GetValue().Get<FVector2D>();
-	const float CameraRotationX = CameraRotation.X * CurrentCameraRotationSpeed;
-	const float CameraRotationY = CameraRotation.Y * CurrentCameraRotationSpeed;
-	
-	const FRotator NewCameraRelativeRotation = FRotator(FMath::ClampAngle((GetCameraBoom()->GetRelativeRotation().Pitch + CameraRotationX),
-		CameraSettingsData->MinCameraPitchAngle, CameraSettingsData->MaxCameraPitchAngle),
-		GetCameraBoom()->GetRelativeRotation().Yaw + CameraRotationY, 0.0f);
-	
-	GetCameraBoom()->SetRelativeRotation(NewCameraRelativeRotation);
 }
 
 void AGASCoursePlayerCharacter::Input_RotateCameraCompleted(const FInputActionInstance& InputActionInstance)
@@ -447,6 +454,29 @@ void AGASCoursePlayerCharacter::Input_RotateCameraCompleted(const FInputActionIn
 	CurrentCameraRotationSpeed = 0.0f;
 	GetCameraBoom()->bEnableCameraRotationLag = true;
 	SetMousePositionToScreenCenter();
+}
+
+void AGASCoursePlayerCharacter::Input_ToggleCameraMovement(const FInputActionInstance& InputActionInstance)
+{
+	bCanMoveCamera = InputActionInstance.GetValue().Get<bool>();
+}
+
+void AGASCoursePlayerCharacter::Input_ToggleCameraRotation(const FInputActionInstance& InputActionInstance)
+{
+	bCanRotateCamera = InputActionInstance.GetValue().Get<bool>();
+	if(AGASCoursePlayerController* GASController = Cast<AGASCoursePlayerController>(Controller))
+	{
+		GASController->SetShowMouseCursor(!bCanRotateCamera);
+		if(!bCanRotateCamera)
+		{
+			//SetMousePositionToScreenCenter();
+			UWidgetBlueprintLibrary::SetInputMode_GameAndUIEx(GASController, nullptr, EMouseLockMode::LockAlways, false, true);
+		}
+		else
+		{
+			UWidgetBlueprintLibrary::SetInputMode_GameOnly(GASController, false);
+		}
+	}
 }
 
 void AGASCoursePlayerCharacter::PointClickMovement(const FInputActionValue& Value)
@@ -550,32 +580,18 @@ void AGASCoursePlayerCharacter::RecenterCameraBoomTimelineFinished()
 void AGASCoursePlayerCharacter::CameraEdgePanning()
 {
 	SCOPED_NAMED_EVENT(AGASCourseCharacter_CameraEdgePanning, FColor::Red);
-	bool bIsEnableRotateCameraAxis = false;
-	bIsWindowFocused = true;
+	bIsWindowFocused = false;
 
 	if(!IsLocallyControlled())
 	{
 		return;
 	}
 
-	//TODO: Move this check somewhere else?
-	if(InputComponent)
-	{
-		if(CameraSettingsData->EnableRotateCameraAxis)
-		{
-			if (UGASCourseEnhancedInputComponent* EnhancedInputComponent = CastChecked<UGASCourseEnhancedInputComponent>(InputComponent))
-			{
-				check(EnhancedInputComponent);
-				const FEnhancedInputActionValueBinding* EnableRotateAxisBinding = &EnhancedInputComponent->BindActionValue(CameraSettingsData->EnableRotateCameraAxis);
-				bIsEnableRotateCameraAxis = EnableRotateAxisBinding->GetValue().Get<bool>();
-			}
-		}
-	}
-
 #if WITH_EDITOR
 	if(const FViewport* EditorViewport = GEditor->GetPIEViewport())
 	{
-		bIsWindowFocused = EditorViewport->HasMouseCapture();
+		//bIsWindowFocused = EditorViewport->HasMouseCapture();
+		bIsWindowFocused = EditorViewport->HasFocus();
 	}
 #endif
 
@@ -598,7 +614,7 @@ void AGASCoursePlayerCharacter::CameraEdgePanning()
 	
 	if(FMath::Abs(MappedNormalizedRangeX) == 1 || FMath::Abs(MappedNormalizedRangeY) == 1)
 	{
-		if(!bIsEnableRotateCameraAxis)// && bIsWindowFocused)
+		if(bCanMoveCamera && bIsWindowFocused)
 		{
 			const FVector OffsetDirection = GetCameraBoom()->GetRelativeRotation().RotateVector(FVector(MappedNormalizedRangeY, MappedNormalizedRangeX, 0.0f)).GetSafeNormal2D();
 			const FVector NewTargetOffset = GetCameraBoom()->TargetOffset + (OffsetDirection * CurrentCameraEdgePanningSpeed);

@@ -92,6 +92,10 @@ Content/DummyTraining/*
 Content/Ultimate_Magic_Bundle*
 Content/Stylescape*
 Content/StylizedWeather*
-Content/GASCourse/Game/Maps/TestMap/GASCourse_TestMap.umap
+Content/GASCourse/Game/Maps/*
 Content/StylizedFireV1*
 Content/TomLooman*
+Content/Action_Knight*
+Content/MageAnimationSet*
+Content/MF_Elf*
+Plugins/*

@@ -200,6 +200,12 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "GASCourse|AbilitySystem|GameplayEffect")
 	static FGameplayEffectSpec GetSpecHandleFromGameplayEffect(FActiveGameplayEffectHandle InGameplayEffect);
 
+	/**
+	 * Retrieves the period of a gameplay effect.
+	 *
+	 * @param InGameplayEffect The handle to the active gameplay effect.
+	 * @return The period of the gameplay effect.
+	 */
 	UFUNCTION(BlueprintPure, Category =  "GASCourse|AbilitySystem|GameplayEffect")
 	static float GetPeriodFromGameplayEffect(FActiveGameplayEffectHandle InGameplayEffect);
 };

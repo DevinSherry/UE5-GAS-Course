@@ -45,6 +45,7 @@ void UGASCourseHealthAttributeSet::PostGameplayEffectExecute(const FGameplayEffe
 		if(GetCurrentHealth() <= 0.0f && !GetOwningAbilitySystemComponent()->HasMatchingGameplayTag(Status_Death))
 		{
 			FGameplayEventData OnDeathPayload;
+			OnDeathPayload.EventTag = Event_OnDeath;
 			OnDeathPayload.Instigator = Data.EffectSpec.GetContext().GetOriginalInstigator();
 			OnDeathPayload.Target = GetOwningActor();
 			OnDeathPayload.ContextHandle = Data.EffectSpec.GetContext();

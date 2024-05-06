@@ -52,6 +52,7 @@ bool UGASCourseASCBlueprintLibrary::ApplyFireDamageToTarget(AActor* Target, AAct
 	if(bApplyBurnStack)
 	{
 		FGameplayTagContainer GrantedTags;
+		//TODO: Add this to Native Gameplay Tags
 		GrantedTags.AddTag(FGameplayTag::RequestGameplayTag(FName("Effect.Gameplay.Status.Burn.Stack")));
 		DamageContext.GrantedTags = GrantedTags;
 	}

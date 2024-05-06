@@ -54,3 +54,8 @@ AGASCourseGameMode::AGASCourseGameMode()
 	
 	HUDClass = AGASCourseHUD::StaticClass();
 }
+
+void AGASCourseGameMode::StartPlay()
+{
+	Super::StartPlay();
+}

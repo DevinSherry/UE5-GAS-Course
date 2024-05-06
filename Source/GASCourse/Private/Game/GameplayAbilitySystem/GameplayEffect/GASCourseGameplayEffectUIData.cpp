@@ -33,9 +33,3 @@ UGASCourseEffectDescriptor* UGASCourseGameplayEffectUIData::InitializeDescriptor
 
 	return nullptr;
 }
-
-void UGASCourseGameplayEffectUIData::OnGameplayEffectExecuted(FActiveGameplayEffectsContainer& ActiveGEContainer,
-                                                              FGameplayEffectSpec& GESpec, FPredictionKey& PredictionKey) const
-{
-	Super::OnGameplayEffectExecuted(ActiveGEContainer, GESpec, PredictionKey);
-}

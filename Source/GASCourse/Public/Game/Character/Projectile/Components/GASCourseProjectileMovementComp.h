@@ -12,5 +12,13 @@ UCLASS()
 class UGASCourseProjectileMovementComp : public UProjectileMovementComponent
 {
 	GENERATED_BODY()
+
+public:
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Homing")
+	bool bDisableHomingBasedOnDotProduct;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Homing")
+	float DisableHomingDotProductMin = 0.0f;
 	
 };

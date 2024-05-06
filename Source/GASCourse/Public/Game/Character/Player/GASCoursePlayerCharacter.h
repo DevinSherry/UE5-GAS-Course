@@ -80,6 +80,8 @@ protected:
 	void Input_RecenterCamera(const FInputActionInstance& InputActionInstance);
 	void Input_RotateCameraAxis(const FInputActionInstance& InputActionInstance);
 	void Input_RotateCameraCompleted(const FInputActionInstance& InputActionInstance);
+	void Input_ToggleCameraMovement(const FInputActionInstance& InputActionInstance);
+	void Input_ToggleCameraRotation(const FInputActionInstance& InputActionInstance);
 
 	/** Called for left-click based movement */
 	void PointClickMovement(const FInputActionValue& Value);
@@ -166,5 +168,7 @@ private:
 	bool bCameraEdgePanningTimelineActivated;
 
 	bool bHasPointClickMovementTarget = false;
+	bool bCanMoveCamera = false;
+	bool bCanRotateCamera = false;
 	
 };

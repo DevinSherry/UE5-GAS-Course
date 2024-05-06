@@ -48,6 +48,9 @@ public:
 
 public:
 
+	UFUNCTION(BlueprintGetter)
+	FORCEINLINE bool IsUsingGamepad() {return bUsingGamepad;}
+
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "GASCourse|HUD")
 	void CreateHUD();
 
@@ -110,6 +113,9 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TArray<TEnumAsByte<EObjectTypeQuery>> HitResultUnderMouseCursorObjectTypes;
 
+	UPROPERTY(Replicated, BlueprintReadOnly, Transient)
+	FRotator CameraRotation;
+
 	/**
 	 * @brief Get the hit result under the mouse cursor.
 	 *
@@ -127,6 +133,18 @@ public:
 	
 	UFUNCTION(Server, Reliable, Category="GASCourse|PlayerController|Mouse")
 	void UpdateMousePositionInViewport(FVector InMousePosition, FVector InMouseDirection);
+	
+	UFUNCTION(Server, Reliable, Category= "GASCourse|PlayerController|Gamepad")
+	void GetCameraRotation(FRotator InCameraRotation);
+
+	UFUNCTION(Client, Reliable, Category= "GASCourse|PlayerController|Gamepad")
+	void Client_GetCameraRotation();
+
+	UFUNCTION(Server, Reliable, Category= "GASCourse|PlayerController|Gamepad")
+	void GetIsUsingGamepad(bool bInUsingGamepad);
+
+	UFUNCTION(Client, Reliable, Category= "GASCourse|PlayerController|Gamepad")
+	void Client_GetIsUsingGamepad();
 
 	UFUNCTION(BlueprintCallable, Reliable, Client)
 	void StopMovement_Client();
@@ -136,6 +154,8 @@ public:
 
 	UFUNCTION(Reliable, NetMulticast)
 	void StopMovement_Multicast();
+
+	bool InputKey(const FInputKeyParams& Params) override;
 
 protected:
 
@@ -148,6 +168,9 @@ protected:
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void OnDamageDealt(const FGameplayEventData& Payload);
+
+	UPROPERTY(Replicated, BlueprintReadOnly, Transient, BlueprintGetter=IsUsingGamepad)
+	bool bUsingGamepad;
 
 private:
 

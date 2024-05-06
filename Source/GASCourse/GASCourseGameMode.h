@@ -12,6 +12,8 @@ class AGASCourseGameMode : public AGameModeBase
 
 public:
 	AGASCourseGameMode();
+
+	virtual void StartPlay() override;
 };
 
 

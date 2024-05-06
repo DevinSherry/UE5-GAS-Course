@@ -11,11 +11,9 @@ public class GASCourseTarget : TargetRules
 		DefaultBuildSettings = BuildSettingsVersion.V4;
 		IncludeOrderVersion = EngineIncludeOrderVersion.Latest;
 		ExtraModuleNames.Add("GASCourse");
-		if (!bUseIris)
-		{
-			BuildEnvironment = TargetBuildEnvironment.Unique;
-			bUseIris = true;
-		}
+		
+		BuildEnvironment = TargetBuildEnvironment.Unique;
+		bUseIris = true;
 
 		if (Type == TargetType.Editor)
 		{

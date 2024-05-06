@@ -9,9 +9,44 @@ UGASCStatusEffectListenerComp::UGASCStatusEffectListenerComp()
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = false;
+	SetIsReplicatedByDefault(true);
 
 	// ...
 }
+
+void UGASCStatusEffectListenerComp::OnStatusEffectApplied_Server_Implementation(UAbilitySystemComponent* Source, const FGameplayEffectSpec& GameplayEffectSpec, FActiveGameplayEffectHandle ActiveGameplayEffectHandle)
+{
+	FGameplayTagContainer GameplayEffectAssetTags;
+	GameplayEffectSpec.GetAllAssetTags(GameplayEffectAssetTags);
+
+	if(GameplayEffectAssetTags.IsEmpty())
+	{
+		return;
+	}
+
+	if(GameplayEffectAssetTags.HasTag(StatusEffectAssetTag))
+	{
+		OnStatusEffectAppliedHandle.Broadcast(ActiveGameplayEffectHandle);
+	}
+}
+
+
+void UGASCStatusEffectListenerComp::OnStatusEffectApplied_Client_Implementation(UAbilitySystemComponent* Source, const FGameplayEffectSpec& GameplayEffectSpec, FActiveGameplayEffectHandle ActiveGameplayEffectHandle)
+{
+	FGameplayTagContainer GameplayEffectAssetTags;
+	GameplayEffectSpec.GetAllAssetTags(GameplayEffectAssetTags);
+
+	if(GameplayEffectAssetTags.IsEmpty())
+	{
+		return;
+	}
+
+	if(GameplayEffectAssetTags.HasTag(StatusEffectAssetTag))
+	{
+		OnStatusEffectAppliedHandle.Broadcast(ActiveGameplayEffectHandle);
+	}
+}
+
 void UGASCStatusEffectListenerComp::OnStatusEffectRemoved_Implementation(const FActiveGameplayEffect& ActiveGameplayEffect)
 {
 	FGameplayTagContainer GameplayEffectAssetTags;
@@ -25,22 +60,6 @@ void UGASCStatusEffectListenerComp::OnStatusEffectRemoved_Implementation(const F
 	if(GameplayEffectAssetTags.HasTag(StatusEffectAssetTag))
 	{
 		OnStatusEffectRemovedHandle.Broadcast(ActiveGameplayEffect.Handle);
-	}
-}
-
-void UGASCStatusEffectListenerComp::OnStatusEffectApplied_Implementation(UAbilitySystemComponent* Source, const FGameplayEffectSpec& GameplayEffectSpec, FActiveGameplayEffectHandle ActiveGameplayEffectHandle)
-{
-	FGameplayTagContainer GameplayEffectAssetTags;
-	GameplayEffectSpec.GetAllAssetTags(GameplayEffectAssetTags);
-
-	if(GameplayEffectAssetTags.IsEmpty())
-	{
-		return;
-	}
-
-	if(GameplayEffectAssetTags.HasTag(StatusEffectAssetTag))
-	{
-		OnStatusEffectAppliedHandle.Broadcast(ActiveGameplayEffectHandle);
 	}
 }
 
@@ -63,15 +82,6 @@ void UGASCStatusEffectListenerComp::ApplyDefaultActiveStatusEffects()
 void UGASCStatusEffectListenerComp::BeginPlay()
 {
 	Super::BeginPlay();
-
-	if(const AGASCourseCharacter* OwningCharacter = Cast<AGASCourseCharacter>(GetOwner()))
-	{
-		if(UAbilitySystemComponent* ASC = OwningCharacter->GetAbilitySystemComponent())
-		{
-			ASC->OnGameplayEffectAppliedDelegateToSelf.AddUObject(this, &ThisClass::OnStatusEffectApplied);
-			ASC->OnAnyGameplayEffectRemovedDelegate().AddUObject(this, &ThisClass::OnStatusEffectRemoved);
-		}
-	}
 }
 
 void UGASCStatusEffectListenerComp::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -79,6 +89,10 @@ void UGASCStatusEffectListenerComp::EndPlay(const EEndPlayReason::Type EndPlayRe
 	if(OnStatusEffectAppliedHandle.IsBound())
 	{
 		OnStatusEffectAppliedHandle.Clear();
+	}
+	if(OnStatusEffectRemovedHandle.IsBound())
+	{
+		OnStatusEffectRemovedHandle.Clear();
 	}
 	
 	Super::EndPlay(EndPlayReason);
@@ -90,6 +104,20 @@ void UGASCStatusEffectListenerComp::Deactivate()
 	{
 		OnStatusEffectAppliedHandle.Clear();
 	}
+	if(OnStatusEffectRemovedHandle.IsBound())
+	{
+		OnStatusEffectRemovedHandle.Clear();
+	}
 	
 	Super::Deactivate();
+}
+
+void UGASCStatusEffectListenerComp::InitializeComponent()
+{
+	Super::InitializeComponent();
+}
+
+void UGASCStatusEffectListenerComp::BeginReplication()
+{
+	Super::BeginReplication();
 }

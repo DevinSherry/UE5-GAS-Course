@@ -6,6 +6,7 @@
 #include "Blueprint/WidgetLayoutLibrary.h"
 #include "Kismet/GameplayStatics.h"
 #include "Game/GameplayAbilitySystem/GASCourseNativeGameplayTags.h"
+#include "GameFramework/PlayerInput.h"
 
 AGASCoursePlayerController::AGASCoursePlayerController(const FObjectInitializer& ObjectInitializer)
 {
@@ -21,6 +22,8 @@ void AGASCoursePlayerController::GetLifetimeReplicatedProps(TArray<FLifetimeProp
 	DOREPLIFETIME(AGASCoursePlayerController, HitResultUnderMouseCursor);
 	DOREPLIFETIME(AGASCoursePlayerController, MouseDirectionDeprojectedToWorld);
 	DOREPLIFETIME(AGASCoursePlayerController, MousePositionDeprojectedToWorld);
+	DOREPLIFETIME(AGASCoursePlayerController, CameraRotation);
+	DOREPLIFETIME(AGASCoursePlayerController, bUsingGamepad);
 }
 
 void AGASCoursePlayerController::BeginPlayingState()
@@ -106,6 +109,36 @@ void AGASCoursePlayerController::UpdateMousePositionInViewport_Implementation(FV
 	MousePositionDeprojectedToWorld = InMousePosition;
 }
 
+void AGASCoursePlayerController::GetCameraRotation_Implementation(FRotator InCameraRotation)
+{
+	CameraRotation = InCameraRotation;
+}
+
+void AGASCoursePlayerController::Client_GetCameraRotation_Implementation()
+{
+	if(PlayerCameraManager)
+	{
+		CameraRotation = PlayerCameraManager->GetCameraRotation();
+		if(GetLocalRole() != ROLE_Authority)
+		{
+			GetCameraRotation(CameraRotation);
+		}
+	}
+}
+
+void AGASCoursePlayerController::GetIsUsingGamepad_Implementation(bool bInUsingGamepad)
+{
+	bUsingGamepad = bInUsingGamepad;
+}
+
+void AGASCoursePlayerController::Client_GetIsUsingGamepad_Implementation()
+{
+	if(GetLocalRole() != ROLE_Authority)
+	{
+		GetIsUsingGamepad(bUsingGamepad);
+	}
+}
+
 void AGASCoursePlayerController::StopMovement_Client_Implementation()
 {
 	StopMovement();
@@ -131,6 +164,13 @@ void AGASCoursePlayerController::StopMovement_Multicast_Implementation()
 	ForceNetUpdate();
 }
 
+bool AGASCoursePlayerController::InputKey(const FInputKeyParams& Params)
+{
+	bUsingGamepad = Params.IsGamepad();
+	Client_GetIsUsingGamepad();
+	return Super::InputKey(Params);
+}
+
 void AGASCoursePlayerController::OnRep_PlayerState()
 {
 	Super::OnRep_PlayerState();
@@ -149,9 +189,10 @@ void AGASCoursePlayerController::OnRep_Pawn()
 
 void AGASCoursePlayerController::Tick(float DeltaSeconds)
 {
+	Super::Tick(DeltaSeconds);
 	GetHitResultUnderMouseCursor();
 	GetMousePositionInViewport();
-	Super::Tick(DeltaSeconds);
+	Client_GetCameraRotation();
 }
 
 void AGASCoursePlayerController::OnDamageDealtCallback(const FGameplayEventData* Payload)

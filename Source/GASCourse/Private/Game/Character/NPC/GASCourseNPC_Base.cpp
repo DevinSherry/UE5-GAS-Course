@@ -6,20 +6,25 @@
 AGASCourseNPC_Base::AGASCourseNPC_Base(const FObjectInitializer& ObjectInitializer) :
 Super(ObjectInitializer)
 {
+	// Create ability system component, and set it to be explicitly replicated
+	AbilitySystemComponent = CreateDefaultSubobject<UGASCourseAbilitySystemComponent>(TEXT("AbilitySystemComponent"));
+	AbilitySystemComponent->SetIsReplicated(true);
+	AbilitySystemComponent->SetReplicationMode(EGameplayEffectReplicationMode::Full);
 }
 
 void AGASCourseNPC_Base::PossessedBy(AController* NewController)
 {
 	Super::PossessedBy(NewController);
-
-	AbilitySystemComponent = Cast<UGASCourseAbilitySystemComponent>(GetAbilitySystemComponent());
-	AbilitySystemComponent->InitAbilityActorInfo(this, this);
-	InitializeAbilitySystem(AbilitySystemComponent);
 }
 
 void AGASCourseNPC_Base::BeginPlay()
 {
 	Super::BeginPlay();
+	if(AbilitySystemComponent)
+	{
+		AbilitySystemComponent->InitAbilityActorInfo(this, this);
+		InitializeAbilitySystem(AbilitySystemComponent);
+	}
 }
 
 void AGASCourseNPC_Base::Tick(float DeltaSeconds)

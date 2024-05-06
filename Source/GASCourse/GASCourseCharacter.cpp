@@ -19,8 +19,14 @@ AGASCourseCharacter::AGASCourseCharacter(const class FObjectInitializer& ObjectI
 {
 	SetReplicates(true);
 	
+	// Activate ticking in order to update the cursor every frame.
+	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bStartWithTickEnabled = true;
+	
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
+	TargetingSceneComponent = CreateDefaultSubobject<USceneComponent>(TEXT("TargetingComponent"));
+	TargetingSceneComponent->SetupAttachment(RootComponent);
 		
 	// Don't rotate when the controller rotates. Let that just affect the camera.
 	bUseControllerRotationPitch = false;
@@ -46,21 +52,7 @@ AGASCourseCharacter::AGASCourseCharacter(const class FObjectInitializer& ObjectI
 	GetCharacterMovement()->bConstrainToPlane = true;
 	GetCharacterMovement()->bSnapToPlaneAtStart = true;
 
-	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
-	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
-
-	//Initialize AbilitySystemComponent
-	AbilitySystemComponent = ObjectInitializer.CreateDefaultSubobject<UGASCourseAbilitySystemComponent>(this, TEXT("AbilitySystemComponent"));
-	AbilitySystemComponent->SetIsReplicated(true);
-	AbilitySystemComponent->SetReplicationMode(EGameplayEffectReplicationMode::Full);
-
-	StatusEffectListenerComp = ObjectInitializer.CreateDefaultSubobject<UGASCStatusEffectListenerComp>(this, TEXT("StatusEffectListenerComp"));
-	StatusEffectListenerComp->SetIsReplicated(true);
-
-	// Activate ticking in order to update the cursor every frame.
-	PrimaryActorTick.bCanEverTick = true;
-	PrimaryActorTick.bStartWithTickEnabled = true;
-	
+	StatusEffectListenerComp = CreateDefaultSubobject<UGASCStatusEffectListenerComp>(TEXT("StatusEffectListenerComp"));
 }
 
 void AGASCourseCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -77,7 +69,22 @@ void AGASCourseCharacter::BeginPlay()
 	Super::BeginPlay();
 	
 	GameplayEffectAssetTagsToRemove.AddTag(FGameplayTag::RequestGameplayTag(FName("Effect.AssetTag.Status")));
-	StatusEffectListenerComp->ApplyDefaultActiveStatusEffects();
+	if(AbilitySystemComponent)
+	{
+		if(StatusEffectListenerComp)
+		{
+			if(GetLocalRole() == ROLE_Authority)
+			{
+				AbilitySystemComponent->OnGameplayEffectAppliedDelegateToSelf.AddUObject(StatusEffectListenerComp, &UGASCStatusEffectListenerComp::OnStatusEffectApplied_Server);
+			}
+			else
+			{
+				AbilitySystemComponent->OnActiveGameplayEffectAddedDelegateToSelf.AddUObject(StatusEffectListenerComp, &UGASCStatusEffectListenerComp::OnStatusEffectApplied_Client);
+			}
+			AbilitySystemComponent->OnAnyGameplayEffectRemovedDelegate().AddUObject(StatusEffectListenerComp, &UGASCStatusEffectListenerComp::OnStatusEffectRemoved);
+			StatusEffectListenerComp->ApplyDefaultActiveStatusEffects();
+		}
+	}
 }
 
 void AGASCourseCharacter::InitializeAbilitySystem(UGASCourseAbilitySystemComponent* InASC)
@@ -106,25 +113,6 @@ void AGASCourseCharacter::InitializeAbilitySystem(UGASCourseAbilitySystemCompone
 		InASC->AddGameplayEventTagContainerDelegate(FGameplayTagContainer(Event_OnDeath), FGameplayEventTagMulticastDelegate::FDelegate::CreateUObject(this, &ThisClass::CharacterDeathGameplayEventCallback));
 		InASC->RegisterGameplayTagEvent(FGameplayTag(Collision_IgnorePawn), EGameplayTagEventType::NewOrRemoved).AddUObject(this, &AGASCourseCharacter::IgnorePawnCollisionGameplayTagEventCallback);
 	}
-}
-
-void AGASCourseCharacter::OnStatusEffectApplied(FActiveGameplayEffectHandle InStatusEffectApplied)
-{
-	OnStatusEffectApplied_Event(InStatusEffectApplied);
-}
-
-void AGASCourseCharacter::OnStatusEffectRemoved(FActiveGameplayEffectHandle InStatusEffectRemoved)
-{
-	OnStatusEffectRemoved_Event(InStatusEffectRemoved);
-	if(HasAuthority())
-	{
-		OnStatusEffectRemoved_Multicast(InStatusEffectRemoved);
-	}
-}
-
-void AGASCourseCharacter::OnStatusEffectRemoved_Multicast_Implementation(FActiveGameplayEffectHandle InStatusEffectRemoved)
-{
-	OnStatusEffectRemoved_Event(InStatusEffectRemoved);
 }
 
 void AGASCourseCharacter::CharacterDeathGameplayEventCallback(FGameplayTag MatchingTag,
@@ -327,8 +315,6 @@ void AGASCourseCharacter::PostInitializeComponents()
 	check(GetCapsuleComponent());
 
 	check(StatusEffectListenerComp);
-	StatusEffectListenerComp->OnStatusEffectAppliedHandle.AddDynamic(this, &ThisClass::OnStatusEffectApplied);
-	StatusEffectListenerComp->OnStatusEffectRemovedHandle.AddDynamic(this, &ThisClass::OnStatusEffectRemoved);
 
 	DefaultCollisionResponseToPawn = GetCapsuleComponent()->GetCollisionResponseToChannel(ECC_Pawn);
 }

@@ -19,10 +19,13 @@ public:
 	// Sets default values for this component's properties
 	UGASCStatusEffectListenerComp();
 
-	UFUNCTION(NetMulticast, Reliable)
-	void OnStatusEffectApplied(UAbilitySystemComponent* Source, const FGameplayEffectSpec& GameplayEffectSpec, FActiveGameplayEffectHandle ActiveGameplayEffectHandle);
+	UFUNCTION(Client, Reliable)
+	void OnStatusEffectApplied_Client(UAbilitySystemComponent* Source, const FGameplayEffectSpec& GameplayEffectSpec, FActiveGameplayEffectHandle ActiveGameplayEffectHandle);
 
 	UFUNCTION(Server, Reliable)
+	void OnStatusEffectApplied_Server(UAbilitySystemComponent* Source, const FGameplayEffectSpec& GameplayEffectSpec, FActiveGameplayEffectHandle ActiveGameplayEffectHandle);
+
+	UFUNCTION(NetMulticast, Reliable)
 	void OnStatusEffectRemoved(const FActiveGameplayEffect& ActiveGameplayEffect);
 	
 	UPROPERTY(BlueprintAssignable)
@@ -44,5 +47,8 @@ protected:
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 	virtual void Deactivate() override;
-		
+
+	virtual void InitializeComponent() override;
+
+	virtual void BeginReplication() override;
 };

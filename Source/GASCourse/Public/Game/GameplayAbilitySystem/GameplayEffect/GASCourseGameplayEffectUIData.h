@@ -36,7 +36,5 @@ public:
 private:
 
 	UGASCourseEffectDescriptor* EffectDescriptorObj = nullptr;
-
-	virtual void OnGameplayEffectExecuted(FActiveGameplayEffectsContainer& ActiveGEContainer, FGameplayEffectSpec& GESpec, FPredictionKey& PredictionKey) const override;
 	
 };

@@ -137,7 +137,6 @@ void UGASCourseGameplayAbility::ActivateAbility(const FGameplayAbilitySpecHandle
 	const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo,
 	const FGameplayEventData* TriggerEventData)
 {
-
 	if(bAutoCommitAbilityOnActivate)
 	{
 		CommitAbility(Handle, ActorInfo, ActivationInfo);

@@ -14,12 +14,17 @@ public:
 	// Sets default values for this actor's properties
 	AGASCourseProjectile();
 
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
 	/** Projectile Movement Component */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Projectile, meta = (AllowPrivateAccess = "true"))
 	class UGASCourseProjectileMovementComp* ProjectileMovementComp;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Projectile, meta = (AllowPrivateAccess = "true"))
 	class USphereComponent* ProjectileCollisionComp;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite,  Category = Projectile, meta = (ExposeOnSpawn=true), Replicated)
+	class AActor* TargetActor = nullptr;
 
 protected:
 	// Called when the game starts or when spawned

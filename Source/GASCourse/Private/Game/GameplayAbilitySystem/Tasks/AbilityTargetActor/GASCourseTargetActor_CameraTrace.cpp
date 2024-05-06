@@ -8,6 +8,7 @@
 #include "GASCourse/GASCourse.h"
 #include "Game/Character/Player/GASCoursePlayerController.h"
 #include "Game/GameplayAbilitySystem/GameplayAbilities/Aimcast/GASCourseAimcastGameplayAbility.h"
+#include "Engine/OverlapResult.h"
 
 AGASCourseTargetActor_CameraTrace::AGASCourseTargetActor_CameraTrace(const FObjectInitializer& ObjectInitializer)
 : Super(ObjectInitializer)
