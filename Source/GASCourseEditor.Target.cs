@@ -9,13 +9,7 @@ public class GASCourseEditorTarget : TargetRules
 	{
 		Type = TargetType.Editor;
 		DefaultBuildSettings = BuildSettingsVersion.V5;
-		bOverrideBuildEnvironment = true;
-		IncludeOrderVersion = EngineIncludeOrderVersion.Latest;
-		
-		ExtraModuleNames.AddRange(
-			new string[]
-			{
-				"GASCourseEditor"
-			});
+		IncludeOrderVersion = EngineIncludeOrderVersion.Unreal5_4;
+		ExtraModuleNames.Add("GASCourse");
 	}
 }

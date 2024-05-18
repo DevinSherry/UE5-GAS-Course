@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "GASCourseCharacter.h"
+#include "GASCourse/GASCourseCharacter.h"
 #include "Abilities/GameplayAbilityTargetActor_Trace.h"
 #include "GASCourseTargetActor_Trace.generated.h"
 

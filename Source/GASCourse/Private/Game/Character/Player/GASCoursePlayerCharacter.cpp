@@ -124,11 +124,14 @@ void AGASCoursePlayerCharacter::SetupPlayerInputComponent(UInputComponent* Playe
 			//Moving - TODO: Remove this
 			EnhancedInputComponent->BindActionByTag(InputConfig, InputTag_Move, ETriggerEvent::Triggered, this, &ThisClass::Move);
 			EnhancedInputComponent->BindActionByTag(InputConfig, InputTag_Move, ETriggerEvent::Completed, this, &ThisClass::StopMove);
-			
+
+			/*
+			 *We want to remove point & click movement mechanics
 			EnhancedInputComponent->BindActionByTag(InputConfig, InputTag_PointClickMovement, ETriggerEvent::Triggered, this, &ThisClass::PointClickMovement);
 			EnhancedInputComponent->BindActionByTag(InputConfig, InputTag_PointClickMovement, ETriggerEvent::Started, this, &ThisClass::PointClickMovementStarted);
 			EnhancedInputComponent->BindActionByTag(InputConfig, InputTag_PointClickMovement, ETriggerEvent::Canceled, this, &ThisClass::PointClickMovementCompleted);
 			EnhancedInputComponent->BindActionByTag(InputConfig, InputTag_PointClickMovement, ETriggerEvent::Completed, this, &ThisClass::PointClickMovementCompleted);
+			*/
 
 			//Looking
 			EnhancedInputComponent->BindActionByTag(InputConfig, InputTag_Look_Stick, ETriggerEvent::Triggered, this, &ThisClass::Look);
@@ -212,6 +215,8 @@ void AGASCoursePlayerCharacter::OnRep_PlayerState()
 	}
 	
 	AbilitySystemComponent->RefreshAbilityActorInfo();
+
+	//TODO: This is probably where to register the view model for the character.
 }
 
 void AGASCoursePlayerCharacter::OnRep_Controller()
@@ -220,6 +225,7 @@ void AGASCoursePlayerCharacter::OnRep_Controller()
 	if(AbilitySystemComponent)
 	{
 		AbilitySystemComponent->RefreshAbilityActorInfo();
+		//TODO: This is probably where to register the view model for the character.
 	}
 }
 
@@ -351,11 +357,6 @@ void AGASCoursePlayerCharacter::Move(const FInputActionValue& Value)
 				// add movement 
 				AddMovementInput(ForwardDirection, MovementVector.Y);
 				AddMovementInput(RightDirection, MovementVector.X);
-
-				if(bHasPointClickMovementTarget)
-				{
-					StopPointClickCharacterMovement();
-				}
 
 				AutoAttachCameraWithinMinDistance();
 			}

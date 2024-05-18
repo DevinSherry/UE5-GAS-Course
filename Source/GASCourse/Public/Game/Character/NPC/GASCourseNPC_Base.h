@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "GASCourseCharacter.h"
+#include "GASCourse/GASCourseCharacter.h"
 #include "GASCourseNPC_Base.generated.h"
 
 /**

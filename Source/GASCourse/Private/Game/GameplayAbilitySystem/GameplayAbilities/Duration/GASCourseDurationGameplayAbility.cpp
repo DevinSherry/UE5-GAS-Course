@@ -3,7 +3,7 @@
 
 #include "Game/GameplayAbilitySystem/GameplayAbilities/Duration/GASCourseDurationGameplayAbility.h"
 #include "Abilities/Tasks/AbilityTask_WaitInputPress.h"
-#include "GASCourse.h"
+#include "GASCourse/GASCourse.h"
 #include "Abilities/Tasks/AbilityTask_WaitGameplayEffectRemoved.h"
 
 UGASCourseDurationGameplayAbility::UGASCourseDurationGameplayAbility(const FObjectInitializer& ObjectInitializer)

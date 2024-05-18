@@ -8,20 +8,10 @@ public class GASCourseTarget : TargetRules
 	public GASCourseTarget(TargetInfo Target) : base(Target)
 	{
 		Type = TargetType.Game;
-		DefaultBuildSettings = BuildSettingsVersion.V4;
-		IncludeOrderVersion = EngineIncludeOrderVersion.Latest;
+		DefaultBuildSettings = BuildSettingsVersion.V5;
+		IncludeOrderVersion = EngineIncludeOrderVersion.Unreal5_4;
 		ExtraModuleNames.Add("GASCourse");
 		
-		BuildEnvironment = TargetBuildEnvironment.Unique;
 		bUseIris = true;
-
-		if (Type == TargetType.Editor)
-		{
-			ExtraModuleNames.AddRange( 
-				new string[]
-				{
-					"GASCourseEditor"
-				});
-		}
 	}
 }

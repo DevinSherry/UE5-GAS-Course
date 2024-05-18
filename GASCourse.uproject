@@ -1,28 +1,13 @@
 {
 	"FileVersion": 3,
-	"EngineAssociation": "",
+	"EngineAssociation": "{CA1203D6-4C02-5A1C-C39A-4194E6A9E1E4}",
 	"Category": "",
 	"Description": "",
 	"Modules": [
 		{
 			"Name": "GASCourse",
 			"Type": "Runtime",
-			"LoadingPhase": "Default",
-			"AdditionalDependencies": [
-				"Engine",
-				"GameplayAbilities",
-				"CoreUObject",
-				"EnhancedInput",
-				"TargetingSystem"
-			]
-		},
-		{
-			"Name": "GASCourseEditor",
-			"Type": "Editor",
-			"LoadingPhase": "PostEngineInit",
-			"AdditionalDependencies": [
-				"UnrealEd"
-			]
+			"LoadingPhase": "Default"
 		}
 	],
 	"Plugins": [
@@ -34,53 +19,7 @@
 			]
 		},
 		{
-			"Name": "AbilitySystemGameFeatureActions",
-			"Enabled": true
-		},
-		{
-			"Name": "GameFeatures",
-			"Enabled": true
-		},
-		{
 			"Name": "GameplayAbilities",
-			"Enabled": true
-		},
-		{
-			"Name": "FunctionalTestingEditor",
-			"Enabled": true
-		},
-		{
-			"Name": "EnhancedInput",
-			"Enabled": true
-		},
-		{
-			"Name": "Iris",
-			"Enabled": true
-		},
-		{
-			"Name": "AnimationWarping",
-			"Enabled": true
-		},
-		{
-			"Name": "AnimationLocomotionLibrary",
-			"Enabled": true
-		},
-		{
-			"Name": "DarkerNodes",
-			"Enabled": true,
-			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/content/4b3441f0228a40ec9ca986489a5bd682"
-		},
-		{
-			"Name": "ElectronicNodes",
-			"Enabled": false,
-			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/content/5cb2a394d0c04e73891762be4cbd7216"
-		},
-		{
-			"Name": "StateTree",
-			"Enabled": true
-		},
-		{
-			"Name": "GameplayStateTree",
 			"Enabled": true
 		},
 		{
@@ -88,19 +27,31 @@
 			"Enabled": true
 		},
 		{
-			"Name": "SkeletalMeshModelingTools",
+			"Name": "ModelViewViewModel",
 			"Enabled": true
 		},
 		{
-			"Name": "Mover",
+			"Name": "Iris",
 			"Enabled": true
 		},
 		{
-			"Name": "MoverExamples",
+			"Name": "AnimationLocomotionLibrary",
 			"Enabled": true
 		},
 		{
-			"Name": "MoverTests",
+			"Name": "AnimationWarping",
+			"Enabled": true
+		},
+		{
+			"Name": "GameplayStateTree",
+			"Enabled": true
+		},
+		{
+			"Name": "GameFeatures",
+			"Enabled": true
+		},
+		{
+			"Name": "AbilitySystemGameFeatureActions",
 			"Enabled": true
 		}
 	]

@@ -3,7 +3,7 @@
 
 #include "Game/Character/Projectile/GASCourseProjectile.h"
 #include "Net/UnrealNetwork.h"
-#include "GASCourseCharacter.h"
+#include "GASCourse/GASCourseCharacter.h"
 #include "Game/Character/Projectile/Components/GASCourseProjectileMovementComp.h"
 #include "Components/SphereComponent.h"
 
