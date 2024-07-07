@@ -5,6 +5,7 @@
 #include "AbilitySystemInterface.h"
 #include "GameFramework/Character.h"
 #include "InputActionValue.h"
+#include "MVVMViewModelBase.h"
 #include "Game/GameplayAbilitySystem/GASCourseAbilitySystemComponent.h"
 #include "Game/GameplayAbilitySystem/GASAbilityTagRelationshipMapping.h"
 #include "Game/GameplayAbilitySystem/AttributeSets/GASCourseCharBaseAttributeSet.h"
@@ -141,7 +142,16 @@ protected:
 	 * The meta flag AllowPrivateAccess is set to true, allowing private access to this component.
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = StatusEffects, meta = (AllowPrivateAccess = "true"))
-	class UGASCStatusEffectListenerComp* StatusEffectListenerComp = nullptr;
+	class UGASCStatusEffectListenerComp* StatusEffectListenerComp;;
+
+	/**
+	 * @brief The CharacterHealthComponent variable represents the component responsible for handling the health functionality of the character.
+	 *
+	 * This variable is decorated with UPROPERTY to ensure replication and provide read-only access. It is also marked as EditAnywhere and BlueprintReadOnly, allowing it to be edited in the editor and accessed from blueprints. It falls under the StatusEffects category.
+	 * The meta flag AllowPrivateAccess is set to true, allowing private access to this component.
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = HealthComponent, meta = (AllowPrivateAccess = "true"))
+	class UGASC_HealthComponent* CharacterHealthComponent;
 
 	/** The component responsible for handling the camera targeting functionality.
 	 *
@@ -165,6 +175,19 @@ protected:
 	/** Remove gameplay effects with these Asset Tags on Character Death */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GASCourse|GameplayTags", DisplayName = "GameplayEffectsToRemoveOnDeath")
 	FGameplayTagContainer GameplayEffectAssetTagsToRemove;
+
+public:
+	
+	virtual void RegisterViewModels();
+
+	UFUNCTION(BlueprintNativeEvent)
+	void PostBeginPlayHealthComponentRegistration();
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "View Models|Health")
+	TSubclassOf<UMVVMViewModelBase> CharacterHealthViewModelContextClass;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "View Models|Health")
+	FName CharacterHealthContextName;
 
 public:
 
@@ -191,6 +214,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "GASCiyrse|Character|Attributes")
 	float GetJumpZVelocityOverride() const;
+
+	UFUNCTION(BlueprintCallable, Category = "GASCourse|Character|Attributes")
+	float GetCurrentHealth() const;
 	
 	UFUNCTION()
 	FORCEINLINE UGASCourseGameplayAbilitySet* GetDefaultAbilitySet() const

@@ -2,6 +2,7 @@
 
 #include "GASCourseCharacter.h"
 #include "Game/Character/Components/GASCStatusEffectListenerComp.h"
+#include "Game/Character/Components/Health/GASC_HealthComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
@@ -53,6 +54,7 @@ AGASCourseCharacter::AGASCourseCharacter(const class FObjectInitializer& ObjectI
 	GetCharacterMovement()->bSnapToPlaneAtStart = true;
 
 	StatusEffectListenerComp = CreateDefaultSubobject<UGASCStatusEffectListenerComp>(TEXT("StatusEffectListenerComp"));
+	CharacterHealthComponent = CreateDefaultSubobject<UGASC_HealthComponent>(TEXT("CharacterHealthComponent"));
 }
 
 void AGASCourseCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -67,6 +69,8 @@ void AGASCourseCharacter::BeginPlay()
 {
 	// Call the base class  
 	Super::BeginPlay();
+
+	PostBeginPlayHealthComponentRegistration();
 	
 	GameplayEffectAssetTagsToRemove.AddTag(FGameplayTag::RequestGameplayTag(FName("Effect.AssetTag.Status")));
 	if(AbilitySystemComponent)
@@ -115,6 +119,23 @@ void AGASCourseCharacter::InitializeAbilitySystem(UGASCourseAbilitySystemCompone
 	}
 }
 
+void AGASCourseCharacter::RegisterViewModels()
+{
+	/*
+	 * Register all components that use view models here.
+	 */
+
+	//Register character health component & view model.
+	if(CharacterHealthComponent)
+	{
+		CharacterHealthComponent->RegisterHealthComponent();
+	}
+}
+
+void AGASCourseCharacter::PostBeginPlayHealthComponentRegistration_Implementation()
+{
+}
+
 void AGASCourseCharacter::CharacterDeathGameplayEventCallback(FGameplayTag MatchingTag,
                                                               const FGameplayEventData* Payload)
 {
@@ -159,6 +180,16 @@ float AGASCourseCharacter::GetJumpZVelocityOverride() const
 	if (const UGASCourseCharBaseAttributeSet* BaseAttributeSet = GetAbilitySystemComponent()->GetSetChecked<UGASCourseCharBaseAttributeSet>())
 	{
 		return BaseAttributeSet->GetJumpZVelocityOverride();
+	}
+	UE_LOG(LogTemp, Warning, TEXT("NO VALID ATTRIBUTE SET FOUND"));
+	return 0.0f;
+}
+
+float AGASCourseCharacter::GetCurrentHealth() const
+{
+	if (const UGASCourseHealthAttributeSet* BaseAttributeSet = GetAbilitySystemComponent()->GetSetChecked<UGASCourseHealthAttributeSet>())
+	{
+		return BaseAttributeSet->GetCurrentHealth();
 	}
 	UE_LOG(LogTemp, Warning, TEXT("NO VALID ATTRIBUTE SET FOUND"));
 	return 0.0f;

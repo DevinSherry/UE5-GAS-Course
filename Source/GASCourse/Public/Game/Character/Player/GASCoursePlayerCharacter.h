@@ -82,6 +82,7 @@ protected:
 	void Input_RotateCameraCompleted(const FInputActionInstance& InputActionInstance);
 	void Input_ToggleCameraMovement(const FInputActionInstance& InputActionInstance);
 	void Input_ToggleCameraRotation(const FInputActionInstance& InputActionInstance);
+	void Input_ToggleCameraRotation_Canceled(const FInputActionInstance& InputActionInstance);
 
 	/** Called for left-click based movement */
 	void PointClickMovement(const FInputActionValue& Value);
@@ -137,6 +138,8 @@ protected:
 	void AutoAttachCameraWithinMinDistance();
 
 public:
+
+	void RegisterViewModels() override;
 
 	UE::Tasks::TTask<FVector> MultithreadTask;
 	FVector GetWorldDirection(const FVector& CachedDirection) const;

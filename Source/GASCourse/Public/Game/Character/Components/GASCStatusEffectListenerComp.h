@@ -37,7 +37,7 @@ public:
 	UPROPERTY(EditAnywhere, Category = "GASCourse|StatusEffect|Tags")
 	FGameplayTag StatusEffectAssetTag;
 
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 	void ApplyDefaultActiveStatusEffects();
 
 protected:

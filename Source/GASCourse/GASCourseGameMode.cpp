@@ -11,7 +11,7 @@
 
 AGASCourseGameMode::AGASCourseGameMode()
 {
-	// set default pawn class to our Blueprinted character
+	/*
 	static ConstructorHelpers::FClassFinder<AGASCoursePlayerCharacter> PlayerPawnBPClass(TEXT("/Game/GASCourse/Game/Character/Player/BP_GASCourse_PlayerCharacter"));
 	if (PlayerPawnBPClass.Class != nullptr)
 	{
@@ -21,7 +21,10 @@ AGASCourseGameMode::AGASCourseGameMode()
 	{
 		DefaultPawnClass = AGASCourseCharacter::StaticClass();
 	}
-	
+	*/
+
+	//For whatever reason, putting the controller BP class here will somehow load in too early for MVVM plugin and break things.
+	/*
 	static ConstructorHelpers::FClassFinder<APlayerController> PlayerControllerBPClass(TEXT("/Game/GASCourse/Game/Character/Player/BP_GASCourse_PlayerController"));
 	if (PlayerControllerBPClass.Class != nullptr)
 	{
@@ -31,6 +34,8 @@ AGASCourseGameMode::AGASCourseGameMode()
 	{
 		PlayerControllerClass = AGASCoursePlayerController::StaticClass();
 	}
+	*/
+	PlayerControllerClass = AGASCoursePlayerController::StaticClass();
 
 	static ConstructorHelpers::FClassFinder<AGameStateBase> GameStateBaseBPClass(TEXT("/Game/GASCourse/Game/GameStateBase/BP_GASCourse_GameStateBase"));
 	if (GameStateBaseBPClass.Class != nullptr)

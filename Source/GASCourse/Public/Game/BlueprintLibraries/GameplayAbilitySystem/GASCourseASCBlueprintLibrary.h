@@ -76,7 +76,7 @@ public:
 	 * @param DamageContext The context of the damage being applied.
 	 * @return True if the damage was successfully applied, false otherwise.
 	 */
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "GASCourse|AbilitySystem|Damage")
+	UFUNCTION(BlueprintCallable, Category = "GASCourse|AbilitySystem|Damage")
 	static bool ApplyDamageToTarget(AActor* Target, AActor* Instigator, float Damage, const FDamageContext& DamageContext);
 
 	/**
@@ -89,7 +89,7 @@ public:
 	 *
 	 * @return True if the damage was successfully applied to at least one target, false otherwise.
 	 */
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "GASCourse|AbilitySystem|Damage")
+	UFUNCTION(BlueprintCallable, Category = "GASCourse|AbilitySystem|Damage")
 	static bool ApplyDamageToTargetDataHandle(FGameplayAbilityTargetDataHandle TargetHandle, AActor* Instigator, float Damage, const FDamageContext& DamageContext);
 
 	/**
@@ -103,7 +103,7 @@ public:
 	 *
 	 * @return                            Returns true if the damage over time was successfully applied, false otherwise.
 	 */
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "GASCourse|AbilitySystem|Damage")
+	UFUNCTION(BlueprintCallable, Category = "GASCourse|AbilitySystem|Damage")
 	static bool ApplyDamageOverTimeToTarget(AActor* Target, AActor* Instigator, float Damage, const FDamageContext& DamageContext, const FDamageOverTimeContext& DamageOverTimeContext);
 
 	/**
@@ -117,7 +117,7 @@ public:
 	 * @return    True if the damage was successfully applied, false otherwise.
 	 */
 
-	UFUNCTION(BlueprintCallable, meta=(Hidepin = "DamageContext"), BlueprintAuthorityOnly, Category = "GASCourse|AbilitySystem|Damage")
+	UFUNCTION(BlueprintCallable, meta=(Hidepin = "DamageContext"), Category = "GASCourse|AbilitySystem|Damage")
 	static bool ApplyPhysicalDamageToTarget(AActor* Target, AActor* Instigator, float Damage, const FHitResult& HitResult, FDamageContext& DamageContext);
 
 	/**
