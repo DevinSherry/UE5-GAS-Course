@@ -30,8 +30,6 @@ public:
 
 
 protected:
-
-
 	virtual void BeginPlay() override;
 	
 	/**
@@ -153,18 +151,10 @@ protected:
 	UPROPERTY(BlueprintAssignable, BlueprintCallable)
 	FOnHealthViewModelInstantiated OnHealthViewModelInstantiated;
 
+	UFUNCTION(BlueprintNativeEvent)
+	void HealthViewModelInstantiated(UGASC_UVM_Health* InstantiatedViewModel); 
+
 public:
-	/**
-	 * This method is used to register the health component for an actor in the game.
-	 * It initializes the view model, server health attributes, and monitors health attribute changes on the server.
-	 * After registration, it broadcasts the OnHealthComponentRegistered event.
-	 *
-	 * @see InitializeViewModel()
-	 * @see Server_InitializeHealthAttributes()
-	 * @see MonitorHealthAttributeChanges_Server()
-	 * @see OnHealthComponentRegistered
-	 */
-	void RegisterHealthComponent();
 
 	/**
 	 * CharacterHealthViewModelContextClass is a property that holds the subclass of UMVVMViewModelBase

@@ -119,18 +119,6 @@ void AGASCourseCharacter::InitializeAbilitySystem(UGASCourseAbilitySystemCompone
 	}
 }
 
-void AGASCourseCharacter::RegisterViewModels()
-{
-	/*
-	 * Register all components that use view models here.
-	 */
-
-	//Register character health component & view model.
-	if(CharacterHealthComponent)
-	{
-		CharacterHealthComponent->RegisterHealthComponent();
-	}
-}
 
 void AGASCourseCharacter::PostBeginPlayHealthComponentRegistration_Implementation()
 {

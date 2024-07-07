@@ -172,13 +172,6 @@ void AGASCoursePlayerCharacter::PossessedBy(AController* NewController)
 			Subsystem->AddMappingContext(DefaultMappingContextKBM, 0);
 			Subsystem->AddMappingContext(DefaultMappingContextGamepad, 0);
 		}
-		
-		/**
-		 * Register the view model for the server.
-		 */
-
-		RegisterViewModels();
-		
 		PlayerController->CreateHUD();
 	}
 	
@@ -206,8 +199,6 @@ void AGASCoursePlayerCharacter::OnRep_PlayerState()
 				Subsystem->AddMappingContext(DefaultMappingContextGamepad, 0);
 			}
 			
-			RegisterViewModels();
-			
 			PlayerController->CreateHUD();
 			BindASCInput();
 		}
@@ -228,7 +219,6 @@ void AGASCoursePlayerCharacter::OnRep_Controller()
 	{
 		AbilitySystemComponent->RefreshAbilityActorInfo();
 	}
-	RegisterViewModels();
 }
 
 void AGASCoursePlayerCharacter::BeginPlay()
@@ -236,7 +226,7 @@ void AGASCoursePlayerCharacter::BeginPlay()
 	Super::BeginPlay();
 	
 	if(CameraSettingsData->RecenterCameraCurve)
-	{
+	{     
 		FOnTimelineFloat TimelineCallback;
 		FOnTimelineEvent TimelineFinishedFunc;
 		TimelineFinishedFunc.BindUFunction(this,FName("RecenterCameraBoomTimelineFinished"));
@@ -784,9 +774,4 @@ void AGASCoursePlayerCharacter::AutoAttachCameraWithinMinDistance()
 			ResetCameraOffsetTimeline.PlayFromStart();
 		}
 	}
-}
-
-void AGASCoursePlayerCharacter::RegisterViewModels()
-{
-	Super::RegisterViewModels();
 }

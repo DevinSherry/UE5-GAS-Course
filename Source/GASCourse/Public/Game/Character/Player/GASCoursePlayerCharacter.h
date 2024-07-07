@@ -139,8 +139,6 @@ protected:
 
 public:
 
-	void RegisterViewModels() override;
-
 	UE::Tasks::TTask<FVector> MultithreadTask;
 	FVector GetWorldDirection(const FVector& CachedDirection) const;
 

@@ -16,13 +16,14 @@ UGASC_HealthComponent::UGASC_HealthComponent()
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = false;
-
-	bWantsInitializeComponent = true;
 	SetIsReplicatedByDefault(true);
 }
 
 void UGASC_HealthComponent::BeginPlay()
 {
+	InitializeViewModel();
+	Server_InitializeHealthAttributes();
+
 	Super::BeginPlay();
 }
 
@@ -65,9 +66,10 @@ void UGASC_HealthComponent::InitializeViewModel()
 	{
 		GlobalViewModelCollection->AddViewModelInstance(CharacterHealthViewModelContext, CharacterHealthViewModel);
 		HealthViewModel = CharacterHealthViewModel;
-	}
 
-	OnHealthViewModelInstantiated.Broadcast(HealthViewModel);
+		OnHealthViewModelInstantiated.Broadcast(HealthViewModel);
+		HealthViewModelInstantiated(HealthViewModel);
+	}
 }
 
 void UGASC_HealthComponent::Server_InitializeHealthAttributes_Implementation()
@@ -87,11 +89,6 @@ void UGASC_HealthComponent::Server_InitializeHealthAttributes_Implementation()
 	}
 }
 
-void UGASC_HealthComponent::RegisterHealthComponent()
+void UGASC_HealthComponent::HealthViewModelInstantiated_Implementation(UGASC_UVM_Health* InstantiatedViewModel)
 {
-	InitializeViewModel();
-	Server_InitializeHealthAttributes();
 }
-
-
-

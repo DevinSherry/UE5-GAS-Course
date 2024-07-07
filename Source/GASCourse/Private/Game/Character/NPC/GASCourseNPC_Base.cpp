@@ -27,11 +27,6 @@ void AGASCourseNPC_Base::PossessedBy(AController* NewController)
 void AGASCourseNPC_Base::BeginPlay()
 {
 	Super::BeginPlay();
-	
-	if(CharacterHealthComponent)
-	{
-		RegisterViewModels();
-	}
 }
 
 void AGASCourseNPC_Base::Tick(float DeltaSeconds)

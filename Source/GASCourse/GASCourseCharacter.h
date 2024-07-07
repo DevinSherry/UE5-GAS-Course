@@ -177,8 +177,6 @@ protected:
 	FGameplayTagContainer GameplayEffectAssetTagsToRemove;
 
 public:
-	
-	virtual void RegisterViewModels();
 
 	UFUNCTION(BlueprintNativeEvent)
 	void PostBeginPlayHealthComponentRegistration();
