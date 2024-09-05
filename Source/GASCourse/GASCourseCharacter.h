@@ -7,12 +7,16 @@
 #include "InputActionValue.h"
 #include "MVVMViewModelBase.h"
 #include "Game/GameplayAbilitySystem/GASCourseAbilitySystemComponent.h"
+#include "Game/Character/Components/Health/GASC_HealthComponent.h"
 #include "Game/GameplayAbilitySystem/GASAbilityTagRelationshipMapping.h"
 #include "Game/GameplayAbilitySystem/AttributeSets/GASCourseCharBaseAttributeSet.h"
 #include "Game/GameplayAbilitySystem/GameplayTagResponseTable/GASCourseStatusEffectTable.h"
+#include "CogCommonDebugFilteredActorInterface.h"
+
 #include "GASCourseCharacter.generated.h"
 
 class UGASCourseGameplayAbilitySet;
+class UInputAction;
 
 USTRUCT(BlueprintType)
 struct GASCOURSE_API FReplicationProxyVarList
@@ -48,9 +52,52 @@ public:
 	float AttributeTwo;
 };
 
+//--------------------------------------------------------------------------------------------------------------------------
+USTRUCT(BlueprintType)
+struct FActiveAbilityInfo
+{
+	GENERATED_BODY()
+
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TSubclassOf<UGameplayAbility> Ability;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UInputAction* InputAction = nullptr;
+};
+
+//--------------------------------------------------------------------------------------------------------------------------
+USTRUCT(BlueprintType)
+struct FPassiveAbilityInfo
+{
+	GENERATED_BODY()
+
+public:
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TSubclassOf<UGameplayAbility> Ability;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	bool ActivateWhenGiven = false;
+};
+
+//--------------------------------------------------------------------------------------------------------------------------
+USTRUCT(BlueprintType)
+struct FCogSampleMontageTableRow : public FTableRowBase
+{
+	GENERATED_BODY()
+
+public:
+	FCogSampleMontageTableRow() {}
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UAnimMontage* Montage = nullptr;
+};
+
 
 UCLASS(config=Game)
-class AGASCourseCharacter : public ACharacter, public IAbilitySystemInterface, public IGCAbilitySystemReplicationProxyInterface
+class AGASCourseCharacter : public ACharacter, public IAbilitySystemInterface, public IGCAbilitySystemReplicationProxyInterface,
+public ICogCommonDebugFilteredActorInterface
 {
 	GENERATED_BODY()
 
@@ -64,8 +111,27 @@ public:
 	FReplicationProxyVarList& Call_GetReplicationProxyVarList_Mutable();
 
 	void PossessedBy(AController* NewController) override;
+
+	virtual void PostInitializeComponents() override;
+
+	virtual void BeginPlay() override;
+
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+
+	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+	virtual void UnPossessed() override;
+
+	virtual void AcknowledgePossession(AController* NewController);
+
+	virtual void AcknowledgeUnpossession();
 	
 protected:
+
+	friend class AGASCoursePlayerController;
+
+	UPROPERTY()
+	AController* InitialController = nullptr;
 
 	/** Called for movement input */
 	virtual void Move(const FInputActionValue& Value);
@@ -84,8 +150,6 @@ protected:
 	//Override these functions in order to jump while crouched, if movement component allows for it.
 	virtual bool CanJumpInternal_Implementation() const override;
 	virtual void Jump() override;
-
-	virtual void PostInitializeComponents() override;
 	
 	UFUNCTION()
 	void OnRep_ReplicationVarList();
@@ -128,9 +192,6 @@ protected:
 
 	
 protected:
-	
-	// To add mapping context
-	virtual void BeginPlay() override;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Getter=GetAbilitySystemComponent)
 	UGASCourseAbilitySystemComponent* AbilitySystemComponent = nullptr;
@@ -151,7 +212,7 @@ protected:
 	 * The meta flag AllowPrivateAccess is set to true, allowing private access to this component.
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = HealthComponent, meta = (AllowPrivateAccess = "true"))
-	class UGASC_HealthComponent* CharacterHealthComponent;
+	UGASC_HealthComponent* CharacterHealthComponent;
 
 	/** The component responsible for handling the camera targeting functionality.
 	 *

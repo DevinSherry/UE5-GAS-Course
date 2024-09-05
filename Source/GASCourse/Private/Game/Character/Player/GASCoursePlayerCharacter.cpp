@@ -60,7 +60,7 @@ void AGASCoursePlayerCharacter::InitializeCamera()
 void AGASCoursePlayerCharacter::OnWindowFocusChanged(bool bIsInFocus)
 {
 	bIsWindowFocused = bIsInFocus;
-	SetMousePositionToScreenCenter();
+	//SetMousePositionToScreenCenter();
 }
 
 void AGASCoursePlayerCharacter::UpdateCameraMovementSpeed()
@@ -445,7 +445,7 @@ void AGASCoursePlayerCharacter::Input_RotateCameraCompleted(const FInputActionIn
 	RotateCameraTimeline.Stop();
 	CurrentCameraRotationSpeed = 0.0f;
 	GetCameraBoom()->bEnableCameraRotationLag = true;
-	SetMousePositionToScreenCenter();
+	//SetMousePositionToScreenCenter();
 }
 
 void AGASCoursePlayerCharacter::Input_ToggleCameraMovement(const FInputActionInstance& InputActionInstance)
@@ -655,6 +655,7 @@ void AGASCoursePlayerCharacter::CameraEdgePanning()
 
 void AGASCoursePlayerCharacter::SetMousePositionToScreenCenter()
 {
+	/*
 	if (APlayerController* PC = Cast<APlayerController>(GetController()))
 	{
 		if(const ULocalPlayer* LP = PC->GetLocalPlayer())
@@ -674,6 +675,7 @@ void AGASCoursePlayerCharacter::SetMousePositionToScreenCenter()
 			}
 		}
 	}
+	*/
 }
 
 void AGASCoursePlayerCharacter::UpdateCameraTargetOffsetZ()

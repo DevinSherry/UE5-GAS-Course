@@ -78,6 +78,10 @@
 		{
 			"Name": "GameplayInsights",
 			"Enabled": true
+		},
+		{
+			"Name": "Cog",
+			"Enabled": true
 		}
 	]
 }

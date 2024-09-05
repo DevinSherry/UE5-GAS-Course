@@ -91,6 +91,32 @@ void AGASCourseCharacter::BeginPlay()
 	}
 }
 
+void AGASCourseCharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	Super::EndPlay(EndPlayReason);
+
+	//TODO: COG Implementations
+	//UnregisterFromAbilitySystemEvents();
+}
+
+void AGASCourseCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+{
+	ACharacter::SetupPlayerInputComponent(PlayerInputComponent);
+}
+
+void AGASCourseCharacter::UnPossessed()
+{
+	ACharacter::UnPossessed();
+}
+
+void AGASCourseCharacter::AcknowledgePossession(AController* NewController)
+{
+}
+
+void AGASCourseCharacter::AcknowledgeUnpossession()
+{
+}
+
 void AGASCourseCharacter::InitializeAbilitySystem(UGASCourseAbilitySystemComponent* InASC)
 {
 	if(GetLocalRole() != ROLE_Authority || !InASC)

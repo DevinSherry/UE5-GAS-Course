@@ -4,13 +4,15 @@
 
 #include "GASCoursePlayerState.h"
 #include "GameFramework/PlayerController.h"
+#include "CogCommonPossessorInterface.h"
+#include "GASCourse/GASCourseCharacter.h"
 #include "GASCoursePlayerController.generated.h"
 
 /**
  * 
  */
-UCLASS()
-class GASCOURSE_API AGASCoursePlayerController : public APlayerController
+UCLASS(Config=Game)
+class GASCOURSE_API AGASCoursePlayerController : public APlayerController, public ICogCommonPossessorInterface
 {
 	GENERATED_BODY()
 
@@ -21,6 +23,14 @@ public:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 	virtual void BeginPlayingState() override;
+
+	virtual void BeginPlay() override;
+
+	UFUNCTION(BlueprintCallable)
+	virtual void SetPossession(APawn* NewPawn) override;
+
+	UFUNCTION(BlueprintCallable)
+	virtual void ResetPossession() override;
 
 	UFUNCTION(BlueprintCallable, Category = "GASCourse|PlayerController")
 	AGASCoursePlayerState* GetGASCoursePlayerState() const;
@@ -175,5 +185,16 @@ protected:
 private:
 
 	FVector3d CachedDestination = FVector3d(0.0f,0.0f,0.0f);
+
+	//----------------------------------------------------------------------------------------------------------------------
+	// Possession
+	//----------------------------------------------------------------------------------------------------------------------
+
+	UPROPERTY(BlueprintReadonly, meta = (AllowPrivateAccess = "true"))
+	TWeakObjectPtr<AGASCourseCharacter> PossessedCharacter = nullptr;
+
+	UPROPERTY(BlueprintReadonly, meta = (AllowPrivateAccess = "true"))
+	TWeakObjectPtr<AGASCourseCharacter> InitialPossessedCharacter = nullptr;
+
 	
 };
