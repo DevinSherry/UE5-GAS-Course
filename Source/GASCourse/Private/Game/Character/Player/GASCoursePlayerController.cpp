@@ -14,18 +14,13 @@
 
 #if ENABLE_COG
 #include "CogAbilityReplicator.h"
-#include "CogDebugDraw.h"
-#include "CogDebugPlot.h"
 #include "CogDebugReplicator.h"
 #include "CogEngineReplicator.h"
-#include "Framework/Application/NavigationConfig.h"
 #include "Framework/Application/SlateApplication.h"
 #endif //ENABLE_COG
 
 AGASCoursePlayerController::AGASCoursePlayerController(const FObjectInitializer& ObjectInitializer)
 {
-	bShowMouseCursor = true;
-	bEnableClickEvents = true;
 	bEnableMouseOverEvents = true;
 }
 
@@ -264,7 +259,7 @@ void AGASCoursePlayerController::OnRep_Pawn()
 void AGASCoursePlayerController::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
-	GetHitResultUnderMouseCursor();
+	//GetHitResultUnderMouseCursor();
 	GetMousePositionInViewport();
 	Client_GetCameraRotation();
 }

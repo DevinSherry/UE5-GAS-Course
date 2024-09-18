@@ -84,11 +84,6 @@ protected:
 	void Input_ToggleCameraRotation(const FInputActionInstance& InputActionInstance);
 	void Input_ToggleCameraRotation_Canceled(const FInputActionInstance& InputActionInstance);
 
-	/** Called for left-click based movement */
-	void PointClickMovement(const FInputActionValue& Value);
-	void PointClickMovementStarted(const FInputActionValue& Value);
-	void PointClickMovementCompleted(const FInputActionInstance& InputActionInstance);
-
 	void MoveToMouseHitResultLocation();
 
 	UFUNCTION()
@@ -118,9 +113,6 @@ protected:
 	void CameraEdgePanning();
 
 	UFUNCTION()
-	void SetMousePositionToScreenCenter();
-
-	UFUNCTION()
 	void UpdateCameraTargetOffsetZ();
 
 	UFUNCTION()
@@ -131,10 +123,7 @@ protected:
 
 	UFUNCTION()
 	void OnMovementUpdated(float DeltaSeconds, FVector OldLocation, FVector OldVelocity);
-
-	UFUNCTION()
-	bool StopPointClickCharacterMovement();
-
+	
 	void AutoAttachCameraWithinMinDistance();
 
 public:

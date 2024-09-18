@@ -6,11 +6,17 @@ public class GASCourse : ModuleRules
 {
 	public GASCourse(ReadOnlyTargetRules Target) : base(Target)
 	{
-		PrivateDependencyModuleNames.AddRange(new string[] { "AIModule", "UMG", "Slate", "NetCore" });
-		if(Target.Type == TargetRules.TargetType.Editor)
+		SetupGameplayDebuggerSupport(Target);
+		SetupIrisSupport(Target);
+		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
+		
+		PrivateDependencyModuleNames.AddRange(new string[] { "AIModule", "UMG", "Slate", "NetCore"});
+		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "TargetingSystem", "GameplayAbilities", 
+			"GameplayTasks", "GameplayTags", "ModelViewViewModel", "CogCommon"});
+		
+		if(Target.Configuration != UnrealTargetConfiguration.Shipping)
 		{
 			PublicDependencyModuleNames.AddRange(new string[] 
-			
 			{
 				"CogAbility",
                 "CogAI",
@@ -20,14 +26,15 @@ public class GASCourse : ModuleRules
                 "CogImgui",
                 "CogInput",
                 "CogWindow",
-				"UnrealEd",
-			
 			});
 		}
-		SetupGameplayDebuggerSupport(Target);
-		SetupIrisSupport(Target);
-		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "GameplayAbilities", "GameplayTasks", "GameplayTags", "ModelViewViewModel", "CogCommon"});
+		if (Target.Type == TargetType.Editor)
+		{
+			PublicDependencyModuleNames.AddRange(new string[]
+			{
+				"UnrealEd"
+			});
+		}
 	}
 }

@@ -118,32 +118,28 @@ bool UGASCourseASCBlueprintLibrary::ApplyDamageToTarget_Internal(AActor* Target,
 
 UGameplayEffect* UGASCourseASCBlueprintLibrary::ConstructDamageGameplayEffect(EGameplayEffectDurationType DurationType,  const FDamageOverTimeContext& DamageOverTimeContext)
 {
-	if(UGASCourseGameplayEffect* DamageEffect = NewObject<UGASCourseGameplayEffect>(GetTransientPackage(), FName(TEXT("Damage"))))
+	UGASCourseGameplayEffect* DamageEffect = NewObject<UGASCourseGameplayEffect>(GetTransientPackage());
+	if(DurationType == EGameplayEffectDurationType::Instant)
 	{
-		if(DurationType == EGameplayEffectDurationType::Instant)
-		{
-			DamageEffect->DurationPolicy = EGameplayEffectDurationType::Instant;
-		}
-		else
-		{
-			DamageEffect->DurationPolicy = EGameplayEffectDurationType::HasDuration;
-				
-			//DamageOverTimeContext should specify FScalableFloat for duration parameter.
-			FScalableFloat Duration;
-			Duration.Value = DamageOverTimeContext.DamageDuration;
-			DamageEffect->DurationMagnitude = FGameplayEffectModifierMagnitude(Duration);
-
-			//DamageOverTimeContext should specify FScalableFloat for period parameter.
-			FScalableFloat Period;
-			Period.Value = DamageOverTimeContext.DamagePeriod;
-			DamageEffect->Period = Period;
-			DamageEffect->bExecutePeriodicEffectOnApplication = DamageOverTimeContext.bApplyDamageOnApplication;
-		}
-	
-		return DamageEffect;
+		DamageEffect->DurationPolicy = EGameplayEffectDurationType::Instant;
+	}
+	else
+	{
+		DamageEffect->DurationPolicy = EGameplayEffectDurationType::HasDuration;
 	}
 
-	return nullptr;
+	//DamageOverTimeContext should specify FScalableFloat for duration parameter.
+	FScalableFloat Duration;
+	Duration.Value = DamageOverTimeContext.DamageDuration;
+	DamageEffect->DurationMagnitude = FGameplayEffectModifierMagnitude(Duration);
+
+	//DamageOverTimeContext should specify FScalableFloat for period parameter.
+	FScalableFloat Period;
+	Period.Value = DamageOverTimeContext.DamagePeriod;
+	DamageEffect->Period = Period;
+	DamageEffect->bExecutePeriodicEffectOnApplication = DamageOverTimeContext.bApplyDamageOnApplication;
+	
+	return DamageEffect;
 }
 
 bool UGASCourseASCBlueprintLibrary::FindDamageTypeTagInContainer(const FGameplayTagContainer& InContainer, FGameplayTag& DamageTypeTag)

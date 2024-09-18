@@ -2,8 +2,12 @@
 
 #pragma once
 
+#include "GameplayTagContainer.h"
 #include "GameFramework/Actor.h"
+#include "Types/TargetingSystemTypes.h"
 #include "GASCourseProjectile.generated.h"
+
+class TargetingSystemTypes;
 
 UCLASS()
 class GASCOURSE_API AGASCourseProjectile : public AActor
@@ -25,6 +29,38 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite,  Category = Projectile, meta = (ExposeOnSpawn=true), Replicated)
 	class AActor* TargetActor = nullptr;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Ricochet")
+	bool bCanRicochet;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Ricochet")
+	FGameplayTagQuery RicochetTagRequirements;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Ricochet")
+	UTargetingPreset* RicochetTargetingPreset;
+
+	UFUNCTION(BlueprintNativeEvent)
+	void OnProjectileRicochet();
+
+
+protected:
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Ricochet")
+	TArray<AActor*> HitTargets;
+
+	UFUNCTION()
+	void OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit );
+
+	UFUNCTION()
+	void OnTargetRequestCompleted(FTargetingRequestHandle TargetingRequestHandle);
+
+private:
+	
+	UPROPERTY()
+	FTargetingRequestHandle CurrentTargetHandle;
+
+	UPROPERTY()
+	TArray<AActor*> FoundTargets;
 
 protected:
 	// Called when the game starts or when spawned

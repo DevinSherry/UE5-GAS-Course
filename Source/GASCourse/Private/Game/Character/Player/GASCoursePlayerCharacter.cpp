@@ -53,14 +53,13 @@ void AGASCoursePlayerCharacter::UpdateCharacterAnimLayer(TSubclassOf<UAnimInstan
 
 void AGASCoursePlayerCharacter::InitializeCamera()
 {
-	GetCameraBoom()->TargetArmLength = CameraSettingsData->MaxCameraBoomDistance/2.0f;
-	GetCameraBoom()->SocketOffset = FVector(0.0f,0.0f, CameraSettingsData->MaxCameraBoomDistance/2.0f);
+	GetCameraBoom()->TargetArmLength = CameraSettingsData->DefaultCameraBoomLength;
+	GetCameraBoom()->SocketOffset = FVector(0.0f,0.0f, CameraSettingsData->DefaultSocketOffsetZ);
 }
 
 void AGASCoursePlayerCharacter::OnWindowFocusChanged(bool bIsInFocus)
 {
 	bIsWindowFocused = bIsInFocus;
-	//SetMousePositionToScreenCenter();
 }
 
 void AGASCoursePlayerCharacter::UpdateCameraMovementSpeed()
@@ -129,15 +128,15 @@ void AGASCoursePlayerCharacter::SetupPlayerInputComponent(UInputComponent* Playe
 			EnhancedInputComponent->BindActionByTag(InputConfig, InputTag_Look_Stick, ETriggerEvent::Triggered, this, &ThisClass::Look);
 
 			//Camera Controls
-			EnhancedInputComponent->BindActionByTag(InputConfig, InputTag_MoveCamera, ETriggerEvent::Triggered, this, &ThisClass::Input_MoveCamera);
-			EnhancedInputComponent->BindActionByTag(InputConfig, InputTag_MoveCamera,ETriggerEvent::Completed, this, &ThisClass::Input_MoveCameraCompleted);
-			EnhancedInputComponent->BindActionByTag(InputConfig, InputTag_RecenterCamera, ETriggerEvent::Triggered, this, &ThisClass::Input_RecenterCamera);
+			//EnhancedInputComponent->BindActionByTag(InputConfig, InputTag_MoveCamera, ETriggerEvent::Triggered, this, &ThisClass::Input_MoveCamera);
+			//EnhancedInputComponent->BindActionByTag(InputConfig, InputTag_MoveCamera,ETriggerEvent::Completed, this, &ThisClass::Input_MoveCameraCompleted);
+			//EnhancedInputComponent->BindActionByTag(InputConfig, InputTag_RecenterCamera, ETriggerEvent::Triggered, this, &ThisClass::Input_RecenterCamera);
 			EnhancedInputComponent->BindActionByTag(InputConfig, InputTag_RotateCameraAxis, ETriggerEvent::Triggered, this, &ThisClass::Input_RotateCameraAxis);
-			EnhancedInputComponent->BindActionByTag(InputConfig, InputTag_RotateCamera,ETriggerEvent::Completed, this, &ThisClass::Input_RotateCameraCompleted);
-			EnhancedInputComponent->BindActionByTag(InputConfig, InputTag_CameraMovementChordedAction, ETriggerEvent::Triggered, this, &ThisClass::Input_ToggleCameraMovement);
-			EnhancedInputComponent->BindActionByTag(InputConfig, InputTag_CameraRotationChordedAction, ETriggerEvent::Triggered, this, &ThisClass::Input_ToggleCameraRotation);
-			EnhancedInputComponent->BindActionByTag(InputConfig, InputTag_CameraRotationChordedAction, ETriggerEvent::Canceled, this, &ThisClass::Input_ToggleCameraRotation_Canceled);
-			EnhancedInputComponent->BindActionByTag(InputConfig, InputTag_CameraRotationChordedAction, ETriggerEvent::Completed, this, &ThisClass::Input_ToggleCameraRotation_Canceled);
+			//EnhancedInputComponent->BindActionByTag(InputConfig, InputTag_RotateCamera,ETriggerEvent::Completed, this, &ThisClass::Input_RotateCameraCompleted);
+			//EnhancedInputComponent->BindActionByTag(InputConfig, InputTag_CameraMovementChordedAction, ETriggerEvent::Triggered, this, &ThisClass::Input_ToggleCameraMovement);
+			//EnhancedInputComponent->BindActionByTag(InputConfig, InputTag_CameraRotationChordedAction, ETriggerEvent::Triggered, this, &ThisClass::Input_ToggleCameraRotation);
+			//EnhancedInputComponent->BindActionByTag(InputConfig, InputTag_CameraRotationChordedAction, ETriggerEvent::Canceled, this, &ThisClass::Input_ToggleCameraRotation_Canceled);
+			//EnhancedInputComponent->BindActionByTag(InputConfig, InputTag_CameraRotationChordedAction, ETriggerEvent::Completed, this, &ThisClass::Input_ToggleCameraRotation_Canceled);
 
 			//Crouching
 			EnhancedInputComponent->BindActionByTag(InputConfig, InputTag_Crouch, ETriggerEvent::Triggered, this, &ThisClass::Input_Crouch);
@@ -224,7 +223,18 @@ void AGASCoursePlayerCharacter::OnRep_Controller()
 void AGASCoursePlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
+	if(CameraSettingsData->RotateCameraCurve)
+	{
+		FOnTimelineFloat TimelineCallback;
+		FOnTimelineEvent TimelineFinishedFunc;
+		TimelineFinishedFunc.BindUFunction(this, FName("UpdateCameraRotationSpeedTimelineFinished"));
+		RotateCameraTimeline.SetTimelineFinishedFunc(TimelineFinishedFunc);
+		TimelineCallback.BindUFunction(this, FName("UpdateCameraRotationSpeed"));
+		RotateCameraTimeline.AddInterpFloat(CameraSettingsData->RotateCameraCurve, TimelineCallback);
+	}
+
+	/*
 	if(CameraSettingsData->RecenterCameraCurve)
 	{     
 		FOnTimelineFloat TimelineCallback;
@@ -245,16 +255,6 @@ void AGASCoursePlayerCharacter::BeginPlay()
 		MoveCameraTimeline.AddInterpFloat(CameraSettingsData->MoveCameraCurve, TimelineCallback);
 	}
 
-	if(CameraSettingsData->RotateCameraCurve)
-	{
-		FOnTimelineFloat TimelineCallback;
-		FOnTimelineEvent TimelineFinishedFunc;
-		TimelineFinishedFunc.BindUFunction(this, FName("UpdateCameraRotationSpeedTimelineFinished"));
-		RotateCameraTimeline.SetTimelineFinishedFunc(TimelineFinishedFunc);
-		TimelineCallback.BindUFunction(this, FName("UpdateCameraRotationSpeed"));
-		RotateCameraTimeline.AddInterpFloat(CameraSettingsData->RotateCameraCurve, TimelineCallback);
-	}
-
 	if(CameraSettingsData->CameraEdgePanningCurve)
 	{
 		FOnTimelineFloat TimelineCallback;
@@ -264,18 +264,21 @@ void AGASCoursePlayerCharacter::BeginPlay()
 		TimelineCallback.BindUFunction(this, FName("UpdateCameraEdgePanningSpeed"));
 		CameraEdgePanningTimeline.AddInterpFloat(CameraSettingsData->CameraEdgePanningCurve, TimelineCallback);
 	}
+	*/
 }
 
 void AGASCoursePlayerCharacter::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
-	
+	RotateCameraTimeline.TickTimeline(DeltaSeconds);
+
+	/*
 	ResetCameraOffsetTimeline.TickTimeline(DeltaSeconds);
 	MoveCameraTimeline.TickTimeline(DeltaSeconds);
-	RotateCameraTimeline.TickTimeline(DeltaSeconds);
 	CameraEdgePanningTimeline.TickTimeline(DeltaSeconds);
 
 	CameraEdgePanning();
+	*/
 }
 
 void AGASCoursePlayerCharacter::Input_AbilityInputTagPressed(FGameplayTag InputTag)
@@ -433,9 +436,11 @@ void AGASCoursePlayerCharacter::Input_RotateCameraAxis(const FInputActionInstanc
 		const FVector2d CameraRotation = InputActionInstance.GetValue().Get<FVector2D>();
 		const float CameraRotationX = CameraRotation.X * CurrentCameraRotationSpeed;
 		const float CameraRotationY = CameraRotation.Y * CurrentCameraRotationSpeed;
+
 		
 		const FRotator NewCameraControlRotation = FRotator(FMath::ClampAngle((Controller->GetControlRotation().Pitch + CameraRotationX),
 			CameraSettingsData->MinCameraPitchAngle, CameraSettingsData->MaxCameraPitchAngle),Controller->GetControlRotation().Yaw + CameraRotationY, 0.0f);
+
 		PlayerControllerController->SetControlRotation(NewCameraControlRotation);
 	}
 }
@@ -445,7 +450,6 @@ void AGASCoursePlayerCharacter::Input_RotateCameraCompleted(const FInputActionIn
 	RotateCameraTimeline.Stop();
 	CurrentCameraRotationSpeed = 0.0f;
 	GetCameraBoom()->bEnableCameraRotationLag = true;
-	//SetMousePositionToScreenCenter();
 }
 
 void AGASCoursePlayerCharacter::Input_ToggleCameraMovement(const FInputActionInstance& InputActionInstance)
@@ -469,38 +473,6 @@ void AGASCoursePlayerCharacter::Input_ToggleCameraRotation_Canceled(const FInput
 	{
 		GASController->SetShowMouseCursor(true);
 		UWidgetBlueprintLibrary::SetInputMode_GameAndUIEx(GASController, nullptr, EMouseLockMode::LockAlways, false, false);
-	}
-}
-
-void AGASCoursePlayerCharacter::PointClickMovement(const FInputActionValue& Value)
-{
-	if(GetAbilitySystemComponent()->HasMatchingGameplayTag(Status_Block_PointClickMovementInput))
-	{
-		return;
-	}
-	MoveToMouseHitResultLocation();
-}
-
-void AGASCoursePlayerCharacter::PointClickMovementStarted(const FInputActionValue& Value)
-{
-	if(GetAbilitySystemComponent()->HasMatchingGameplayTag(Status_Block_PointClickMovementInput))
-	{
-		return;
-	}
-	
-	StopPointClickCharacterMovement();
-}
-
-void AGASCoursePlayerCharacter::PointClickMovementCompleted(const FInputActionInstance& InputActionInstance)
-{
-	if(GetAbilitySystemComponent()->HasMatchingGameplayTag(Status_Block_PointClickMovementInput))
-	{
-		return;
-	}
-	
-	if(AGASCoursePlayerController* PC = Cast<AGASCoursePlayerController>(Controller))
-	{
-		UAIBlueprintHelperLibrary::SimpleMoveToLocation(PC, PC->GetCachedDestination());
 	}
 }
 
@@ -583,7 +555,6 @@ void AGASCoursePlayerCharacter::CameraEdgePanning()
 #if WITH_EDITOR
 	if(const FViewport* EditorViewport = GEditor->GetPIEViewport())
 	{
-		//bIsWindowFocused = EditorViewport->HasMouseCapture();
 		bIsWindowFocused = EditorViewport->HasFocus();
 	}
 #endif
@@ -651,31 +622,6 @@ void AGASCoursePlayerCharacter::CameraEdgePanning()
 			CurrentCameraEdgePanningSpeed = 0.0f;
 		}
 	}
-}
-
-void AGASCoursePlayerCharacter::SetMousePositionToScreenCenter()
-{
-	/*
-	if (APlayerController* PC = Cast<APlayerController>(GetController()))
-	{
-		if(const ULocalPlayer* LP = PC->GetLocalPlayer())
-		{
-			if(UGameViewportClient* GVC = LP->ViewportClient)
-			{
-				FViewport* VP = GVC->Viewport;
-				if(VP)
-				{
-					FVector2D ViewportSize;
-					GVC->GetViewportSize(ViewportSize);
-					const int32 X = static_cast<int32>(ViewportSize.X * 0.5f);
-					const int32 Y = static_cast<int32>(ViewportSize.Y * 0.5f);
-
-					VP->SetMouse(X, Y);
-				}
-			}
-		}
-	}
-	*/
 }
 
 void AGASCoursePlayerCharacter::UpdateCameraTargetOffsetZ()
@@ -753,18 +699,6 @@ void AGASCoursePlayerCharacter::OnMovementUpdated(float DeltaSeconds, FVector Ol
 	{
 		GetCameraBoom()->TargetOffset.Z += MovementHeightDelta;
 	}
-}
-
-bool AGASCoursePlayerCharacter::StopPointClickCharacterMovement()
-{
-	if(AGASCoursePlayerController* PC = Cast<AGASCoursePlayerController>(Controller))
-	{
-		PC->StopMovement();
-		bHasPointClickMovementTarget = false;
-		return true;
-	}
-
-	return false;
 }
 
 void AGASCoursePlayerCharacter::AutoAttachCameraWithinMinDistance()
