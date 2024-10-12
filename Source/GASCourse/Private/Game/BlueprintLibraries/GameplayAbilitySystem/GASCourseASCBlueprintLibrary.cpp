@@ -75,6 +75,16 @@ bool UGASCourseASCBlueprintLibrary::ApplyDamageToTarget_Internal(AActor* Target,
 		return false;
 	}
 
+	if(AGASCoursePlayerState* InstigatorPlayerState = Cast<AGASCoursePlayerState>(Instigator))
+	{
+		Instigator = InstigatorPlayerState->GetPawn();
+	}
+
+	if(AGASCoursePlayerState* TargetPlayerState = Cast<AGASCoursePlayerState>(Target))
+	{
+		Target = TargetPlayerState->GetPawn();
+	}
+
 	//TODO: Add check to verify ability system component + consider damage/health interface for Non-GAS actors
 	if(AGASCourseCharacter* TargetCharacter = Cast<AGASCourseCharacter>(Target))
 	{
@@ -264,5 +274,22 @@ float UGASCourseASCBlueprintLibrary::GetPeriodFromGameplayEffect(FActiveGameplay
 	}
 	
 	return OutPeriod;
+}
+
+bool UGASCourseASCBlueprintLibrary::GrantAbilityToInputTag(UAbilitySystemComponent* InASC, TSubclassOf<UGASCourseGameplayAbility> Ability, int AbilityLevel,
+	FGameplayTag InputTag)
+{
+	if (!Ability)
+	{
+		return false;
+	}
+
+	FGameplayAbilitySpec AbilitySpec(Ability, AbilityLevel);
+	AbilitySpec.SourceObject = InASC;
+	AbilitySpec.DynamicAbilityTags.AddTag(InputTag);
+
+	const FGameplayAbilitySpecHandle AbilitySpecHandle = InASC->GiveAbility(AbilitySpec);
+
+	return true;
 }
 

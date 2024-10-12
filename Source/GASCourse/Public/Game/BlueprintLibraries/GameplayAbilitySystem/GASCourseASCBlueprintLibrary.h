@@ -208,4 +208,7 @@ public:
 	 */
 	UFUNCTION(BlueprintPure, Category =  "GASCourse|AbilitySystem|GameplayEffect")
 	static float GetPeriodFromGameplayEffect(FActiveGameplayEffectHandle InGameplayEffect);
+
+	UFUNCTION(BlueprintCallable, Category = "GASCourse|AbilitySystem|GameplayAbility")
+	static bool GrantAbilityToInputTag(UAbilitySystemComponent* InASC, TSubclassOf<UGASCourseGameplayAbility> Ability, int AbilityLevel, FGameplayTag InputTag);
 };

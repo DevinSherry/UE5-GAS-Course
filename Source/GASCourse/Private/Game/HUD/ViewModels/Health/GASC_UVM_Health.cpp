@@ -3,6 +3,8 @@
 
 #include "Game/HUD/ViewModels/Health/GASC_UVM_Health.h"
 
+#include "Kismet/KismetMathLibrary.h"
+
 
 UGASC_UVM_Health::UGASC_UVM_Health()
 {
@@ -51,7 +53,13 @@ float UGASC_UVM_Health::GetHealthPercentage() const
 
 FText UGASC_UVM_Health::GetHealthAsDisplay() const
 {
-	FString HealthString = FString::SanitizeFloat(CurrentHealth, 0) + "/" + FString::SanitizeFloat(MaxHealth, 0);
+	uint32 CurrentHealthAsInt = UKismetMathLibrary::FFloor(CurrentHealth);
+	FString CurrentHealthString = FString::FromInt(CurrentHealthAsInt);
+
+	uint32 MaxHealthAsInt = UKismetMathLibrary::FFloor(MaxHealth);
+	FString MaxHealthString = FString::FromInt(MaxHealthAsInt);
+
+	FString HealthString = CurrentHealthString + "/" + MaxHealthString;
 	return FText::AsCultureInvariant(HealthString);
 }
 

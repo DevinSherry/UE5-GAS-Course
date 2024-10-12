@@ -19,6 +19,7 @@ class GASCOURSE_API AGASCourseGameStateBase : public AGameStateBase
 
 	AGASCourseGameStateBase(const class FObjectInitializer& ObjectInitializer);
 
+	
 	// To make sure it doesn't get garbage collected.
 	UPROPERTY()
 	TObjectPtr<UObject> CogWindowManagerRef = nullptr;
@@ -28,6 +29,7 @@ class GASCOURSE_API AGASCourseGameStateBase : public AGameStateBase
 	void InitializeCog();
 	TObjectPtr<UCogWindowManager> CogWindowManager = nullptr;
 #endif //ENABLE_COG
+
 
 	void BeginPlay() override;
 	void Tick(float DeltaSeconds) override;

@@ -14,6 +14,7 @@ public class GASCourse : ModuleRules
 		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "TargetingSystem", "GameplayAbilities", 
 			"GameplayTasks", "GameplayTags", "ModelViewViewModel", "CogCommon"});
 		
+		
 		if(Target.Configuration != UnrealTargetConfiguration.Shipping)
 		{
 			PublicDependencyModuleNames.AddRange(new string[] 
@@ -28,6 +29,7 @@ public class GASCourse : ModuleRules
                 "CogWindow",
 			});
 		}
+		
 
 		if (Target.Type == TargetType.Editor)
 		{

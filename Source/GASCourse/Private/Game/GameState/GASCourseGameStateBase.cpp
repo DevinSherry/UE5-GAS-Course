@@ -3,12 +3,15 @@
 
 #include "Game/GameState/GASCourseGameStateBase.h"
 
+
 #if ENABLE_COG
 #include "CogAll.h"
 #include "CogDebugPlot.h"
 #include "Debug/Cog/CogSampleWindow_Team.h"
 #include "CogWindowManager.h"
 #endif //ENABLE_COG
+
+
 
 AGASCourseGameStateBase::AGASCourseGameStateBase(const FObjectInitializer& ObjectInitializer)
 {
@@ -18,14 +21,17 @@ AGASCourseGameStateBase::AGASCourseGameStateBase(const FObjectInitializer& Objec
 	PrimaryActorTick.bStartWithTickEnabled = true;
 }
 
+
 void AGASCourseGameStateBase::InitializeCog()
 {
 }
 
+
 void AGASCourseGameStateBase::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	Super::EndPlay(EndPlayReason);
-	
+
+	/*
 #if ENABLE_COG
     
 	if (CogWindowManager != nullptr)
@@ -33,6 +39,9 @@ void AGASCourseGameStateBase::EndPlay(const EEndPlayReason::Type EndPlayReason)
 		CogWindowManager->Shutdown();
 	}
 #endif //ENABLE_COG
+
+*/
+
 }
 
 void AGASCourseGameStateBase::BeginPlay()
@@ -49,12 +58,14 @@ void AGASCourseGameStateBase::BeginPlay()
 	// Add a custom window 
 	CogWindowManager->AddWindow<FCogSampleWindow_Team>("Gameplay.Team");
 #endif //ENABLE_COG
+
+
 }
 
 void AGASCourseGameStateBase::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
-	
+
 #if ENABLE_COG
 
 	extern ENGINE_API float GAverageFPS;
@@ -68,4 +79,6 @@ void AGASCourseGameStateBase::Tick(float DeltaSeconds)
 	}
 
 #endif //ENABLE_COG
+
+
 }

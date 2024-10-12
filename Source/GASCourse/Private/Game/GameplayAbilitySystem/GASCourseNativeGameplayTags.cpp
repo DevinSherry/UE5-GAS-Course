@@ -37,14 +37,19 @@ UE_DEFINE_GAMEPLAY_TAG(Status_Block_AbilityInput, "Status.Block.Input.AbilityAct
 UE_DEFINE_GAMEPLAY_TAG(Status_Death, "Status.Death")
 
 UE_DEFINE_GAMEPLAY_TAG(Data_IncomingDamage, "Data.IncomingDamage")
+UE_DEFINE_GAMEPLAY_TAG(Data_IncomingHealing, "Data.IncomingHealing")
 UE_DEFINE_GAMEPLAY_TAG(DamageType_Physical, "Damage.Type.Physical")
+UE_DEFINE_GAMEPLAY_TAG(DamageType_Elemental, "Damage.Type.Elemental")
 UE_DEFINE_GAMEPLAY_TAG(DamageType_Elemental_Fire, "Damage.Type.Elemental.Fire")
+UE_DEFINE_GAMEPLAY_TAG(DamageType_Status, "Damage.Type.Status")
 UE_DEFINE_GAMEPLAY_TAG(DamageType_Status_Burn, "Damage.Type.Status.Burn")
 
 UE_DEFINE_GAMEPLAY_TAG(Event_OnDeath, "Event.Gameplay.OnDeath")
+UE_DEFINE_GAMEPLAY_TAG(Event_OnStatusDeath, "Event.Gameplay.Status.OnDeath")
 UE_DEFINE_GAMEPLAY_TAG(Event_Gameplay_OnDamageDealt, "Event.Gameplay.OnDamageDealt")
 UE_DEFINE_GAMEPLAY_TAG(Event_Gameplay_OnDamageReceived, "Event.Gameplay.OnDamageReceived")
 UE_DEFINE_GAMEPLAY_TAG(Event_Gameplay_OnHit, "Event.Gameplay.OnHit")
+UE_DEFINE_GAMEPLAY_TAG(Event_Gameplay_OnHealing, "Event.Gameplay.OnHealing")
 
 UE_DEFINE_GAMEPLAY_TAG(Collision_IgnorePawn, "Collision.Ignore.Pawn")
 

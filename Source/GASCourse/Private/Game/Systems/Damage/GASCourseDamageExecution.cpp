@@ -7,6 +7,7 @@
 #include "Game/GameplayAbilitySystem/GASCourseAbilitySystemComponent.h"
 #include "Game/GameplayAbilitySystem/GASCourseGameplayEffect.h"
 #include "Game/GameplayAbilitySystem/GASCourseNativeGameplayTags.h"
+#include "Game/Systems/Healing/GASCourseHealingExecution.h"
 
 struct GASCourseDamageStatics
 {
@@ -65,6 +66,24 @@ void UGASCourseDamageExecution::Execute_Implementation(const FGameplayEffectCust
 		OutExecutionOutput.AddOutputModifier(FGameplayModifierEvaluatedData(DamageStatics().IncomingDamageProperty, EGameplayModOp::Additive, MitigatedDamage));
 	}
 
+	UGASCourseGameplayEffect* IncomingHealingGameplayEffect = NewObject<UGASCourseGameplayEffect>(GetTransientPackage());
+	IncomingHealingGameplayEffect->DurationPolicy = EGameplayEffectDurationType::Instant;
+	if(UGASCourseGameplayEffect* HealingEffect = Cast<UGASCourseGameplayEffect>(IncomingHealingGameplayEffect))
+	{
+		FGameplayEffectExecutionDefinition HealingExecutionDefinition;
+		HealingExecutionDefinition.CalculationClass = LoadClass<UGASCourseHealingExecution>(SourceActor, TEXT("/Game/GASCourse/Game/Systems/Healing/HealingExecution_Base.HealingExecution_Base_C"));
+		if(HealingExecutionDefinition.CalculationClass)
+		{
+			HealingEffect->Executions.Emplace(HealingExecutionDefinition);
+			const FGameplayEffectSpecHandle HealingEffectHandle = UAbilitySystemBlueprintLibrary::MakeSpecHandle(HealingEffect, SourceActor, SourceActor, 1.0f);
+			FGameplayEffectContextHandle ContextHandle = UAbilitySystemBlueprintLibrary::GetEffectContext(HealingEffectHandle);
+			UAbilitySystemBlueprintLibrary::AssignTagSetByCallerMagnitude(HealingEffectHandle, Data_IncomingHealing, MitigatedDamage);
+			ContextHandle.AddInstigator(SourceActor, SourceActor);
+			UAbilitySystemBlueprintLibrary::AddGrantedTags(HealingEffectHandle, Spec.DynamicGrantedTags);
+			SourceAbilitySystemComponent->ApplyGameplayEffectSpecToTarget(*HealingEffectHandle.Data.Get(), SourceAbilitySystemComponent);
+		}
+	}
+
 	// Broadcast damages to Target ASC & SourceASC
 	if (TargetAbilitySystemComponent && SourceAbilitySystemComponent)
 	{
@@ -79,7 +98,7 @@ void UGASCourseDamageExecution::Execute_Implementation(const FGameplayEffectCust
 			FHitResult HitResultFromContext = *Spec.GetContext().GetHitResult();
 			DamageDealtPayload.TargetData = UAbilitySystemBlueprintLibrary::AbilityTargetDataFromHitResult(HitResultFromContext); 
 		}
-
+		
 		if(TargetAbilitySystemComponent->HasMatchingGameplayTag(FGameplayTag::RequestGameplayTag(FName("Status.Death"))))
 		{
 			return;

@@ -11,7 +11,7 @@
 #include "Game/GameplayAbilitySystem/GASAbilityTagRelationshipMapping.h"
 #include "Game/GameplayAbilitySystem/AttributeSets/GASCourseCharBaseAttributeSet.h"
 #include "Game/GameplayAbilitySystem/GameplayTagResponseTable/GASCourseStatusEffectTable.h"
-#include "CogCommonDebugFilteredActorInterface.h"
+//#include "CogCommonDebugFilteredActorInterface.h"
 
 #include "GASCourseCharacter.generated.h"
 
@@ -96,8 +96,8 @@ public:
 
 
 UCLASS(config=Game)
-class AGASCourseCharacter : public ACharacter, public IAbilitySystemInterface, public IGCAbilitySystemReplicationProxyInterface,
-public ICogCommonDebugFilteredActorInterface
+class AGASCourseCharacter : public ACharacter, public IAbilitySystemInterface, public IGCAbilitySystemReplicationProxyInterface
+//public ICogCommonDebugFilteredActorInterface
 {
 	GENERATED_BODY()
 
@@ -294,6 +294,18 @@ public:
 	{
 		return (GameplayStatusEffectTable) ? GameplayStatusEffectTable : nullptr;
 	}
+
+	UFUNCTION(Blueprintable)
+	FORCEINLINE void SetCharacterDead(bool bInNewDeath)
+	{
+		bIsAlive = !bInNewDeath;
+	}
+
+	UFUNCTION(Blueprintable)
+	FORCEINLINE bool IsCharacterAlive() const
+	{
+		return bIsAlive;
+	}
 	
 protected:
 	
@@ -341,6 +353,8 @@ protected:
 private:
 
 	ECollisionResponse DefaultCollisionResponseToPawn;
+
+	bool bIsAlive = true;
 	
 };
 

@@ -61,7 +61,11 @@ public:
 
 	void SetGameplayEffectStatusTable(UGASCourseStatusEffectTable* NewStatusEffectTable);
 
-	void ApplyGameplayStatusEffect(UAbilitySystemComponent* TargetASC, UAbilitySystemComponent* InstigatorASC, const FGameplayTagContainer& StatusEffectTags) const;
+	UFUNCTION(BlueprintCallable)
+	void ApplyGameplayStatusEffect(UAbilitySystemComponent* TargetASC, UAbilitySystemComponent* InstigatorASC, const FGameplayTagContainer& StatusEffectTags);
+
+	UFUNCTION(BlueprintCallable)
+	void ApplyGameplayStatusEffectToTargetDataHandle(FGameplayAbilityTargetDataHandle TargetData_Actors, const FGameplayTagContainer& StatusEffectTags);
 	
 	/** Looks at ability tags and gathers additional required and blocking tags */
 	void GetAdditionalActivationTagRequirements(const FGameplayTagContainer& AbilityTags, FGameplayTagContainer& OutActivationRequired, FGameplayTagContainer& OutActivationBlocked) const;

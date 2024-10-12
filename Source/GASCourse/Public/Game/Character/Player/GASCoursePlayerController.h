@@ -26,11 +26,13 @@ public:
 
 	virtual void BeginPlay() override;
 
+
 	UFUNCTION(BlueprintCallable)
 	virtual void SetPossession(APawn* NewPawn) override;
 
 	UFUNCTION(BlueprintCallable)
 	virtual void ResetPossession() override;
+
 
 	UFUNCTION(BlueprintCallable, Category = "GASCourse|PlayerController")
 	AGASCoursePlayerState* GetGASCoursePlayerState() const;

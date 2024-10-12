@@ -11,7 +11,8 @@
 			"AdditionalDependencies": [
 				"ModelViewViewModel",
 				"Engine",
-				"GameplayAbilities"
+				"GameplayAbilities",
+				"TargetingSystem"
 			]
 		}
 	],
@@ -78,10 +79,7 @@
 		{
 			"Name": "GameplayInsights",
 			"Enabled": true
-		},
-		{
-			"Name": "Cog",
-			"Enabled": true
 		}
 	]
 }
+

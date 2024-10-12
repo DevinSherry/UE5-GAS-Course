@@ -126,18 +126,9 @@ void AGASCoursePlayerCharacter::SetupPlayerInputComponent(UInputComponent* Playe
 
 			//Looking
 			EnhancedInputComponent->BindActionByTag(InputConfig, InputTag_Look_Stick, ETriggerEvent::Triggered, this, &ThisClass::Look);
-
-			//Camera Controls
-			//EnhancedInputComponent->BindActionByTag(InputConfig, InputTag_MoveCamera, ETriggerEvent::Triggered, this, &ThisClass::Input_MoveCamera);
-			//EnhancedInputComponent->BindActionByTag(InputConfig, InputTag_MoveCamera,ETriggerEvent::Completed, this, &ThisClass::Input_MoveCameraCompleted);
-			//EnhancedInputComponent->BindActionByTag(InputConfig, InputTag_RecenterCamera, ETriggerEvent::Triggered, this, &ThisClass::Input_RecenterCamera);
+			
 			EnhancedInputComponent->BindActionByTag(InputConfig, InputTag_RotateCameraAxis, ETriggerEvent::Triggered, this, &ThisClass::Input_RotateCameraAxis);
-			//EnhancedInputComponent->BindActionByTag(InputConfig, InputTag_RotateCamera,ETriggerEvent::Completed, this, &ThisClass::Input_RotateCameraCompleted);
-			//EnhancedInputComponent->BindActionByTag(InputConfig, InputTag_CameraMovementChordedAction, ETriggerEvent::Triggered, this, &ThisClass::Input_ToggleCameraMovement);
-			//EnhancedInputComponent->BindActionByTag(InputConfig, InputTag_CameraRotationChordedAction, ETriggerEvent::Triggered, this, &ThisClass::Input_ToggleCameraRotation);
-			//EnhancedInputComponent->BindActionByTag(InputConfig, InputTag_CameraRotationChordedAction, ETriggerEvent::Canceled, this, &ThisClass::Input_ToggleCameraRotation_Canceled);
-			//EnhancedInputComponent->BindActionByTag(InputConfig, InputTag_CameraRotationChordedAction, ETriggerEvent::Completed, this, &ThisClass::Input_ToggleCameraRotation_Canceled);
-
+			
 			//Crouching
 			EnhancedInputComponent->BindActionByTag(InputConfig, InputTag_Crouch, ETriggerEvent::Triggered, this, &ThisClass::Input_Crouch);
 

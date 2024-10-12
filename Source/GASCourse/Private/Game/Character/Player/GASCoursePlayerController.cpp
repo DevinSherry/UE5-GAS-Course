@@ -12,12 +12,14 @@
 #include "Debug/Cog/CogSampleLogCategories.h"
 #include "GASCourse/GASCourseCharacter.h"
 
+
 #if ENABLE_COG
 #include "CogAbilityReplicator.h"
 #include "CogDebugReplicator.h"
 #include "CogEngineReplicator.h"
 #include "Framework/Application/SlateApplication.h"
 #endif //ENABLE_COG
+
 
 AGASCoursePlayerController::AGASCoursePlayerController(const FObjectInitializer& ObjectInitializer)
 {
@@ -44,17 +46,21 @@ void AGASCoursePlayerController::BeginPlay()
 {
 	Super::BeginPlay();
 
+
 #if ENABLE_COG
 	// Spawn the Replicator of each plugin
 	ACogDebugReplicator::Spawn(this);
 	ACogAbilityReplicator::Spawn(this);
 	ACogEngineReplicator::Spawn(this);
 #endif //ENABLE_COG
+
+
 }
+
 
 void AGASCoursePlayerController::SetPossession(APawn* NewPawn)
 {
-	    if (NewPawn == nullptr || GetPawn() == NewPawn)
+	if (NewPawn == nullptr || GetPawn() == NewPawn)
     {
         return;
     }
@@ -93,12 +99,14 @@ void AGASCoursePlayerController::SetPossession(APawn* NewPawn)
         COG_LOG_OBJECT(LogCogPossession, ELogVerbosity::Verbose, this, TEXT("%s possess %s"), *GetNameSafe(OldCharacter->InitialController), *GetNameSafe(OldCharacter));
         OldCharacter->InitialController->Possess(OldCharacter);
     }
+
 }
 
 void AGASCoursePlayerController::ResetPossession()
 {
 	SetPossession(InitialPossessedCharacter.Get());
 }
+
 
 AGASCoursePlayerState* AGASCoursePlayerController::GetGASCoursePlayerState() const
 {

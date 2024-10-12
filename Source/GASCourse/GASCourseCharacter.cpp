@@ -140,7 +140,7 @@ void AGASCourseCharacter::InitializeAbilitySystem(UGASCourseAbilitySystemCompone
 
 	if(InASC)
 	{
-		InASC->AddGameplayEventTagContainerDelegate(FGameplayTagContainer(Event_OnDeath), FGameplayEventTagMulticastDelegate::FDelegate::CreateUObject(this, &ThisClass::CharacterDeathGameplayEventCallback));
+		InASC->AddGameplayEventTagContainerDelegate(FGameplayTagContainer(Event_OnStatusDeath), FGameplayEventTagMulticastDelegate::FDelegate::CreateUObject(this, &ThisClass::CharacterDeathGameplayEventCallback));
 		InASC->RegisterGameplayTagEvent(FGameplayTag(Collision_IgnorePawn), EGameplayTagEventType::NewOrRemoved).AddUObject(this, &AGASCourseCharacter::IgnorePawnCollisionGameplayTagEventCallback);
 	}
 }
@@ -157,6 +157,8 @@ void AGASCourseCharacter::CharacterDeathGameplayEventCallback(FGameplayTag Match
 	{
 		InASC->RemoveActiveEffectsWithTags(GameplayEffectAssetTagsToRemove);
 	}
+
+	SetCharacterDead(true);
 }
 
 void AGASCourseCharacter::IgnorePawnCollisionGameplayTagEventCallback(FGameplayTag MatchingTag, int32 NewCount)

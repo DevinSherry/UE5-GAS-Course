@@ -42,9 +42,29 @@ public:
 	FGameplayAttributeData MaxHealth;
 	ATTRIBUTE_ACCESSORS(UGASCourseHealthAttributeSet, MaxHealth)
 
+	UPROPERTY(BlueprintReadOnly, Category = "Character Health Attributes", ReplicatedUsing=OnRep_StatusDamageHealingCoefficient)
+	FGameplayAttributeData StatusDamageHealingCoefficient;
+	ATTRIBUTE_ACCESSORS(UGASCourseHealthAttributeSet, StatusDamageHealingCoefficient)
+
+	UPROPERTY(BlueprintReadOnly, Category = "Character Health Attributes", ReplicatedUsing=OnRep_ElementalDamageHealingCoefficient)
+	FGameplayAttributeData ElementalDamageHealingCoefficient;
+	ATTRIBUTE_ACCESSORS(UGASCourseHealthAttributeSet, ElementalDamageHealingCoefficient)
+	
+	UPROPERTY(BlueprintReadOnly, Category = "Character Health Attributes", ReplicatedUsing=OnRep_PhysicalDamageHealingCoefficient)
+	FGameplayAttributeData PhysicalDamageHealingCoefficient;
+	ATTRIBUTE_ACCESSORS(UGASCourseHealthAttributeSet, PhysicalDamageHealingCoefficient)
+
+	UPROPERTY(BlueprintReadOnly, Category = "Character Health Attributes", ReplicatedUsing=OnRep_AllDamageHealingCoefficient)
+	FGameplayAttributeData AllDamageHealingCoefficient;
+	ATTRIBUTE_ACCESSORS(UGASCourseHealthAttributeSet, AllDamageHealingCoefficient)
+
 	UPROPERTY(BlueprintReadOnly, Category = "Damage")
 	FGameplayAttributeData IncomingDamage;
 	ATTRIBUTE_ACCESSORS(UGASCourseHealthAttributeSet, IncomingDamage)
+
+	UPROPERTY(BlueprintReadOnly, Category = "Healing")
+	FGameplayAttributeData IncomingHealing;
+	ATTRIBUTE_ACCESSORS(UGASCourseHealthAttributeSet, IncomingHealing)
 	
 protected:
 	
@@ -53,5 +73,19 @@ protected:
 	
 	UFUNCTION()
 	virtual void OnRep_MaxHealth(const FGameplayAttributeData& OldMaxHealth);
+
+	UFUNCTION()
+	virtual void OnRep_StatusDamageHealingCoefficient(const FGameplayAttributeData& OldStatusDamageHealingCoefficient);
+
+	UFUNCTION()
+	virtual void OnRep_ElementalDamageHealingCoefficient(const FGameplayAttributeData& OldElementalDamageHealingCoefficient);
+	
+	UFUNCTION()
+	virtual void OnRep_PhysicalDamageHealingCoefficient(const FGameplayAttributeData& OldPhysicalDamageHealingCoefficient);
+
+	UFUNCTION()
+	virtual void OnRep_AllDamageHealingCoefficient(const FGameplayAttributeData& OldAllDamageHealingCoefficient);
+	
+
 	
 };

@@ -11,5 +11,7 @@ public class GASCourseEditorTarget : TargetRules
 		DefaultBuildSettings = BuildSettingsVersion.V5;
 		IncludeOrderVersion = EngineIncludeOrderVersion.Unreal5_4;
 		ExtraModuleNames.Add("GASCourse");
+        
+		bUseIris = true;
 	}
 }

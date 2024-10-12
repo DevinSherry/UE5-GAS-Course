@@ -8,7 +8,7 @@
 #include "Game/GameplayAbilitySystem/GASCourseGameplayAbility.h"
 #include "Game/GameplayAbilitySystem/GASCourseGameplayEffect.h"
 #include "Game/GameplayAbilitySystem/GASCourseNativeGameplayTags.h"
-#include "Game/Systems/Damage/GASCourseDamageExecution.h"
+#include "AbilitySystemBlueprintLibrary.h"
 
 UGASCourseAbilitySystemComponent::UGASCourseAbilitySystemComponent(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
@@ -117,13 +117,32 @@ void UGASCourseAbilitySystemComponent::SetGameplayEffectStatusTable(UGASCourseSt
 }
 
 void UGASCourseAbilitySystemComponent::ApplyGameplayStatusEffect(UAbilitySystemComponent* TargetASC,
-	UAbilitySystemComponent* InstigatorASC, const FGameplayTagContainer& StatusEffectTags) const
+	UAbilitySystemComponent* InstigatorASC, const FGameplayTagContainer& StatusEffectTags)
 {
-	if(const AGASCourseCharacter* OwningCharacter = Cast<AGASCourseCharacter>(GetOwnerActor()))
+	if(UGASCourseAbilitySystemComponent* NewTargetASC = Cast<UGASCourseAbilitySystemComponent>(TargetASC))
 	{
-		if(OwningCharacter->GetGameplayStatusEffectTable())
+		if(UGASCourseStatusEffectTable* StatusEffectTable = NewTargetASC->GameplayStatusEffectTable)
 		{
-			GameplayStatusEffectTable->ApplyGameplayStatusEffect(TargetASC, InstigatorASC, StatusEffectTags);
+			StatusEffectTable->ApplyGameplayStatusEffect(TargetASC, InstigatorASC, StatusEffectTags);
+		}
+	}
+}
+
+void UGASCourseAbilitySystemComponent::ApplyGameplayStatusEffectToTargetDataHandle(
+	FGameplayAbilityTargetDataHandle TargetData_Actors, const FGameplayTagContainer& StatusEffectTags)
+{
+	TArray<AActor*> TargetActors = UAbilitySystemBlueprintLibrary::GetActorsFromTargetData(TargetData_Actors, 0);
+	if(TargetActors.Num() > 0)
+	{
+		for(AActor* Target : TargetActors)
+		{
+			if(AGASCourseCharacter* TargetCharacter = Cast<AGASCourseCharacter>(Target))
+			{
+				if(UGASCourseAbilitySystemComponent* TargetASC = TargetCharacter->GetAbilitySystemComponent())
+				{
+					ApplyGameplayStatusEffect(TargetASC, this, StatusEffectTags);
+				}
+			}
 		}
 	}
 }
