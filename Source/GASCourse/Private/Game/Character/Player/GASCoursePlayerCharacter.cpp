@@ -361,7 +361,6 @@ void AGASCoursePlayerCharacter::Input_CameraZoom(const FInputActionInstance& Inp
 		CameraSettingsData->MinCameraBoomDistance, CameraSettingsData->MaxCameraBoomDistance);
 					
 		CameraRef->TargetArmLength = CurrentTargetArmLength;
-		CameraRef->SocketOffset.Z = CurrentTargetArmLength;
 	}
 }
 
