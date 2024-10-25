@@ -176,7 +176,7 @@ void AGASCourseTargetActor_Trace::ShowMouseCursor(bool bShowCursor)
 	{
 		if(SourcePC->IsLocalController())
 		{
-			SourcePC->bShowMouseCursor = bShowCursor;
+			//SourcePC->bShowMouseCursor = bShowCursor;
 		}
 	}
 }

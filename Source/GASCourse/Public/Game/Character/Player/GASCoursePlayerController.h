@@ -26,6 +26,8 @@ public:
 
 	virtual void BeginPlay() override;
 
+	virtual void SetupInputComponent() override;
+
 
 	UFUNCTION(BlueprintCallable)
 	virtual void SetPossession(APawn* NewPawn) override;
@@ -128,6 +130,9 @@ public:
 	UPROPERTY(Replicated, BlueprintReadOnly, Transient)
 	FRotator CameraRotation;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
+	UInputAction* MovementInputAction = nullptr;
+
 	/**
 	 * @brief Get the hit result under the mouse cursor.
 	 *
@@ -178,8 +183,21 @@ protected:
 	
 	void OnDamageDealtCallback(const FGameplayEventData* Payload);
 
+	/**
+	 * @brief Callback method triggered when the count of a gameplay tag changes.
+	 *
+	 * This method is called whenever the count associated with a gameplay tag is updated. It provides information about the gameplay tag and the new count value.
+	 *
+	 * @param Tag The gameplay tag that has been updated.
+	 * @param NewCount The new count value associated with the gameplay tag.
+	 */
+	void RegisterCanMoveInterruptTagCountChanged(const FGameplayTag Tag, int32 NewCount);
+
 	UFUNCTION(BlueprintImplementableEvent)
 	void OnDamageDealt(const FGameplayEventData& Payload);
+
+	UFUNCTION()
+	void CanMoveInterrupt();
 
 	UPROPERTY(Replicated, BlueprintReadOnly, Transient, BlueprintGetter=IsUsingGamepad)
 	bool bUsingGamepad;
@@ -187,6 +205,7 @@ protected:
 private:
 
 	FVector3d CachedDestination = FVector3d(0.0f,0.0f,0.0f);
+	bool bCanMoveInterrupt = false;
 
 	//----------------------------------------------------------------------------------------------------------------------
 	// Possession

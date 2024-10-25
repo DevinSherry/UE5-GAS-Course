@@ -8,8 +8,11 @@
 #include "Game/GameplayAbilitySystem/GASCourseNativeGameplayTags.h"
 #include "GameFramework/PlayerInput.h"
 #include "CogCommon.h"
+#include "Abilities/Async/AbilityAsync_WaitGameplayTagCountChanged.h"
 #include "Debug/Cog/CogSampleDefines.h"
 #include "Debug/Cog/CogSampleLogCategories.h"
+#include "Game/Character/Player/GASCoursePlayerCharacter.h"
+#include "Game/Input/GASCourseEnhancedInputComponent.h"
 #include "GASCourse/GASCourseCharacter.h"
 
 
@@ -55,6 +58,19 @@ void AGASCoursePlayerController::BeginPlay()
 #endif //ENABLE_COG
 
 
+}
+
+void AGASCoursePlayerController::SetupInputComponent()
+{
+	Super::SetupInputComponent();
+
+	// Set up action bindings
+	if (UGASCourseEnhancedInputComponent* EnhancedInputComponent = CastChecked<UGASCourseEnhancedInputComponent>(InputComponent))
+	{
+		check(EnhancedInputComponent);
+
+		EnhancedInputComponent->BindAction(MovementInputAction, ETriggerEvent::Triggered, this, &ThisClass::CanMoveInterrupt);
+	}
 }
 
 
@@ -148,6 +164,7 @@ void AGASCoursePlayerController::OnPossess(APawn* InPawn)
 	if(UGASCourseAbilitySystemComponent* ASC = GetGASCourseAbilitySystemComponent())
 	{
 		ASC->GenericGameplayEventCallbacks.FindOrAdd(Event_Gameplay_OnDamageDealt).AddUObject(this, &AGASCoursePlayerController::OnDamageDealtCallback);
+		ASC->RegisterGameplayTagEvent(Status_CanMoveInterrupt, EGameplayTagEventType::AnyCountChange).AddUObject(this, &AGASCoursePlayerController::RegisterCanMoveInterruptTagCountChanged);
 	}
 }
 
@@ -275,4 +292,30 @@ void AGASCoursePlayerController::Tick(float DeltaSeconds)
 void AGASCoursePlayerController::OnDamageDealtCallback(const FGameplayEventData* Payload)
 {
 	OnDamageDealt(*Payload);
+}
+
+void AGASCoursePlayerController::RegisterCanMoveInterruptTagCountChanged(const FGameplayTag Tag, int32 NewCount)
+{
+	bCanMoveInterrupt = static_cast<bool>(NewCount);
+}
+
+void AGASCoursePlayerController::CanMoveInterrupt()
+{
+	if(bCanMoveInterrupt)
+	{
+		if(AGASCoursePlayerCharacter* PlayerCharacter = Cast<AGASCoursePlayerCharacter>(GetPawn()))
+		{
+			UAnimInstance* AnimInstance = PlayerCharacter->GetMesh()->GetAnimInstance();
+			check(AnimInstance);
+			if(UAnimMontage* AnimMontage = AnimInstance->GetCurrentActiveMontage())
+			{
+				if(AnimInstance->IsSlotActive(FName("DefaultSlot")))
+				{
+					const FAlphaBlendArgs& BlendOutArgs = AnimMontage->GetBlendOutArgs();
+					AnimInstance->Montage_StopWithBlendOut(BlendOutArgs, AnimMontage);
+				}
+			}
+			
+		}
+	}
 }
