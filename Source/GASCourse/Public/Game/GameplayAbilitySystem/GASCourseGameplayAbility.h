@@ -68,6 +68,7 @@ UCLASS(Abstract, HideCategories = Input, Meta = (ShortTooltip = "The base gamepl
 class GASCOURSE_API UGASCourseGameplayAbility : public UGameplayAbility
 {
 	GENERATED_BODY()
+	
 	friend class UGASCourseAbilitySystemComponent;
 
 public:
@@ -103,6 +104,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "GASCourse|Ability")
 	AGASCoursePlayerCharacter* GetGASCouresPlayerCharacterFromActorInfo() const;
+
+	UFUNCTION(BlueprintPure)
+	FGameplayTagContainer GetDynamicAbilityTags()const {return GetCurrentAbilitySpec()->DynamicAbilityTags;}
 
 	EGASCourseAbilityActivationPolicy GetActivationPolicy() const { return ActivationPolicy; }
 
@@ -169,4 +173,16 @@ protected:
 	 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "GASCourse|Ability")
 	bool bAutoCommitAbilityOnActivate;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "GASCourse|Ability|Stacking")
+	bool bHasAbilityStacks = false;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "GASCourse|Ability|Stacking", meta=(EditCondition="bHasAbilityStacks"))
+	int32 MaxNumberOfStacks = 1;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "GASCourse|Ability|Stacking", meta=(EditCondition="bHasAbilityStacks"))
+	float StackRechargeDuration = -1.0f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "GASCourse|Ability|Stacking", meta=(EditCondition="bHasAbilityStacks"))
+	int32 CurrentNumberOfStacks = MaxNumberOfStacks;
 };

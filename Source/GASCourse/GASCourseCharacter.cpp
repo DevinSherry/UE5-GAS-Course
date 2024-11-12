@@ -11,7 +11,6 @@
 #include "Game/Character/Components/GASCourseMovementComponent.h"
 #include "Net/UnrealNetwork.h"
 
-
 //////////////////////////////////////////////////////////////////////////
 // AGASCourseCharacter
 
@@ -55,6 +54,7 @@ AGASCourseCharacter::AGASCourseCharacter(const class FObjectInitializer& ObjectI
 
 	StatusEffectListenerComp = CreateDefaultSubobject<UGASCStatusEffectListenerComp>(TEXT("StatusEffectListenerComp"));
 	CharacterHealthComponent = CreateDefaultSubobject<UGASC_HealthComponent>(TEXT("CharacterHealthComponent"));
+	MotionWarpComponent = CreateDefaultSubobject<UMotionWarpingComponent>(TEXT("MotionWarpComponent"));
 }
 
 void AGASCourseCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

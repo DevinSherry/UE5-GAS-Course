@@ -8,6 +8,7 @@
 #include "CogAll.h"
 #include "CogDebugPlot.h"
 #include "Debug/Cog/CogSampleWindow_Team.h"
+#include "Debug/Cog/InputBuffer/FCogInputBufferWindow.h"
 #include "CogWindowManager.h"
 #endif //ENABLE_COG
 
@@ -57,6 +58,7 @@ void AGASCourseGameStateBase::BeginPlay()
 
 	// Add a custom window 
 	CogWindowManager->AddWindow<FCogSampleWindow_Team>("Gameplay.Team");
+	CogWindowManager->AddWindow<FCogInputBufferWindow>("Input.InputBuffer");
 #endif //ENABLE_COG
 
 

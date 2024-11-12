@@ -5,6 +5,7 @@
 #include "AbilitySystemInterface.h"
 #include "GameFramework/Character.h"
 #include "InputActionValue.h"
+#include "MotionWarpingComponent.h"
 #include "MVVMViewModelBase.h"
 #include "Game/GameplayAbilitySystem/GASCourseAbilitySystemComponent.h"
 #include "Game/Character/Components/Health/GASC_HealthComponent.h"
@@ -221,6 +222,9 @@ protected:
 	 */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class USceneComponent* TargetingSceneComponent;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = HealthComponent, meta = (AllowPrivateAccess = "true"))
+	UMotionWarpingComponent* MotionWarpComponent;
 
 	void InitializeAbilitySystem(UGASCourseAbilitySystemComponent* InASC);
 		

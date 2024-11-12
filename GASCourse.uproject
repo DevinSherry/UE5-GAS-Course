@@ -12,7 +12,8 @@
 				"ModelViewViewModel",
 				"Engine",
 				"GameplayAbilities",
-				"TargetingSystem"
+				"TargetingSystem",
+				"CoreUObject"
 			]
 		}
 	],
@@ -82,4 +83,3 @@
 		}
 	]
 }
-

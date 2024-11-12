@@ -38,6 +38,7 @@ void AGASCoursePlayerController::GetLifetimeReplicatedProps(TArray<FLifetimeProp
 	DOREPLIFETIME(AGASCoursePlayerController, MousePositionDeprojectedToWorld);
 	DOREPLIFETIME(AGASCoursePlayerController, CameraRotation);
 	DOREPLIFETIME(AGASCoursePlayerController, bUsingGamepad);
+	DOREPLIFETIME(AGASCoursePlayerController, bCanMoveInterrupt);
 }
 
 void AGASCoursePlayerController::BeginPlayingState()
@@ -315,7 +316,6 @@ void AGASCoursePlayerController::CanMoveInterrupt()
 					AnimInstance->Montage_StopWithBlendOut(BlendOutArgs, AnimMontage);
 				}
 			}
-			
 		}
 	}
 }

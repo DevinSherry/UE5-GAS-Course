@@ -39,7 +39,4 @@ protected:
 	
 	/** Called on every target to get a Score for sorting. This score will be added to the Score float in FTargetingDefaultResultData */
 	virtual float GetScoreForTarget(const FTargetingRequestHandle& TargetingHandle, const FTargetingDefaultResultData& TargetData) const;
-
-	
-	
 };

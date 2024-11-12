@@ -5,7 +5,9 @@
 #include "Tasks/TargetingSortTask_Base.h"
 #include "GASCourse_TargetSortBase.generated.h"
 
-/** Lifecycle function called when the task first begins */
+/**
+ * Lifecycle functions for sorting targets based on various criteria.
+ */
 
 UCLASS(Blueprintable)
 class GASCOURSE_API UGASCourse_TargetSortBase : public UTargetingSortTask_Base

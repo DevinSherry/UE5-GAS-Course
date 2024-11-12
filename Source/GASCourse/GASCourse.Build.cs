@@ -10,7 +10,7 @@ public class GASCourse : ModuleRules
 		SetupIrisSupport(Target);
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 		
-		PrivateDependencyModuleNames.AddRange(new string[] { "AIModule", "UMG", "Slate", "NetCore"});
+		PrivateDependencyModuleNames.AddRange(new string[] { "AIModule", "UMG", "Slate", "NetCore", "MotionWarping"});
 		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "TargetingSystem", "GameplayAbilities", 
 			"GameplayTasks", "GameplayTags", "ModelViewViewModel", "CogCommon"});
 		
@@ -27,6 +27,7 @@ public class GASCourse : ModuleRules
                 "CogImgui",
                 "CogInput",
                 "CogWindow",
+                "ImGui"
 			});
 		}
 		

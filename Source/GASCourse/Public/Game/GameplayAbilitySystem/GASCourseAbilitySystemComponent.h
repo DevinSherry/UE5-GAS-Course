@@ -11,6 +11,8 @@
  * 
  */
 
+
+
 UINTERFACE(meta = (CannotImplementInterfaceInBlueprint))
 class GASCOURSE_API UGCAbilitySystemReplicationProxyInterface : public UAbilitySystemReplicationProxyInterface
 {
@@ -82,6 +84,9 @@ public:
 	virtual void CurrentMontageStop(float OverrideBlendOutTime /*= -1.0f*/) override;
 
 	void WaitForAbilityCooldownEnd(UGameplayAbility* InAbility, const FActiveGameplayEffectHandle InCooldownActiveGEHandle);
+
+	UFUNCTION(BlueprintPure)
+	TSubclassOf<UGameplayAbility> GetAbilityFromTaggedInput(FGameplayTag InputTag);
 
 protected:
 

@@ -251,6 +251,12 @@ void UGASCourseAbilitySystemComponent::ProcessAbilityInput(float DeltaTime, bool
 				{
 					// Ability is active so pass along the input event.
 					AbilitySpecInputPressed(*AbilitySpec);
+					//To gain retriggerable ability functionality, we add this check here.
+					const UGASCourseGameplayAbility* AbilityCDO = CastChecked<UGASCourseGameplayAbility>(AbilitySpec->Ability);
+					if(AbilityCDO->bRetriggerInstancedAbility)
+					{
+						AbilitiesToActivate.AddUnique(AbilitySpec->Handle);
+					}
 				}
 				else
 				{
@@ -273,6 +279,7 @@ void UGASCourseAbilitySystemComponent::ProcessAbilityInput(float DeltaTime, bool
 	for (const FGameplayAbilitySpecHandle& AbilitySpecHandle : AbilitiesToActivate)
 	{
 		TryActivateAbility(AbilitySpecHandle);
+		UE_LOG(LogTemp, Warning, TEXT("TRY ACTIVATE ABILITY"));
 	}
 
 	//
@@ -442,4 +449,24 @@ void UGASCourseAbilitySystemComponent::WaitForAbilityCooldownEnd(UGameplayAbilit
 			//CooldownEffectRemovalTask->Activate();
 		}
 	}
+}
+
+TSubclassOf<UGameplayAbility> UGASCourseAbilitySystemComponent::GetAbilityFromTaggedInput(FGameplayTag InputTag)
+{
+	TArray<FGameplayAbilitySpecHandle> OutAbilityHandles;
+	TSubclassOf<UGameplayAbility> OutAbility = nullptr;
+	GetAllAbilities(OutAbilityHandles);
+	for(FGameplayAbilitySpecHandle SpecHandle : OutAbilityHandles)
+	{
+		bool bInstanced = false;
+		if(const UGASCourseGameplayAbility* Ability = Cast<UGASCourseGameplayAbility>(UAbilitySystemBlueprintLibrary::GetGameplayAbilityFromSpecHandle(this, SpecHandle, bInstanced)))
+		{
+			if(Ability->GetDynamicAbilityTags().HasTagExact(InputTag))
+			{
+				return Ability->GetClass();
+			}
+		}
+	}
+
+	return OutAbility;
 }

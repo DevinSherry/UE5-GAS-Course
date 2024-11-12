@@ -56,7 +56,41 @@ public:
 	 * @param   InputTag   The FGameplayTag used to search for the UInputAction.
 	 * @return             The UInputAction associated with the InputTag, or nullptr if not found.
 	 */
+	UFUNCTION(BlueprintPure, Category="GASCourse|Input")
 	const UInputAction* FindInputActionForTag(const FGameplayTag& InputTag) const;
+
+	/**
+	 * FindTaggedAbilityActionForTag
+	 *
+	 * Finds and returns the UInputAction associated with the given FGameplayTag.
+	 *
+	 * @param   InputTag   The FGameplayTag used to search for the UInputAction.
+	 *
+	 * @return             The UInputAction associated with the InputTag, or nullptr if not found.
+	 */
+	UFUNCTION(BlueprintPure, Category="GASCourse|Input")
+	const UInputAction* FindTaggedAbilityActionForTag(const FGameplayTag& InputTag) const;
+
+	/**
+	 * Finds and returns the FGameplayTag associated with the given UInputAction.
+	 *
+	 * @param   InputAction  The UInputAction to search for the associated FGameplayTag.
+	 * @return              The FGameplayTag associated with the InputAction.
+	 */
+	UFUNCTION()
+	const FGameplayTag& FindTagForInputAction(const UInputAction* InputAction) const;
+
+	/**
+	 * FindTagForAbilityAction
+	 *
+	 * Finds and returns the FGameplayTag associated with the given UInputAction.
+	 *
+	 * @param   InputAction   The UInputAction to search for the associated FGameplayTag.
+	 * @return               The FGameplayTag associated with the InputAction.
+	 */
+	UFUNCTION(BlueprintPure, Category="GASCourse|Input")
+	const FGameplayTag& FindTagForAbilityAction(const UInputAction* InputAction) const;
+
 
 public:
 	// List of input actions used by the owner. These input actions are mapped to a gameplay tag and must be manually bound.

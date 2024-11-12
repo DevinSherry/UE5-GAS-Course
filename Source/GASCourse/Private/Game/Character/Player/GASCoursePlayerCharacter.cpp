@@ -1,11 +1,9 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "Game/Character/Player/GASCoursePlayerCharacter.h"
 #include "Game/Character/Player/GASCoursePlayerState.h"
 #include "Game/Input/GASCourseEnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
-#include "Blueprint/AIBlueprintHelperLibrary.h"
 #include "Blueprint/WidgetBlueprintLibrary.h"
 #include "Blueprint/WidgetLayoutLibrary.h"
 #include "Components/TimelineComponent.h"
@@ -48,6 +46,43 @@ void AGASCoursePlayerCharacter::UpdateCharacterAnimLayer(TSubclassOf<UAnimInstan
 	if(NewAnimLayer)
 	{
 		GetMesh()->LinkAnimClassLayers(NewAnimLayer);
+	}
+}
+
+void AGASCoursePlayerCharacter::OpenInputBuffer_Implementation()
+{
+	bInputBufferOpen = true;
+	OnInputBufferOpenedEvent.Broadcast();
+}
+
+void AGASCoursePlayerCharacter::CloseInputBuffer_Implementation()
+{
+	bInputBufferOpen = false;
+	OnInputBufferClosedEvent.Broadcast();
+	
+	ActivateBufferedInputAbility();
+	FlushInputBuffer();
+}
+
+bool AGASCoursePlayerCharacter::FlushInputBuffer()
+{
+	BufferedInputTags.Empty();
+	OnInputBufferFlushedEvent.Broadcast();
+	return true;
+}
+
+void AGASCoursePlayerCharacter::ActivateBufferedInputAbility()
+{
+	if(UGASCourseAbilitySystemComponent* ASC = GetAbilitySystemComponent())
+	{
+		if(BufferedInputTags.IsEmpty())
+		{
+			return;
+		}
+
+		FGameplayTag& ConsumedInputTag = BufferedInputTags[0];
+		ASC->AbilityInputTagPressed(ConsumedInputTag);
+		OnInputBufferedConsumedEvent.Broadcast(ConsumedInputTag);
 	}
 }
 
@@ -139,7 +174,6 @@ void AGASCoursePlayerCharacter::SetupPlayerInputComponent(UInputComponent* Playe
 			EnhancedInputComponent->BindAbilityActions(InputConfig, this, &ThisClass::Input_AbilityInputTagPressed, &ThisClass::Input_AbilityInputTagReleased, /*out*/ BindHandles);
 
 			BindASCInput();
-			
 		}
 	}
 }
@@ -224,52 +258,14 @@ void AGASCoursePlayerCharacter::BeginPlay()
 		TimelineCallback.BindUFunction(this, FName("UpdateCameraRotationSpeed"));
 		RotateCameraTimeline.AddInterpFloat(CameraSettingsData->RotateCameraCurve, TimelineCallback);
 	}
-
-	/*
-	if(CameraSettingsData->RecenterCameraCurve)
-	{     
-		FOnTimelineFloat TimelineCallback;
-		FOnTimelineEvent TimelineFinishedFunc;
-		TimelineFinishedFunc.BindUFunction(this,FName("RecenterCameraBoomTimelineFinished"));
-		ResetCameraOffsetTimeline.SetTimelineFinishedFunc(TimelineFinishedFunc);
-		TimelineCallback.BindUFunction(this, FName("RecenterCameraBoomTargetOffset"));
-		ResetCameraOffsetTimeline.AddInterpFloat(CameraSettingsData->RecenterCameraCurve, TimelineCallback);
-	}
-	
-	if(CameraSettingsData->MoveCameraCurve)
-	{
-		FOnTimelineFloat TimelineCallback;
-		FOnTimelineEvent TimelineFinishedFunc;
-		TimelineFinishedFunc.BindUFunction(this, FName("UpdateCameraMovementSpeedTimelineFinished"));
-		MoveCameraTimeline.SetTimelineFinishedFunc(TimelineFinishedFunc);
-		TimelineCallback.BindUFunction(this, FName("UpdateCameraMovementSpeed"));
-		MoveCameraTimeline.AddInterpFloat(CameraSettingsData->MoveCameraCurve, TimelineCallback);
-	}
-
-	if(CameraSettingsData->CameraEdgePanningCurve)
-	{
-		FOnTimelineFloat TimelineCallback;
-		FOnTimelineEvent TimelineFinishedFunc;
-		TimelineFinishedFunc.BindUFunction(this, FName("UpdateCameraEdgePanningSpeedTimelineFinished"));
-		CameraEdgePanningTimeline.SetTimelineFinishedFunc(TimelineFinishedFunc);
-		TimelineCallback.BindUFunction(this, FName("UpdateCameraEdgePanningSpeed"));
-		CameraEdgePanningTimeline.AddInterpFloat(CameraSettingsData->CameraEdgePanningCurve, TimelineCallback);
-	}
-	*/
 }
 
 void AGASCoursePlayerCharacter::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
+	
+	
 	RotateCameraTimeline.TickTimeline(DeltaSeconds);
-
-	/*
-	ResetCameraOffsetTimeline.TickTimeline(DeltaSeconds);
-	MoveCameraTimeline.TickTimeline(DeltaSeconds);
-	CameraEdgePanningTimeline.TickTimeline(DeltaSeconds);
-
-	CameraEdgePanning();
-	*/
 }
 
 void AGASCoursePlayerCharacter::Input_AbilityInputTagPressed(FGameplayTag InputTag)
@@ -280,7 +276,19 @@ void AGASCoursePlayerCharacter::Input_AbilityInputTagPressed(FGameplayTag InputT
 		{
 			return;
 		}
-		ASC->AbilityInputTagPressed(InputTag);
+		if(!InputTag.IsValid())
+		{
+			return;
+		}
+		if(!bInputBufferOpen)
+		{
+			ASC->AbilityInputTagPressed(InputTag);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("%s"), *InputTag.ToString());
+			BufferedInputTags.AddUnique(InputTag);
+		}
 	}
 }
 

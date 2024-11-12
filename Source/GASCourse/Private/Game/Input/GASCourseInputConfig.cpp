@@ -17,3 +17,42 @@ const UInputAction* UGASCourseInputConfig::FindInputActionForTag(const FGameplay
 
 	return nullptr;
 }
+
+const UInputAction* UGASCourseInputConfig::FindTaggedAbilityActionForTag(const FGameplayTag& InputTag) const
+{
+	for (const FTaggedAbilityAction& TaggedAbilityAction : TaggedAbilityActions)
+	{
+		if (TaggedAbilityAction.InputAction && TaggedAbilityAction.InputTag == InputTag)
+		{
+			return TaggedAbilityAction.InputAction;
+		}
+	}
+
+	return nullptr;
+}
+
+const FGameplayTag& UGASCourseInputConfig::FindTagForAbilityAction(const UInputAction* InputAction) const
+{
+	for (const FTaggedAbilityAction& TaggedAbilityAction : TaggedAbilityActions)
+	{
+		if (TaggedAbilityAction.InputAction && TaggedAbilityAction.InputAction == InputAction)
+		{
+			return TaggedAbilityAction.InputTag;
+		}
+	}
+
+	return FGameplayTag::EmptyTag;
+}
+
+const FGameplayTag& UGASCourseInputConfig::FindTagForInputAction(const UInputAction* InputAction) const
+{
+	for (const FTaggedInputAction& TaggedInputAction : TaggedInputActions)
+	{
+		if (TaggedInputAction.InputAction && TaggedInputAction.InputAction == InputAction)
+		{
+			return TaggedInputAction.InputTag;
+		}
+	}
+
+	return FGameplayTag::EmptyTag;
+}

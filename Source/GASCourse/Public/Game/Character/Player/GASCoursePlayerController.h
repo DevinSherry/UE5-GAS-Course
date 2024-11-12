@@ -202,10 +202,13 @@ protected:
 	UPROPERTY(Replicated, BlueprintReadOnly, Transient, BlueprintGetter=IsUsingGamepad)
 	bool bUsingGamepad;
 
+	UPROPERTY(Replicated, BlueprintReadOnly, Transient)
+	bool bCanMoveInterrupt = false;
+
 private:
 
 	FVector3d CachedDestination = FVector3d(0.0f,0.0f,0.0f);
-	bool bCanMoveInterrupt = false;
+
 
 	//----------------------------------------------------------------------------------------------------------------------
 	// Possession

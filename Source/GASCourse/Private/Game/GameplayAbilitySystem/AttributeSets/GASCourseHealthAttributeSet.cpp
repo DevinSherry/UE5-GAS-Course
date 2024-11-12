@@ -4,6 +4,7 @@
 #include "Game/GameplayAbilitySystem/AttributeSets/GASCourseHealthAttributeSet.h"
 #include "Game/GameplayAbilitySystem/GASCourseNativeGameplayTags.h"
 #include "GameplayEffectExtension.h"
+#include "Game/GameplayAbilitySystem/GASCourseGameplayEffect.h"
 #include "GASCourse/GASCourseCharacter.h"
 #include "Net/UnrealNetwork.h"
 

@@ -73,7 +73,6 @@ float UGASCourse_TargetSortCameraAngle::GetScoreForTarget(const FTargetingReques
 		{
 			if(AActor* HitActor = TargetData.HitResult.HitObjectHandle.FetchActor())
 			{
-				FVector CameraLocation = CameraManager->GetCameraLocation();
 				FVector CameraForwardVector = CameraManager->GetActorForwardVector();
 				FVector UnitDirection = UKismetMathLibrary::GetDirectionUnitVector(SourcePawn->GetActorLocation(), HitActor->GetActorLocation());
 
