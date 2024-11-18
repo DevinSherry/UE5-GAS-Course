@@ -58,7 +58,7 @@ protected:
 	//TODO: Consider removing in favor of only DoJump()
 	virtual float GetMaxJumpHeightWithJumpTime() const override;
 	
-	virtual bool DoJump(bool bReplayingMoves) override;
+	virtual bool DoJump(bool bReplayingMoves, float DeltaTime) override;
 
 protected:
 	

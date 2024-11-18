@@ -38,11 +38,11 @@ void UGASCourse_TargetSortInputAngle::Init(const FTargetingRequestHandle& Target
 			FlushPersistentDebugLines(SourcePawn->GetWorld());
 			FlushDebugStrings(SourcePawn->GetWorld());
 			FVector LineEndInputDirection = SourcePawn->GetActorLocation() + InputDirection.GetSafeNormal() * 500.0f;
+			DrawDebugSphere(SourcePawn->GetWorld(), LineEndInputDirection, 64.0f, 100, FColor::Yellow, false, 5.0f, 0, 2.0f);
 			DrawDebugDirectionalArrow(SourcePawn->GetWorld(), SourcePawn->GetActorLocation(), LineEndInputDirection, 50.0f, FColor::Yellow, false, 5.0f, 0, 5.0f);
 		}
 #endif
 	}
-
 }
 
 void UGASCourse_TargetSortInputAngle::Execute(const FTargetingRequestHandle& TargetingHandle) const

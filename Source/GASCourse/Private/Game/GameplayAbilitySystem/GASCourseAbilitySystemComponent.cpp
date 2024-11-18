@@ -34,18 +34,11 @@ void UGASCourseAbilitySystemComponent::InitAbilityActorInfo(AActor* InOwnerActor
 		{
 			UGASCourseGameplayAbility* AbilityCDO = CastChecked<UGASCourseGameplayAbility>(AbilitySpec.Ability);
 
-			if (AbilityCDO->GetInstancingPolicy() != EGameplayAbilityInstancingPolicy::NonInstanced)
+			TArray<UGameplayAbility*> Instances = AbilitySpec.GetAbilityInstances();
+			for (UGameplayAbility* AbilityInstance : Instances)
 			{
-				TArray<UGameplayAbility*> Instances = AbilitySpec.GetAbilityInstances();
-				for (UGameplayAbility* AbilityInstance : Instances)
-				{
-					UGASCourseGameplayAbility* GASCourseAbilityInstance = CastChecked<UGASCourseGameplayAbility>(AbilityInstance);
-					GASCourseAbilityInstance->OnPawnAvatarSet();
-				}
-			}
-			else
-			{
-				AbilityCDO->OnPawnAvatarSet();
+				UGASCourseGameplayAbility* GASCourseAbilityInstance = CastChecked<UGASCourseGameplayAbility>(AbilityInstance);
+				GASCourseAbilityInstance->OnPawnAvatarSet();
 			}
 		}
 	}
@@ -162,7 +155,7 @@ void UGASCourseAbilitySystemComponent::AbilityInputTagPressed(const FGameplayTag
 	{
 		for (const FGameplayAbilitySpec& AbilitySpec : ActivatableAbilities.Items)
 		{
-			if (AbilitySpec.Ability && (AbilitySpec.DynamicAbilityTags.HasTagExact(InputTag)))
+			if (AbilitySpec.Ability && (AbilitySpec.GetDynamicSpecSourceTags().HasTagExact(InputTag)))
 			{
 				InputPressedSpecHandles.AddUnique(AbilitySpec.Handle);
 				InputHeldSpecHandles.AddUnique(AbilitySpec.Handle);
@@ -177,7 +170,7 @@ void UGASCourseAbilitySystemComponent::AbilityInputTagReleased(const FGameplayTa
 	{
 		for (const FGameplayAbilitySpec& AbilitySpec : ActivatableAbilities.Items)
 		{
-			if (AbilitySpec.Ability && (AbilitySpec.DynamicAbilityTags.HasTagExact(InputTag)))
+			if (AbilitySpec.Ability && (AbilitySpec.GetDynamicSpecSourceTags().HasTagExact(InputTag)))
 			{
 				InputReleasedSpecHandles.AddUnique(AbilitySpec.Handle);
 				InputHeldSpecHandles.Remove(AbilitySpec.Handle);
@@ -192,7 +185,7 @@ void UGASCourseAbilitySystemComponent::AbilitySpecInputPressed(FGameplayAbilityS
 	if(Spec.IsActive())
 	{
 		InvokeReplicatedEvent(EAbilityGenericReplicatedEvent::InputPressed, Spec.Handle,
-			Spec.ActivationInfo.GetActivationPredictionKey());
+			Spec.GetPrimaryInstance()->GetCurrentActivationInfo().GetActivationPredictionKey());
 	}
 }
 
@@ -202,7 +195,7 @@ void UGASCourseAbilitySystemComponent::AbilitySpecInputReleased(FGameplayAbility
 	if(Spec.IsActive())
 	{
 		InvokeReplicatedEvent(EAbilityGenericReplicatedEvent::InputReleased, Spec.Handle,
-			Spec.ActivationInfo.GetActivationPredictionKey());
+			Spec.GetPrimaryInstance()->GetCurrentActivationInfo().GetActivationPredictionKey());
 	}
 }
 

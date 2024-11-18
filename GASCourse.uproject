@@ -1,6 +1,6 @@
 {
 	"FileVersion": 3,
-	"EngineAssociation": "{CA1203D6-4C02-5A1C-C39A-4194E6A9E1E4}",
+	"EngineAssociation": "{084CCED9-4E61-BE87-2FC3-04BC5828A876}",
 	"Category": "",
 	"Description": "",
 	"Modules": [
@@ -80,6 +80,21 @@
 		{
 			"Name": "GameplayInsights",
 			"Enabled": true
+		},
+		{
+			"Name": "ElectronicNodes",
+			"Enabled": true,
+			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/content/5cb2a394d0c04e73891762be4cbd7216"
+		},
+		{
+			"Name": "DarkerNodes",
+			"Enabled": true,
+			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/content/4b3441f0228a40ec9ca986489a5bd682"
+		},
+		{
+			"Name": "ShaderCompilationScreen",
+			"Enabled": true,
+			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/93c24c7c77614ac5ae5b39ad08449c2c"
 		}
 	]
 }

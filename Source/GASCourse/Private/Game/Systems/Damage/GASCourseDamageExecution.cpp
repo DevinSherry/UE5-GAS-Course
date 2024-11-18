@@ -4,6 +4,7 @@
 #include "Game/Systems/Damage/GASCourseDamageExecution.h"
 #include "Game/GameplayAbilitySystem/AttributeSets/GASCourseHealthAttributeSet.h"
 #include "AbilitySystemBlueprintLibrary.h"
+#include "AbilitySystemGlobals.h"
 #include "Game/GameplayAbilitySystem/GASCourseAbilitySystemComponent.h"
 #include "Game/GameplayAbilitySystem/GASCourseGameplayEffect.h"
 #include "Game/GameplayAbilitySystem/GASCourseNativeGameplayTags.h"
@@ -75,10 +76,11 @@ void UGASCourseDamageExecution::Execute_Implementation(const FGameplayEffectCust
 		if(HealingExecutionDefinition.CalculationClass)
 		{
 			HealingEffect->Executions.Emplace(HealingExecutionDefinition);
-			const FGameplayEffectSpecHandle HealingEffectHandle = UAbilitySystemBlueprintLibrary::MakeSpecHandle(HealingEffect, SourceActor, SourceActor, 1.0f);
-			FGameplayEffectContextHandle ContextHandle = UAbilitySystemBlueprintLibrary::GetEffectContext(HealingEffectHandle);
+			FGameplayEffectContext* ContextHandle = UAbilitySystemGlobals::Get().AllocGameplayEffectContext();
+			ContextHandle->AddInstigator(SourceActor, SourceActor);
+			const FGameplayEffectSpecHandle HealingEffectHandle =FGameplayEffectSpecHandle(new FGameplayEffectSpec(HealingEffect, FGameplayEffectContextHandle(ContextHandle), 1.0f));
+				//UAbilitySystemBlueprintLibrary::MakeSpecHandle(HealingEffect, SourceActor, SourceActor, 1.0f);
 			UAbilitySystemBlueprintLibrary::AssignTagSetByCallerMagnitude(HealingEffectHandle, Data_IncomingHealing, MitigatedDamage);
-			ContextHandle.AddInstigator(SourceActor, SourceActor);
 			UAbilitySystemBlueprintLibrary::AddGrantedTags(HealingEffectHandle, Spec.DynamicGrantedTags);
 			SourceAbilitySystemComponent->ApplyGameplayEffectSpecToTarget(*HealingEffectHandle.Data.Get(), SourceAbilitySystemComponent);
 		}

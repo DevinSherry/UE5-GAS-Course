@@ -357,12 +357,6 @@ void AGASCourseCharacter::Jump()
 void AGASCourseCharacter::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
-
-	check(AbilitySystemComponent);
-	check(GetCapsuleComponent());
-
-	check(StatusEffectListenerComp);
-
 	DefaultCollisionResponseToPawn = GetCapsuleComponent()->GetCollisionResponseToChannel(ECC_Pawn);
 }
 

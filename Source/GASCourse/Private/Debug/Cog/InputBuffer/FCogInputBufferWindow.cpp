@@ -74,7 +74,7 @@ void FCogInputBufferWindow::RenderContent()
 		for(FGameplayTag BufferedTag : BufferedTags)
 		{
 			//UE_LOG(LogTemp, Warning, TEXT("Buffered Input Tag: %s"), *BufferedTag.ToString());
-			//TODO: Make sure that the text fits!
+			//TODO: Confirm how to properly display text
 			//ImGui::Text(TEXT("Buffered Input Tag: %s", *BufferedTag.ToString()));
 		}
 	}

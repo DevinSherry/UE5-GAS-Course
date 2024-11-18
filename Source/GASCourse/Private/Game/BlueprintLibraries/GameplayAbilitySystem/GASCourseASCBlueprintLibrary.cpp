@@ -2,6 +2,8 @@
 
 
 #include "Game/BlueprintLibraries/GameplayAbilitySystem/GASCourseASCBlueprintLibrary.h"
+
+#include "AbilitySystemGlobals.h"
 #include "Game/GameplayAbilitySystem/GASCourseAbilitySystemComponent.h"
 #include "Game/Systems/Damage/GASCourseDamageExecution.h"
 #include "Game/GameplayAbilitySystem/GASCourseNativeGameplayTags.h"
@@ -102,15 +104,14 @@ bool UGASCourseASCBlueprintLibrary::ApplyDamageToTarget_Internal(AActor* Target,
 				DamageExecutionDefinition.CalculationClass = LoadClass<UGASCourseDamageExecution>(Instigator, TEXT("/Game/GASCourse/Game/Systems/Damage/DamageExecution_Base.DamageExecution_Base_C"));
 				DamageEffect->Executions.Emplace(DamageExecutionDefinition);
 
-				const FGameplayEffectSpecHandle DamageEffectHandle = MakeSpecHandle(DamageEffect, Instigator, Instigator, 1.0f);
-				FGameplayEffectContextHandle ContextHandle = GetEffectContext(DamageEffectHandle);
+				FGameplayEffectContext* ContextHandle = UAbilitySystemGlobals::Get().AllocGameplayEffectContext();
+				ContextHandle->AddInstigator(Instigator, Instigator);
+				const FGameplayEffectSpecHandle DamageEffectHandle = FGameplayEffectSpecHandle(new FGameplayEffectSpec(DamageEffect, FGameplayEffectContextHandle(ContextHandle), 1.0f));
 				AssignTagSetByCallerMagnitude(DamageEffectHandle, Data_IncomingDamage, Damage);
 				
-				ContextHandle.AddInstigator(Instigator, Instigator);
-
 				if(DamageContext.HitResult.bBlockingHit)
 				{
-					ContextHandle.AddHitResult(DamageContext.HitResult);
+					ContextHandle->AddHitResult(DamageContext.HitResult);
 				}
 
 				AddGrantedTags(DamageEffectHandle, DamageContext.GrantedTags);
@@ -286,7 +287,7 @@ bool UGASCourseASCBlueprintLibrary::GrantAbilityToInputTag(UAbilitySystemCompone
 
 	FGameplayAbilitySpec AbilitySpec(Ability, AbilityLevel);
 	AbilitySpec.SourceObject = InASC;
-	AbilitySpec.DynamicAbilityTags.AddTag(InputTag);
+	AbilitySpec.GetDynamicSpecSourceTags().AddTag(InputTag);
 
 	const FGameplayAbilitySpecHandle AbilitySpecHandle = InASC->GiveAbility(AbilitySpec);
 

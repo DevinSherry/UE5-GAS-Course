@@ -106,7 +106,7 @@ public:
 	AGASCoursePlayerCharacter* GetGASCouresPlayerCharacterFromActorInfo() const;
 
 	UFUNCTION(BlueprintPure)
-	FGameplayTagContainer GetDynamicAbilityTags()const {return GetCurrentAbilitySpec()->DynamicAbilityTags;}
+	FGameplayTagContainer GetDynamicAbilityTags()const {return GetCurrentAbilitySpec()->GetDynamicSpecSourceTags();}
 
 	EGASCourseAbilityActivationPolicy GetActivationPolicy() const { return ActivationPolicy; }
 

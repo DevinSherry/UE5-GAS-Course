@@ -12,7 +12,7 @@ AGASCoursePlayerState::AGASCoursePlayerState()
 	AbilitySystemComponent->SetIsReplicated(true);
 	AbilitySystemComponent->SetReplicationMode(EGameplayEffectReplicationMode::Mixed);
 
-	NetUpdateFrequency = 100.0f;
+	SetNetUpdateFrequency(100.0f);
 }
 
 UGASCourseAbilitySystemComponent* AGASCoursePlayerState::GetAbilitySystemComponent() const

@@ -5,5 +5,5 @@
 
 bool UGASCourseGameplayCueManager::ShouldAsyncLoadRuntimeObjectLibraries() const
 {
-	return true;
+	return false;
 }

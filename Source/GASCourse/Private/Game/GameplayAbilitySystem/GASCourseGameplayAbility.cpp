@@ -70,7 +70,8 @@ AGASCoursePlayerCharacter* UGASCourseGameplayAbility::GetGASCouresPlayerCharacte
 void UGASCourseGameplayAbility::TryActivateAbilityOnSpawn(const FGameplayAbilityActorInfo* ActorInfo,
 	const FGameplayAbilitySpec& Spec) const
 {
-	const bool bIsPredicting = (Spec.ActivationInfo.ActivationMode == EGameplayAbilityActivationMode::Predicting);
+	const bool bIsPredicting = (Spec.GetPrimaryInstance()->GetCurrentActivationInfo().ActivationMode == EGameplayAbilityActivationMode::Predicting);
+	
 	
 	// Try to activate if activation policy is on spawn.
 	if (ActorInfo && !Spec.IsActive() && !bIsPredicting && (ActivationPolicy == EGASCourseAbilityActivationPolicy::OnSpawn))
@@ -137,7 +138,7 @@ void UGASCourseGameplayAbility::OnGiveAbility(const FGameplayAbilityActorInfo* A
 void UGASCourseGameplayAbility::OnRemoveAbility(const FGameplayAbilityActorInfo* ActorInfo,
 	const FGameplayAbilitySpec& Spec)
 {
-	EndAbility(Spec.Handle, ActorInfo, Spec.ActivationInfo, true, false);
+	EndAbility(Spec.Handle, ActorInfo, Spec.GetPrimaryInstance()->GetCurrentActivationInfo(), true, false);
 	K2_OnAbilityRemoved();
 	Super::OnRemoveAbility(ActorInfo, Spec);
 }
@@ -199,7 +200,7 @@ bool UGASCourseGameplayAbility::DoesAbilitySatisfyTagRequirements(const UAbility
 	const FGameplayTag& MissingTag = AbilitySystemGlobals.ActivateFailTagsMissingTag;
 
 	// Check if any of this ability's tags are currently blocked
-	if (AbilitySystemComponent.AreAbilityTagsBlocked(AbilityTags))
+	if (AbilitySystemComponent.AreAbilityTagsBlocked(GetAssetTags()))
 	{
 		bBlocked = true;
 	}
@@ -214,7 +215,7 @@ bool UGASCourseGameplayAbility::DoesAbilitySatisfyTagRequirements(const UAbility
 	// Expand our ability tags to add additional required/blocked tags
 	if (GASCourseASC)
 	{
-		GASCourseASC->GetAdditionalActivationTagRequirements(AbilityTags, AllRequiredTags, AllBlockedTags);
+		GASCourseASC->GetAdditionalActivationTagRequirements(GetAssetTags(), AllRequiredTags, AllBlockedTags);
 	}
 
 	// Check to see the required/blocked tags for this ability
@@ -345,7 +346,7 @@ float UGASCourseGameplayAbility::GetGrantedbyEffectDuration() const
 	check(CurrentActorInfo);
 	if (CurrentActorInfo)
 	{
-		const UAbilitySystemComponent* AbilitySystemComponent = GetAbilitySystemComponentFromActorInfo_Checked();
+		const UAbilitySystemComponent* AbilitySystemComponent = GetAbilitySystemComponentFromActorInfo_Ensured();
 		const FActiveGameplayEffectHandle ActiveHandle = AbilitySystemComponent->FindActiveGameplayEffectHandle(GetCurrentAbilitySpecHandle());
 		if (ActiveHandle.IsValid())
 		{

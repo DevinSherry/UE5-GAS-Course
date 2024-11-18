@@ -164,7 +164,7 @@ float UGASCourseMovementComponent::GetMaxJumpHeightWithJumpTime() const
 	return MaxJumpHeight;
 }
 
-bool UGASCourseMovementComponent::DoJump(bool bReplayingMoves)
+bool UGASCourseMovementComponent::DoJump(bool bReplayingMoves, float DeltaTime)
 {
 	const AGASCourseCharacter* Owner = Cast<AGASCourseCharacter>(GetOwner());
 	if(Owner->IsPlayerControlled())
@@ -173,7 +173,7 @@ bool UGASCourseMovementComponent::DoJump(bool bReplayingMoves)
 		if (!Owner || !PS)
 		{
 			UE_LOG(LogTemp, Error, TEXT("%s() No Owner"), *FString(__FUNCTION__));
-			return Super::DoJump(bReplayingMoves);
+			return Super::DoJump(bReplayingMoves, DeltaTime);
 		}
 	}
 	if ( CharacterOwner && CharacterOwner->CanJump() )
