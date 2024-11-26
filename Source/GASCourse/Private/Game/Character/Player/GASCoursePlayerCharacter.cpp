@@ -358,6 +358,45 @@ void AGASCoursePlayerCharacter::Move(const FInputActionValue& Value)
 	}
 }
 
+void AGASCoursePlayerCharacter::Look(const FInputActionValue& Value)
+{
+	// input is a Vector2D
+	const FVector2D LookAxisVector = Value.Get<FVector2D>();
+
+	if (Controller != nullptr)
+	{
+		// add yaw and pitch input to controller
+		AddControllerYawInput(LookAxisVector.X);
+		AddControllerPitchInput(LookAxisVector.Y);
+	}
+	Input_RotateCameraAxis(Value);
+}
+
+void AGASCoursePlayerCharacter::Input_RotateCameraAxis(const FInputActionValue& Value)
+{
+	if(GetAbilitySystemComponent()->HasMatchingGameplayTag(Status_Block_RotationInput))
+	{
+		return;
+	}
+	if(AGASCoursePlayerController* PlayerControllerController = Cast<AGASCoursePlayerController>(Controller))
+	{
+		if(!RotateCameraTimeline.IsPlaying())
+		{
+			RotateCameraTimeline.PlayFromStart();
+		}
+		
+		GetCameraBoom()->bEnableCameraRotationLag = false;
+		const FVector2d CameraRotation = Value.Get<FVector2D>();
+		const float CameraRotationX = CameraRotation.X; //* CurrentCameraRotationSpeed;
+		const float CameraRotationY = CameraRotation.Y; //* CurrentCameraRotationSpeed;
+		
+		const FRotator NewCameraControlRotation = FRotator(FMath::ClampAngle((CameraBoom->GetComponentRotation().Pitch - CameraRotationY),
+			CameraSettingsData->MinCameraPitchAngle, CameraSettingsData->MaxCameraPitchAngle),CameraBoom->GetComponentRotation().Yaw + CameraRotationX, 0.0f);
+
+		CameraBoom->SetWorldRotation(NewCameraControlRotation);
+	}
+}
+
 void AGASCoursePlayerCharacter::Input_CameraZoom(const FInputActionInstance& InputActionInstance)
 {
 	const float AxisValue = InputActionInstance.GetValue().Get<float>();
@@ -419,28 +458,6 @@ void AGASCoursePlayerCharacter::UpdateCameraBoomTargetOffset(const FVector& InCa
 void AGASCoursePlayerCharacter::Input_RecenterCamera(const FInputActionInstance& InputActionInstance)
 {
 	ResetCameraOffsetTimeline.PlayFromStart();
-}
-
-void AGASCoursePlayerCharacter::Input_RotateCameraAxis(const FInputActionInstance& InputActionInstance)
-{
-	if(AGASCoursePlayerController* PlayerControllerController = Cast<AGASCoursePlayerController>(Controller))
-	{
-		if(!RotateCameraTimeline.IsPlaying())
-		{
-			RotateCameraTimeline.PlayFromStart();
-		}
-		
-		GetCameraBoom()->bEnableCameraRotationLag = false;
-		const FVector2d CameraRotation = InputActionInstance.GetValue().Get<FVector2D>();
-		const float CameraRotationX = CameraRotation.X * CurrentCameraRotationSpeed;
-		const float CameraRotationY = CameraRotation.Y * CurrentCameraRotationSpeed;
-
-		
-		const FRotator NewCameraControlRotation = FRotator(FMath::ClampAngle((Controller->GetControlRotation().Pitch + CameraRotationX),
-			CameraSettingsData->MinCameraPitchAngle, CameraSettingsData->MaxCameraPitchAngle),Controller->GetControlRotation().Yaw + CameraRotationY, 0.0f);
-
-		PlayerControllerController->SetControlRotation(NewCameraControlRotation);
-	}
 }
 
 void AGASCoursePlayerCharacter::Input_RotateCameraCompleted(const FInputActionInstance& InputActionInstance)

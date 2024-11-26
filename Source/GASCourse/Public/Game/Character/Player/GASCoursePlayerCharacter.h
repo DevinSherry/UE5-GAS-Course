@@ -166,13 +166,14 @@ protected:
 	void BindASCInput();
 
 	void Move(const FInputActionValue& Value) override;
+	void Look(const FInputActionValue& Value) override;
 
 	void Input_CameraZoom(const FInputActionInstance& InputActionInstance);
 	void Input_MoveCamera(const FInputActionInstance& InputActionInstance);
 	void Input_MoveCameraCompleted(const FInputActionInstance& InputActionInstance);
 	void UpdateCameraBoomTargetOffset(const FVector& InCameraBoomTargetOffset) const;
 	void Input_RecenterCamera(const FInputActionInstance& InputActionInstance);
-	void Input_RotateCameraAxis(const FInputActionInstance& InputActionInstance);
+	void Input_RotateCameraAxis(const FInputActionValue& Value);
 	void Input_RotateCameraCompleted(const FInputActionInstance& InputActionInstance);
 	void Input_ToggleCameraMovement(const FInputActionInstance& InputActionInstance);
 	void Input_ToggleCameraRotation(const FInputActionInstance& InputActionInstance);

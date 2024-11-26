@@ -46,6 +46,10 @@ public:
 	UPROPERTY(BlueprintReadOnly, Category = "Character Base Attributes", ReplicatedUsing=OnRep_JumpZVelocityOverride)
 	FGameplayAttributeData JumpZVelocityOverride;
 	ATTRIBUTE_ACCESSORS(UGASCourseCharBaseAttributeSet, JumpZVelocityOverride)
+
+	UPROPERTY(BlueprintReadOnly, Category = "Character Base Attributes", ReplicatedUsing=OnRep_AirControlOverride)
+	FGameplayAttributeData AirControlOverride;
+	ATTRIBUTE_ACCESSORS(UGASCourseCharBaseAttributeSet, AirControlOverride)
 	
 protected:
 	
@@ -57,5 +61,8 @@ protected:
 	
 	UFUNCTION()
 	virtual void OnRep_JumpZVelocityOverride(const FGameplayAttributeData& OldJumpZVelocityOverride);
+	
+	UFUNCTION()
+	virtual void OnRep_AirControlOverride(const FGameplayAttributeData& OldJAirControlOverride);
 	
 };

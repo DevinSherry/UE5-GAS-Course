@@ -201,6 +201,16 @@ float AGASCourseCharacter::GetJumpZVelocityOverride() const
 	return 0.0f;
 }
 
+float AGASCourseCharacter::GetAirControlOverride() const
+{
+	if (const UGASCourseCharBaseAttributeSet* BaseAttributeSet = GetAbilitySystemComponent()->GetSetChecked<UGASCourseCharBaseAttributeSet>())
+	{
+		return BaseAttributeSet->GetAirControlOverride();
+	}
+	UE_LOG(LogTemp, Warning, TEXT("NO VALID ATTRIBUTE SET FOUND"));
+	return 0.0f;
+}
+
 float AGASCourseCharacter::GetCurrentHealth() const
 {
 	if (const UGASCourseHealthAttributeSet* BaseAttributeSet = GetAbilitySystemComponent()->GetSetChecked<UGASCourseHealthAttributeSet>())

@@ -60,6 +60,8 @@ protected:
 	
 	virtual bool DoJump(bool bReplayingMoves, float DeltaTime) override;
 
+	virtual FVector GetAirControl(float DeltaTime, float TickAirControl, const FVector& FallAcceleration) override;
+
 protected:
 	
 	// Cached ground info for the character.  Do not access this directly!  It's only updated when accessed via GetGroundInfo().

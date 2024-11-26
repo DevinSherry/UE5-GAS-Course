@@ -20,21 +20,19 @@ public:
 	
 	AGASCoursePlayerController(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 
-	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
-	virtual void BeginPlayingState() override;
+	void BeginPlayingState() override;
 
-	virtual void BeginPlay() override;
+	void BeginPlay() override;
 
-	virtual void SetupInputComponent() override;
-
+	void SetupInputComponent() override;
+	
+	UFUNCTION(BlueprintCallable)
+	void SetPossession(APawn* NewPawn) override;
 
 	UFUNCTION(BlueprintCallable)
-	virtual void SetPossession(APawn* NewPawn) override;
-
-	UFUNCTION(BlueprintCallable)
-	virtual void ResetPossession() override;
-
+	void ResetPossession() override;
 
 	UFUNCTION(BlueprintCallable, Category = "GASCourse|PlayerController")
 	AGASCoursePlayerState* GetGASCoursePlayerState() const;

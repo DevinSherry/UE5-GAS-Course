@@ -7,6 +7,7 @@
 void UGASCourseTargetingLibrary::GetBestTargetFromHandle(FTargetingRequestHandle TargetingHandle, AActor* &Target, bool &bTargetFound)
 {
 	bTargetFound = false;
+	Target = nullptr;
 	
 	if (TargetingHandle.IsValid())
 	{
@@ -22,7 +23,8 @@ void UGASCourseTargetingLibrary::GetBestTargetFromHandle(FTargetingRequestHandle
 			}
 			if(Targets.Num() == 0)
 			{
-				bTargetFound = false;
+				//bTargetFound = false;
+				//Target = nullptr;
 				return;
 			}
 			

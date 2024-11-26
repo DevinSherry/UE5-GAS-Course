@@ -102,7 +102,6 @@ class AGASCourseCharacter : public ACharacter, public IAbilitySystemInterface, p
 {
 	GENERATED_BODY()
 
-
 public:
 	
 	AGASCourseCharacter(const class FObjectInitializer& ObjectInitializer);
@@ -139,7 +138,7 @@ protected:
 	void StopMove(const FInputActionValue& Value);
 	
 	/** Called for looking input */
-	void Look(const FInputActionValue& Value);
+	virtual void Look(const FInputActionValue& Value);
 
 	/** Called for crouch input */
 	void Input_Crouch(const FInputActionValue& Value);
@@ -277,6 +276,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "GASCiyrse|Character|Attributes")
 	float GetJumpZVelocityOverride() const;
+
+	UFUNCTION(BlueprintCallable, Category = "GASCiyrse|Character|Attributes")
+	float GetAirControlOverride() const;
 
 	UFUNCTION(BlueprintCallable, Category = "GASCourse|Character|Attributes")
 	float GetCurrentHealth() const;

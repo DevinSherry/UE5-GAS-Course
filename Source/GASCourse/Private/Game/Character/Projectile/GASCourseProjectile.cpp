@@ -6,9 +6,12 @@
 #include "GASCourse/GASCourseCharacter.h"
 #include "Game/Character/Projectile/Components/GASCourseProjectileMovementComp.h"
 #include "Components/SphereComponent.h"
+#include "Game/GameplayAbilitySystem/GASCourseNativeGameplayTags.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "TargetingSystem/TargetingSubsystem.h"
 #include "Types/TargetingSystemTypes.h"
+
+//TODO: Ricochet is broken! Fix this.
 
 // Sets default values
 AGASCourseProjectile::AGASCourseProjectile()
@@ -89,19 +92,55 @@ void AGASCourseProjectile::OnTargetRequestCompleted(FTargetingRequestHandle Targ
 		ProjectileCollisionComp->SetCollisionEnabled(ECollisionEnabled::QueryAndProbe);
 		if(AActor* NewTarget = FoundTargets[0])
 		{
-			ProjectileMovementComp->HomingTargetComponent = NewTarget->GetRootComponent();
+			TargetActor = NewTarget;
 			FRotator RotationDirection = (UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), NewTarget->GetActorLocation()));
 			FVector DirectionVector = RotationDirection.Vector();
 			DirectionVector.Normalize();
 			ProjectileMovementComp->Velocity = DirectionVector * ProjectileMovementComp->InitialSpeed;
-			ProjectileMovementComp->bIsHomingProjectile = true;
-
+			
+			EnableProjectileHoming();
 			OnProjectileRicochet();
 		}
 		else
 		{
 			Destroy();
 		}
+	}
+}
+
+void AGASCourseProjectile::OnTargetDeathCallback(FGameplayTag MatchingTag, int32 NewCount)
+{
+	if (MatchingTag == Status_Death)
+	{
+		if (AGASCourseCharacter* TargetCharacter = Cast<AGASCourseCharacter>(ProjectileMovementComp->HomingTargetComponent->GetOwner()))
+		{
+			UAbilitySystemComponent* InASC = TargetCharacter->GetAbilitySystemComponent();
+			InASC->UnregisterGameplayTagEvent(OnTargetDeathDelegateHandle, FGameplayTag(Status_Death), EGameplayTagEventType::NewOrRemoved);
+		}
+		ProjectileMovementComp->bIsHomingProjectile = false;
+		ProjectileMovementComp->HomingTargetComponent = nullptr;
+		
+	}
+}
+
+void AGASCourseProjectile::EnableProjectileHoming()
+{
+	if (AGASCourseCharacter* TargetCharacter = Cast<AGASCourseCharacter>(TargetActor))
+	{
+		UAbilitySystemComponent* InASC = TargetCharacter->GetAbilitySystemComponent();
+		if (InASC->HasMatchingGameplayTag(Status_Death))
+		{
+			return;	
+		}
+	
+		ProjectileMovementComp->bIsHomingProjectile = true;
+		ProjectileMovementComp->HomingTargetComponent = TargetActor->GetRootComponent();
+		if (OnTargetDeathDelegateHandle.IsValid())
+		{
+			InASC->UnregisterGameplayTagEvent(OnTargetDeathDelegateHandle, FGameplayTag(Status_Death), EGameplayTagEventType::NewOrRemoved);
+		}
+		InASC->RegisterGameplayTagEvent(FGameplayTag(Status_Death),
+			EGameplayTagEventType::NewOrRemoved).AddUObject(this, &AGASCourseProjectile::OnTargetDeathCallback);
 	}
 }
 
@@ -122,11 +161,8 @@ void AGASCourseProjectile::BeginPlay()
 
 	ProjectileMovementComp->bShouldBounce = bCanRicochet;
 	ProjectileCollisionComp->IgnoreActorWhenMoving(GetInstigator(), true);
-	if(AGASCourseCharacter* TargetCharacter = Cast<AGASCourseCharacter>(TargetActor))
-	{
-		ProjectileMovementComp->bIsHomingProjectile = true;
-		ProjectileMovementComp->HomingTargetComponent = TargetCharacter->GetTargetingSceneComponent();
-	}
+	
+	EnableProjectileHoming();
 }
 
 // Called every frame

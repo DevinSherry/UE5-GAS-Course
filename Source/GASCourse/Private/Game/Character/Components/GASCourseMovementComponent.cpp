@@ -188,3 +188,20 @@ bool UGASCourseMovementComponent::DoJump(bool bReplayingMoves, float DeltaTime)
 	}
 	return false;
 }
+
+FVector UGASCourseMovementComponent::GetAirControl(float DeltaTime, float TickAirControl,
+	const FVector& FallAcceleration)
+{
+	const AGASCourseCharacter* Owner = Cast<AGASCourseCharacter>(GetOwner());
+	if(Owner->IsPlayerControlled())
+	{
+		const AGASCoursePlayerState* PS = Cast<AGASCoursePlayerState>(Owner->GetPlayerState());
+		if (!Owner || !PS)
+		{
+			UE_LOG(LogTemp, Error, TEXT("%s() No Owner"), *FString(__FUNCTION__));
+			return Super::GetAirControl(DeltaTime, TickAirControl, FallAcceleration);
+		}
+	}
+	float NewAirControlValue = Owner->GetAirControlOverride();
+	return Super::GetAirControl(DeltaTime, NewAirControlValue, FallAcceleration);
+}

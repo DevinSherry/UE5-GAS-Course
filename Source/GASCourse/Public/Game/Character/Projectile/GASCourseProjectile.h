@@ -54,6 +54,9 @@ protected:
 	UFUNCTION()
 	void OnTargetRequestCompleted(FTargetingRequestHandle TargetingRequestHandle);
 
+	UFUNCTION()
+	void OnTargetDeathCallback(FGameplayTag MatchingTag, int32 NewCount);
+
 private:
 	
 	UPROPERTY()
@@ -61,6 +64,11 @@ private:
 
 	UPROPERTY()
 	TArray<AActor*> FoundTargets;
+
+	FDelegateHandle OnTargetDeathDelegateHandle;
+
+	UFUNCTION()
+	void EnableProjectileHoming();
 
 protected:
 	// Called when the game starts or when spawned

@@ -57,8 +57,6 @@ void AGASCoursePlayerController::BeginPlay()
 	ACogAbilityReplicator::Spawn(this);
 	ACogEngineReplicator::Spawn(this);
 #endif //ENABLE_COG
-
-
 }
 
 void AGASCoursePlayerController::SetupInputComponent()
@@ -73,7 +71,6 @@ void AGASCoursePlayerController::SetupInputComponent()
 		EnhancedInputComponent->BindAction(MovementInputAction, ETriggerEvent::Triggered, this, &ThisClass::CanMoveInterrupt);
 	}
 }
-
 
 void AGASCoursePlayerController::SetPossession(APawn* NewPawn)
 {

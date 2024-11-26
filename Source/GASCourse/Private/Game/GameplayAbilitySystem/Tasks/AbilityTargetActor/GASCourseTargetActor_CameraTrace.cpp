@@ -241,13 +241,16 @@ void AGASCourseTargetActor_CameraTrace::DrawTargetOutline(TArray<TWeakObjectPtr<
 	
 	for(const TWeakObjectPtr<AActor>& Actor : InHitActors)
 	{
-		if(Actor->IsA(TargetOutlineData.CharacterClassToOutline))
+		if (Actor.IsValid())
 		{
-			const AGASCourseCharacter* Character = Cast<AGASCourseCharacter>(Actor);
-			if(USkeletalMeshComponent* Mesh = Character->GetComponentByClass<USkeletalMeshComponent>())
+			if(Actor->IsA(TargetOutlineData.CharacterClassToOutline))
 			{
-				Mesh->SetRenderCustomDepth(false);
-				Mesh->SetCustomDepthStencilValue(STENCIL_NONE);
+				const AGASCourseCharacter* Character = Cast<AGASCourseCharacter>(Actor);
+				if(USkeletalMeshComponent* Mesh = Character->GetComponentByClass<USkeletalMeshComponent>())
+				{
+					Mesh->SetRenderCustomDepth(false);
+					Mesh->SetCustomDepthStencilValue(STENCIL_NONE);
+				}
 			}
 		}
 	}

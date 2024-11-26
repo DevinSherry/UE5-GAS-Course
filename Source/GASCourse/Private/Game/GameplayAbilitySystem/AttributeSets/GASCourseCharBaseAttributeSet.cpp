@@ -18,6 +18,11 @@ void UGASCourseCharBaseAttributeSet::PreAttributeChange(const FGameplayAttribute
 	Super::PreAttributeChange(Attribute, NewValue);
 
 	//TODO: Clamp movement speed to low/high values to prevent crazy values from getting in.
+
+	if(Attribute == GetAirControlOverrideAttribute())
+	{
+		NewValue = FMath::Clamp<float>(NewValue, 0.0f, 1.0f);
+	}
 }
 
 void UGASCourseCharBaseAttributeSet::PostAttributeChange(const FGameplayAttribute& Attribute, float OldValue,
@@ -39,6 +44,11 @@ void UGASCourseCharBaseAttributeSet::PostAttributeChange(const FGameplayAttribut
 	{
 		OwnerCharacter->GetCharacterMovement()->MaxWalkSpeed = NewValue;
 	}
+
+	if(Attribute == GetAirControlOverrideAttribute())
+	{
+		OwnerCharacter->GetCharacterMovement()->AirControl = NewValue;
+	}
 }
 
 void UGASCourseCharBaseAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCallbackData& Data)
@@ -53,6 +63,7 @@ void UGASCourseCharBaseAttributeSet::GetLifetimeReplicatedProps(TArray<FLifetime
 	DOREPLIFETIME_CONDITION_NOTIFY(UGASCourseCharBaseAttributeSet, MovementSpeed, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(UGASCourseCharBaseAttributeSet, CrouchSpeed, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(UGASCourseCharBaseAttributeSet, JumpZVelocityOverride, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(UGASCourseCharBaseAttributeSet, AirControlOverride, COND_None, REPNOTIFY_Always);
 }
 
 void UGASCourseCharBaseAttributeSet::OnRep_MovementSpeed(const FGameplayAttributeData& OldMovementSpeed)
@@ -68,4 +79,9 @@ void UGASCourseCharBaseAttributeSet::OnRep_CrouchSpeed(const FGameplayAttributeD
 void UGASCourseCharBaseAttributeSet::OnRep_JumpZVelocityOverride(const FGameplayAttributeData& OldJumpZVelocityOverride)
 {
 	GAMEPLAYATTRIBUTE_REPNOTIFY(UGASCourseCharBaseAttributeSet, JumpZVelocityOverride, OldJumpZVelocityOverride);
+}
+
+void UGASCourseCharBaseAttributeSet::OnRep_AirControlOverride(const FGameplayAttributeData& OldJAirControlOverride)
+{
+	GAMEPLAYATTRIBUTE_REPNOTIFY(UGASCourseCharBaseAttributeSet, AirControlOverride, OldJAirControlOverride);
 }
