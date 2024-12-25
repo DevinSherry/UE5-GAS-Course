@@ -331,6 +331,50 @@ void UGASCourseGameplayAbility::ApplyCooldown(const FGameplayAbilitySpecHandle H
 	}
 }
 
+bool UGASCourseGameplayAbility::CheckCooldown(const FGameplayAbilitySpecHandle Handle,
+	const FGameplayAbilityActorInfo* ActorInfo, FGameplayTagContainer* OptionalRelevantTags) const
+{
+	if (!ensure(ActorInfo))
+	{
+		return true;
+	}
+
+	const FGameplayTagContainer* CooldownTags = GetCooldownTags();
+	if (CooldownTags && !CooldownTags->IsEmpty())
+	{
+		if (UAbilitySystemComponent* AbilitySystemComponent = ActorInfo->AbilitySystemComponent.Get())
+		{
+			if (AbilitySystemComponent->HasAnyMatchingGameplayTags(*CooldownTags))
+			{
+				if (OptionalRelevantTags)
+				{
+					const FGameplayTag& FailCooldownTag = UAbilitySystemGlobals::Get().ActivateFailCooldownTag;
+					if (FailCooldownTag.IsValid())
+					{
+						FGameplayTag EventTag;
+						EventTag = Event_AbilityActivation_Fail;
+						
+						FGameplayEventData Payload;
+						Payload.Instigator = GetAvatarActorFromActorInfo();
+						Payload.OptionalObject = this;
+						Payload.EventTag = AbilityActivationFail_OnCooldown;
+						Payload.Target = GetAvatarActorFromActorInfo();
+						
+						OptionalRelevantTags->AddTag(FailCooldownTag);
+						AbilitySystemComponent->HandleGameplayEvent(EventTag, &Payload);
+					}
+
+					// Let the caller know which tags were blocking
+					OptionalRelevantTags->AppendMatchingTags(AbilitySystemComponent->GetOwnedGameplayTags(), *CooldownTags);
+				}
+
+				return false;
+			}
+		}
+	}
+	return true;
+}
+
 void UGASCourseGameplayAbility::GetAbilityCooldownTags(FGameplayTagContainer& CooldownTags) const
 {
 	CooldownTags.Reset();
@@ -339,6 +383,10 @@ void UGASCourseGameplayAbility::GetAbilityCooldownTags(FGameplayTagContainer& Co
 		CooldownTags.AppendTags(CooldownGE->GetGrantedTags());
 		
 	}
+}
+
+void UGASCourseGameplayAbility::GetAbilityDurationTags(FGameplayTagContainer& DurationTags) const
+{
 }
 
 float UGASCourseGameplayAbility::GetGrantedbyEffectDuration() const
@@ -358,4 +406,22 @@ float UGASCourseGameplayAbility::GetGrantedbyEffectDuration() const
 
 void UGASCourseGameplayAbility::OnPawnAvatarSet()
 {
+}
+
+void UGASCourseGameplayAbility::GetStackedAbilityDurationTags(FGameplayTagContainer& DurationTags) const
+{
+	if (!bHasAbilityStacks)
+	{
+		return;
+	}
+	if (!StackDurationEffect.Get())
+	{
+		return;
+	}
+	DurationTags.Reset();
+	
+	if (const UGameplayEffect* StackDurationGE = StackDurationEffect->GetDefaultObject<UGameplayEffect>())
+	{
+		DurationTags.AppendTags(StackDurationGE->GetGrantedTags());
+	}
 }

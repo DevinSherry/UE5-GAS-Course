@@ -40,7 +40,9 @@ enum class EGASCourseAbilityType : uint8
 	
 	Duration,
 	
-	Instant
+	Instant,
+
+	Stack
 };
 
 /**
@@ -78,6 +80,18 @@ public:
 
 	UFUNCTION(BlueprintPure, Category = "GASCourse|Ability|Tags")
 	void GetAbilityCooldownTags(FGameplayTagContainer& CooldownTags) const;
+
+	/**
+	 * Retrieves the duration tags of the ability.
+	 *
+	 * This method populates the provided `DurationTags` container with tags that represent
+	 * the duration-related properties or effects of the gameplay ability.
+	 *
+	 * @param DurationTags A reference to a `FGameplayTagContainer` that will be filled with
+	 * duration-related tags applicable to the ability.
+	 */
+	UFUNCTION(BlueprintPure, Category = "GASCourse|Ability|Tags")
+	virtual void GetAbilityDurationTags(FGameplayTagContainer& DurationTags) const;
 
 	/**
 	 * @brief Get the granted by effect duration.
@@ -138,6 +152,7 @@ protected:
 	virtual bool CommitAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, OUT FGameplayTagContainer* OptionalRelevantTags = nullptr) override;
 	virtual void CommitExecute(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo) override;
 	virtual void ApplyCooldown(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo) const override;
+	virtual bool CheckCooldown(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, FGameplayTagContainer* OptionalRelevantTags = nullptr) const override;
 	//~End of UGameplayAbility interface
 
 	virtual void OnPawnAvatarSet();
@@ -153,6 +168,9 @@ protected:
 	/** Called when the ability system is initialized with a pawn avatar. */
 	UFUNCTION(BlueprintImplementableEvent, Category = Ability, DisplayName = "OnPawnAvatarSet")
 	void K2_OnPawnAvatarSet();
+
+	UFUNCTION(BlueprintPure, Category = "GASCourse|Ability|Tags")
+	void GetStackedAbilityDurationTags(FGameplayTagContainer& DurationTags) const;
 
 protected:
 
@@ -174,15 +192,51 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "GASCourse|Ability")
 	bool bAutoCommitAbilityOnActivate;
 
+	// Stacking Ability Parameters
+
+	/**
+	 * bHasAbilityStacks
+	 *
+	 * Indicates whether the ability can utilize stacking mechanics.
+	 * If true, the ability supports stacks that can influence its behavior or effects.
+	 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "GASCourse|Ability|Stacking")
 	bool bHasAbilityStacks = false;
 
+	/**
+	 * MaxNumberOfStacks
+	 *
+	 * Represents the maximum number of stacks an ability can have when stacking mechanics are enabled.
+	 * This value is scalable and influences stacking-related gameplay effects or behavior.
+	 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "GASCourse|Ability|Stacking", meta=(EditCondition="bHasAbilityStacks"))
-	int32 MaxNumberOfStacks = 1;
+	FScalableFloat MaxNumberOfStacks;
 
+	/**
+	 * StackDurationEffect
+	 *
+	 * Represents a subclass of UGameplayEffect that defines the effect applied
+	 * to extend or influence the duration of an ability when stacking mechanics
+	 * are enabled. This effect is only applicable if bHasAbilityStacks is true.
+	 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "GASCourse|Ability|Stacking", meta=(EditCondition="bHasAbilityStacks"))
-	float StackRechargeDuration = -1.0f;
+	TSubclassOf<UGameplayEffect> StackDurationEffect = nullptr;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "GASCourse|Ability|Stacking", meta=(EditCondition="bHasAbilityStacks"))
-	int32 CurrentNumberOfStacks = MaxNumberOfStacks;
+	/**
+	 * MaxStackAttribute
+	 *
+	 * Represents the maximum stack attribute associated with an ability when stacking mechanics are enabled.
+	 * This attribute determines the limit of stacks that can influence the ability's behavior or effects.
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "GASCourse|Ability|Stacking", meta=(EditCondition="bHasAbilityStacks"))
+	FGameplayAttribute MaxStackAttribute;
+
+	/**
+	 * CurrentStackAttribute
+	 *
+	 * Represents the current stack attribute associated with an ability when stacking mechanics are enabled.
+	 * This attribute tracks the active number or value of stacks influencing the ability's behavior or effects.
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "GASCourse|Ability|Stacking", meta=(EditCondition="bHasAbilityStacks"))
+	FGameplayAttribute CurrentStackAttribute;
 };

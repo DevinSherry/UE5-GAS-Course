@@ -13,4 +13,5 @@ class UGASCourseGameplayEffect : public UGameplayEffect
 {
 	GENERATED_BODY()
 	
+	
 };

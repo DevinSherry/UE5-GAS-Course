@@ -34,13 +34,20 @@ public:
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
-	UPROPERTY(BlueprintReadOnly, Category = "Character Health Attributes", ReplicatedUsing=OnRep_NumofRicochetBounces)
+	UPROPERTY(BlueprintReadOnly, Category = "Character Perks Attributes", ReplicatedUsing=OnRep_NumofRicochetBounces)
 	FGameplayAttributeData NumofRicochetBounces;
 	ATTRIBUTE_ACCESSORS(UGASCoursePerksAttributeSet, NumofRicochetBounces)
+
+	UPROPERTY(BlueprintReadOnly, Category = "Character Perks Attributes", ReplicatedUsing=OnRep_DodgeDistanceMultiplier)
+	FGameplayAttributeData DodgeDistanceMultiplier = 1.0f;
+	ATTRIBUTE_ACCESSORS(UGASCoursePerksAttributeSet, DodgeDistanceMultiplier)
 
 protected:
 	
 	UFUNCTION()
 	virtual void OnRep_NumofRicochetBounces(const FGameplayAttributeData& OldNumofRicochetBounces);
+
+	UFUNCTION()
+	virtual void OnRep_DodgeDistanceMultiplier(const FGameplayAttributeData& OldDodgeDistanceMultiplier);
 	
 };

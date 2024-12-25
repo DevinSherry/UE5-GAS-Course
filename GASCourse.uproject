@@ -13,7 +13,8 @@
 				"Engine",
 				"GameplayAbilities",
 				"TargetingSystem",
-				"CoreUObject"
+				"CoreUObject",
+				"AIModule"
 			]
 		}
 	],

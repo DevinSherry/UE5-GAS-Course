@@ -35,8 +35,15 @@ public:
 	UFUNCTION(BlueprintCallable)
 	UGameplayEffect* GetDurationGameplayEffect() const;
 
-	UFUNCTION(BlueprintPure, Category = "GASCourse|Ability|Tags")
-	void GetAbilityDurationTags(FGameplayTagContainer& DurationTags) const;
+	/**
+	 * @brief Retrieves the gameplay tags associated with the duration of the ability.
+	 *
+	 * This function populates the provided FGameplayTagContainer with tags that are derived
+	 * from the duration gameplay effect associated with the ability, if applicable.
+	 *
+	 * @param DurationTags A reference to an FGameplayTagContainer that will be populated with the duration tags.
+	 */
+	virtual void GetAbilityDurationTags(FGameplayTagContainer& DurationTags) const override;
 	
 protected:
 

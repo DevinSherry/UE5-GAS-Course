@@ -30,22 +30,24 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite,  Category = Projectile, meta = (ExposeOnSpawn=true), Replicated)
 	class AActor* TargetActor = nullptr;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Ricochet")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Projectile|Ricochet")
 	bool bCanRicochet;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Ricochet")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Projectile|Ricochet")
 	FGameplayTagQuery RicochetTagRequirements;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Ricochet")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Projectile|Ricochet")
 	UTargetingPreset* RicochetTargetingPreset;
 
 	UFUNCTION(BlueprintNativeEvent)
 	void OnProjectileRicochet();
 
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Projectile|Damage")
+	float GetProjectileDamage(FCurveTableRowHandle CurveRow) const;
 
 protected:
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Ricochet")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Projectile|Ricochet")
 	TArray<AActor*> HitTargets;
 
 	UFUNCTION()

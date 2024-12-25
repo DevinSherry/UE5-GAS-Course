@@ -60,8 +60,19 @@ UE_DECLARE_GAMEPLAY_TAG_EXTERN(Event_Gameplay_OnDamageDealt);
 UE_DECLARE_GAMEPLAY_TAG_EXTERN(Event_Gameplay_OnDamageReceived);
 UE_DECLARE_GAMEPLAY_TAG_EXTERN(Event_Gameplay_OnHit);
 UE_DECLARE_GAMEPLAY_TAG_EXTERN(Event_Gameplay_OnHealing);
+UE_DECLARE_GAMEPLAY_TAG_EXTERN(Event_AbilityActivation_Fail);
 
 UE_DECLARE_GAMEPLAY_TAG_EXTERN(Collision_IgnorePawn);
+
+//Ability Activation fails
+
+UE_DECLARE_GAMEPLAY_TAG_EXTERN(AbilityActivationFail_IsDead);
+UE_DECLARE_GAMEPLAY_TAG_EXTERN(AbilityActivationFail_OnCooldown);
+UE_DECLARE_GAMEPLAY_TAG_EXTERN(AbilityActivationFail_CantAffordCost);
+UE_DECLARE_GAMEPLAY_TAG_EXTERN(AbilityActivationFail_BlockedByTags);
+UE_DECLARE_GAMEPLAY_TAG_EXTERN(AbilityActivationFail_MissingTags);
+UE_DECLARE_GAMEPLAY_TAG_EXTERN(AbilityActivationFail_Networking);
+
 
 
 struct FGASCourseNativeGameplayTags

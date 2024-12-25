@@ -53,7 +53,17 @@ UE_DEFINE_GAMEPLAY_TAG(Event_Gameplay_OnDamageDealt, "Event.Gameplay.OnDamageDea
 UE_DEFINE_GAMEPLAY_TAG(Event_Gameplay_OnDamageReceived, "Event.Gameplay.OnDamageReceived")
 UE_DEFINE_GAMEPLAY_TAG(Event_Gameplay_OnHit, "Event.Gameplay.OnHit")
 UE_DEFINE_GAMEPLAY_TAG(Event_Gameplay_OnHealing, "Event.Gameplay.OnHealing")
+UE_DEFINE_GAMEPLAY_TAG(Event_AbilityActivation_Fail, "Event.Ability.Activation.Failure");
 
 UE_DEFINE_GAMEPLAY_TAG(Collision_IgnorePawn, "Collision.Ignore.Pawn")
+
+
+UE_DEFINE_GAMEPLAY_TAG(AbilityActivationFail_IsDead, "Ability.Activation.Failure.IsDead")
+UE_DEFINE_GAMEPLAY_TAG(AbilityActivationFail_OnCooldown, "Ability.Activation.Failure.OnCooldown")
+UE_DEFINE_GAMEPLAY_TAG(AbilityActivationFail_CantAffordCost, "Ability.Activation.Failure.CantAffordCost")
+UE_DEFINE_GAMEPLAY_TAG(AbilityActivationFail_BlockedByTags, "Ability.Activation.Failure.BlockedByTags")
+UE_DEFINE_GAMEPLAY_TAG(AbilityActivationFail_MissingTags, "Ability.Activation.Failure.MissingTags")
+UE_DEFINE_GAMEPLAY_TAG(AbilityActivationFail_Networking, "Ability.Activation.Failure.Networking")
+
 
 FGASCourseNativeGameplayTags FGASCourseNativeGameplayTags::GameplayTags;

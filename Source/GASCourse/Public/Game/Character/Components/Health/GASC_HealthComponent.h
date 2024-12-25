@@ -148,6 +148,9 @@ protected:
 	UFUNCTION(Reliable, Server)
 	void Server_InitializeHealthAttributes();
 
+	UFUNCTION(Reliable, Client)
+	void Client_InitializeHealthAttributes();
+
 	UPROPERTY(BlueprintAssignable, BlueprintCallable)
 	FOnHealthViewModelInstantiated OnHealthViewModelInstantiated;
 

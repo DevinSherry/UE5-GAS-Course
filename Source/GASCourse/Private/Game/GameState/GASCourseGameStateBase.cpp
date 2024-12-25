@@ -75,10 +75,12 @@ void AGASCourseGameStateBase::Tick(float DeltaSeconds)
 	FCogDebugPlot::PlotValue(this, "Frame Rate", GAverageFPS);
 	FCogDebugPlot::PlotValue(this, "Frame Time", GAverageMS);
 
+	
 	if (CogWindowManager != nullptr)
 	{
 		CogWindowManager->Tick(DeltaSeconds);
 	}
+	
 
 #endif //ENABLE_COG
 

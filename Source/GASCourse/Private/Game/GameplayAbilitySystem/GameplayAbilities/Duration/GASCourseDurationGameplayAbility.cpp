@@ -198,6 +198,8 @@ bool UGASCourseDurationGameplayAbility::ApplyDurationEffect()
 
 void UGASCourseDurationGameplayAbility::GetAbilityDurationTags(FGameplayTagContainer& DurationTags) const
 {
+	Super::GetAbilityDurationTags(DurationTags);
+	
 	DurationTags.Reset();
 	if(const UGameplayEffect* DurationGE = GetDurationGameplayEffect())
 	{

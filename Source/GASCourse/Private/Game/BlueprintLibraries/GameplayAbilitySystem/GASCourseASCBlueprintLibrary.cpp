@@ -2,7 +2,7 @@
 
 
 #include "Game/BlueprintLibraries/GameplayAbilitySystem/GASCourseASCBlueprintLibrary.h"
-
+#include "AbilitySystemLog.h"
 #include "AbilitySystemGlobals.h"
 #include "Game/GameplayAbilitySystem/GASCourseAbilitySystemComponent.h"
 #include "Game/Systems/Damage/GASCourseDamageExecution.h"
@@ -103,7 +103,11 @@ bool UGASCourseASCBlueprintLibrary::ApplyDamageToTarget_Internal(AActor* Target,
 				FGameplayEffectExecutionDefinition DamageExecutionDefinition;
 				DamageExecutionDefinition.CalculationClass = LoadClass<UGASCourseDamageExecution>(Instigator, TEXT("/Game/GASCourse/Game/Systems/Damage/DamageExecution_Base.DamageExecution_Base_C"));
 				DamageEffect->Executions.Emplace(DamageExecutionDefinition);
-
+				if (DamageExecutionDefinition.CalculationClass)
+				{
+					UE_LOG(LogTemp, Warning, TEXT("Damage Calculation: %s"), *DamageExecutionDefinition.CalculationClass->GetName());
+				}
+				UE_LOG(LogTemp, Warning, TEXT("Damage Calculation is not valid!"));
 				FGameplayEffectContext* ContextHandle = UAbilitySystemGlobals::Get().AllocGameplayEffectContext();
 				ContextHandle->AddInstigator(Instigator, Instigator);
 				const FGameplayEffectSpecHandle DamageEffectHandle = FGameplayEffectSpecHandle(new FGameplayEffectSpec(DamageEffect, FGameplayEffectContextHandle(ContextHandle), 1.0f));
@@ -278,7 +282,7 @@ float UGASCourseASCBlueprintLibrary::GetPeriodFromGameplayEffect(FActiveGameplay
 }
 
 bool UGASCourseASCBlueprintLibrary::GrantAbilityToInputTag(UAbilitySystemComponent* InASC, TSubclassOf<UGASCourseGameplayAbility> Ability, int AbilityLevel,
-	FGameplayTag InputTag)
+                                                           FGameplayTag InputTag)
 {
 	if (!Ability)
 	{
