@@ -112,14 +112,16 @@ void AGASCourseProjectile::OnTargetDeathCallback(FGameplayTag MatchingTag, int32
 {
 	if (MatchingTag == Status_Death)
 	{
-		if (AGASCourseCharacter* TargetCharacter = Cast<AGASCourseCharacter>(ProjectileMovementComp->HomingTargetComponent->GetOwner()))
+		if (ProjectileMovementComp->HomingTargetComponent.IsValid())
 		{
-			UAbilitySystemComponent* InASC = TargetCharacter->GetAbilitySystemComponent();
-			InASC->UnregisterGameplayTagEvent(OnTargetDeathDelegateHandle, FGameplayTag(Status_Death), EGameplayTagEventType::NewOrRemoved);
+			if (AGASCourseCharacter* TargetCharacter = Cast<AGASCourseCharacter>(ProjectileMovementComp->HomingTargetComponent->GetOwner()))
+			{
+				UAbilitySystemComponent* InASC = TargetCharacter->GetAbilitySystemComponent();
+				InASC->UnregisterGameplayTagEvent(OnTargetDeathDelegateHandle, FGameplayTag(Status_Death), EGameplayTagEventType::NewOrRemoved);
+			}
 		}
 		ProjectileMovementComp->bIsHomingProjectile = false;
 		ProjectileMovementComp->HomingTargetComponent = nullptr;
-		
 	}
 }
 
