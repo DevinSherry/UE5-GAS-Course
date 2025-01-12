@@ -99,6 +99,11 @@ void UGASC_HealthComponent::InitializeViewModel()
 	CharacterHealthViewModelContext.ContextName = CharacterHealthContextName;
 	if(CharacterHealthViewModelContext.IsValid())
 	{
+		if (GlobalViewModelCollection->FindViewModelInstance(CharacterHealthViewModelContext))
+		{
+			GlobalViewModelCollection->RemoveViewModel(CharacterHealthViewModelContext);
+		}
+		
 		GlobalViewModelCollection->AddViewModelInstance(CharacterHealthViewModelContext, CharacterHealthViewModel);
 		HealthViewModel = CharacterHealthViewModel;
 

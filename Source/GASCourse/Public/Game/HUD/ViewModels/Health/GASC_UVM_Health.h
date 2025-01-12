@@ -6,7 +6,10 @@
 #include "GASC_UVM_Health.generated.h"
 
 /**
- * 
+ * UGASC_UVM_Health is a ViewModel class extending UMVVMViewModelBase, designed to manage the health
+ * properties of an actor, including current health, maximum health, and health display information.
+ * It provides methods to get and set health values, calculate the health percentage, and format health
+ * information as text for display purposes.
  */
 UCLASS()
 class GASCOURSE_API UGASC_UVM_Health : public UMVVMViewModelBase

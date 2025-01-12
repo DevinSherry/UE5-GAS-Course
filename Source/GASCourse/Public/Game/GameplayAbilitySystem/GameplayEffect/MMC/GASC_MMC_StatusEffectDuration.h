@@ -7,7 +7,11 @@
 #include "GASC_MMC_StatusEffectDuration.generated.h"
 
 /**
- * 
+ * UGASC_MMC_StatusEffectDuration is a class derived from UGameplayModMagnitudeCalculation used to
+ * calculate the magnitude of a gameplay effect that modifies the duration of status effects.
+ *
+ * The calculation is determined based on specific attributes, capturing the modifiers for
+ * duration multiplier and duration reduction multiplier.
  */
 UCLASS()
 class GASCOURSE_API UGASC_MMC_StatusEffectDuration : public UGameplayModMagnitudeCalculation

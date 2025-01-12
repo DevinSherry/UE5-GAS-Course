@@ -13,10 +13,14 @@
 struct GASCourseDamageStatics
 {
 	DECLARE_ATTRIBUTE_CAPTUREDEF(IncomingDamage);
+	DECLARE_ATTRIBUTE_CAPTUREDEF(CriticalChance);
+	DECLARE_ATTRIBUTE_CAPTUREDEF(CriticalDamageMultiplier);
 
 	GASCourseDamageStatics()
 	{
 		DEFINE_ATTRIBUTE_CAPTUREDEF(UGASCourseHealthAttributeSet, IncomingDamage, Source, true);
+		DEFINE_ATTRIBUTE_CAPTUREDEF(UGASCourseHealthAttributeSet, CriticalChance, Source, false);
+		DEFINE_ATTRIBUTE_CAPTUREDEF(UGASCourseHealthAttributeSet, CriticalDamageMultiplier, Source, false);
 	}
 };
 
@@ -29,6 +33,8 @@ static const GASCourseDamageStatics& DamageStatics()
 UGASCourseDamageExecution::UGASCourseDamageExecution()
 {
 	RelevantAttributesToCapture.Add(DamageStatics().IncomingDamageDef);
+	RelevantAttributesToCapture.Add(DamageStatics().CriticalChanceDef);
+	RelevantAttributesToCapture.Add(DamageStatics().CriticalDamageMultiplierDef);
 }
 
 void UGASCourseDamageExecution::Execute_Implementation(const FGameplayEffectCustomExecutionParameters& ExecutionParams,
@@ -56,6 +62,22 @@ void UGASCourseDamageExecution::Execute_Implementation(const FGameplayEffectCust
 
 	// Add SetByCaller damage if it exists
 	Damage += FMath::Max<float>(Spec.GetSetByCallerMagnitude(Data_IncomingDamage, false, -1.0f), 0.0f);
+
+	/*
+	 * Critical Chance + Critical Damage
+	 */
+	float CriticalChance = 0.0f;
+	ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(DamageStatics().CriticalChanceDef, EvaluationParameters, CriticalChance);
+	
+	float CriticalDamageMultiplier = 0.0f;
+	ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(DamageStatics().CriticalDamageMultiplierDef, EvaluationParameters, CriticalDamageMultiplier);
+	
+	float RolledChancePercentage = FMath::RandRange(0.0f, 1.0f);
+	bool bCriticalHit = RolledChancePercentage <= CriticalChance;
+	if (bCriticalHit)
+	{
+		Damage += FMath::Floor(Damage * CriticalDamageMultiplier);
+	}
 
 	float UnmitigatedDamage = Damage; // Can multiply any damage boosters here
 	
@@ -100,8 +122,13 @@ void UGASCourseDamageExecution::Execute_Implementation(const FGameplayEffectCust
 			FHitResult HitResultFromContext = *Spec.GetContext().GetHitResult();
 			DamageDealtPayload.TargetData = UAbilitySystemBlueprintLibrary::AbilityTargetDataFromHitResult(HitResultFromContext); 
 		}
+
+		if (bCriticalHit)
+		{
+			DamageDealtPayload.InstigatorTags.AddTag(DamageType_Critical);
+		}
 		
-		if(TargetAbilitySystemComponent->HasMatchingGameplayTag(FGameplayTag::RequestGameplayTag(FName("Status.Death"))))
+		if(TargetAbilitySystemComponent->HasMatchingGameplayTag(Status_Death))
 		{
 			return;
 		}

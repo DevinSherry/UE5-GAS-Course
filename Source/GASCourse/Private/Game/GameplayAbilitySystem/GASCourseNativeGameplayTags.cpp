@@ -46,6 +46,7 @@ UE_DEFINE_GAMEPLAY_TAG(DamageType_Elemental, "Damage.Type.Elemental")
 UE_DEFINE_GAMEPLAY_TAG(DamageType_Elemental_Fire, "Damage.Type.Elemental.Fire")
 UE_DEFINE_GAMEPLAY_TAG(DamageType_Status, "Damage.Type.Status")
 UE_DEFINE_GAMEPLAY_TAG(DamageType_Status_Burn, "Damage.Type.Status.Burn")
+UE_DEFINE_GAMEPLAY_TAG(DamageType_Critical, "Damage.Type.Critical")
 
 UE_DEFINE_GAMEPLAY_TAG(Event_OnDeath, "Event.Gameplay.OnDeath")
 UE_DEFINE_GAMEPLAY_TAG(Event_OnStatusDeath, "Event.Gameplay.Status.OnDeath")

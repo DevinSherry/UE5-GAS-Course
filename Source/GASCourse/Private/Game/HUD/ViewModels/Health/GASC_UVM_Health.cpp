@@ -22,6 +22,8 @@ float UGASC_UVM_Health::GetMaxHealth() const
 
 void UGASC_UVM_Health::SetCurrentHealth(const float& NewCurrentHealth)
 {
+	UE_LOG(LogTemp, Warning, TEXT("Current Health: %f | New Current Health: %f"), CurrentHealth, NewCurrentHealth);
+
 	if(UE_MVVM_SET_PROPERTY_VALUE(CurrentHealth, NewCurrentHealth))
 	{
 		UE_MVVM_BROADCAST_FIELD_VALUE_CHANGED(GetHealthPercentage);
@@ -42,6 +44,7 @@ float UGASC_UVM_Health::GetHealthPercentage() const
 {
 	if(MaxHealth != 0.0f)
 	{
+		UE_LOG(LogTemp, Warning, TEXT("Current Health: %f | Max Health: %f"), CurrentHealth, MaxHealth);
 		return CurrentHealth / MaxHealth;
 	}
 	else

@@ -98,6 +98,14 @@ public:
 	FGameplayAttributeData IncomingDamage;
 	ATTRIBUTE_ACCESSORS(UGASCourseHealthAttributeSet, IncomingDamage)
 
+	UPROPERTY(BlueprintReadOnly, Category = "Damage", ReplicatedUsing=OnRep_CriticalChance)
+	FGameplayAttributeData CriticalChance = 0.0f;
+	ATTRIBUTE_ACCESSORS(UGASCourseHealthAttributeSet, CriticalChance)
+
+	UPROPERTY(BlueprintReadOnly, Category = "Damage", ReplicatedUsing=OnRep_CriticalDamageMultiplier)
+	FGameplayAttributeData CriticalDamageMultiplier = 0.0f;
+	ATTRIBUTE_ACCESSORS(UGASCourseHealthAttributeSet, CriticalDamageMultiplier)
+
 	UPROPERTY(BlueprintReadOnly, Category = "Healing")
 	FGameplayAttributeData IncomingHealing;
 	ATTRIBUTE_ACCESSORS(UGASCourseHealthAttributeSet, IncomingHealing)
@@ -121,7 +129,11 @@ protected:
 
 	UFUNCTION()
 	virtual void OnRep_AllDamageHealingCoefficient(const FGameplayAttributeData& OldAllDamageHealingCoefficient);
-	
 
+	UFUNCTION()
+	virtual void OnRep_CriticalChance(const FGameplayAttributeData& OldCriticalChance);
+
+	UFUNCTION()
+	virtual void OnRep_CriticalDamageMultiplier(const FGameplayAttributeData& OldCriticalDamageMultiplier);
 	
 };

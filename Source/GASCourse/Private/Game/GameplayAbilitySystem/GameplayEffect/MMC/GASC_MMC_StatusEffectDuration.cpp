@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Game/GameplayAbilitySystem/GameplayEffect/New folder/GASC_MMC_StatusEffectDuration.h"
+#include "Game/GameplayAbilitySystem/GameplayEffect/MMC/GASC_MMC_StatusEffectDuration.h"
 #include "GameplayEffectExecutionCalculation.h"
 #include "Game/GameplayAbilitySystem/AttributeSets/GASC_DurationAttributeSet.h"
 
@@ -38,7 +38,9 @@ float UGASC_MMC_StatusEffectDuration::CalculateBaseMagnitude_Implementation(cons
 	GetCapturedAttributeMagnitude(DurationReductionMultiplierAttributeDef, Spec, EvaluationParameters, DurationReductionMultiplier);
 	DurationReductionMultiplier = FMath::Max<float>(DurationReductionMultiplier, 0.0f); // Avoid divide by zero
 
-	float Reduction = FMath::Max<float>(DurationMultiplier - DurationReductionMultiplier, 0.0f); // ( DurationMultiplier - DurationReductionMultiplier
-	
+	float Reduction = FMath::Max<float>(DurationMultiplier - DurationReductionMultiplier, 0.01f); // ( DurationMultiplier - DurationReductionMultiplier
+
+	//TODO: Research to see if Reduction <= 0.0f if we can block the effect from being granted in the first place?
+	//TODO: Or add/remove immunity tag dynamically based on duration reduction multiplier?
 	return Reduction;
 }

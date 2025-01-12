@@ -47,6 +47,14 @@ void UGASCourseHealthAttributeSet::PreAttributeChange(const FGameplayAttribute& 
 		NewValue = FMath::Clamp<float>(NewValue, 0.0f, 1.0f);
 	}
 
+	if(Attribute == GetCriticalChanceAttribute())
+	{
+		NewValue = FMath::Clamp<float>(NewValue, 0.0f, 1.0f);
+	}
+	if(Attribute == GetCriticalDamageMultiplierAttribute())
+	{
+		NewValue = FMath::Clamp<float>(NewValue, 0.0f, 10.0f);
+	}
 	
 }
 
@@ -125,6 +133,8 @@ void UGASCourseHealthAttributeSet::GetLifetimeReplicatedProps(TArray<FLifetimePr
 	DOREPLIFETIME_CONDITION_NOTIFY(UGASCourseHealthAttributeSet, ElementalDamageHealingCoefficient, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(UGASCourseHealthAttributeSet, PhysicalDamageHealingCoefficient, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(UGASCourseHealthAttributeSet, AllDamageHealingCoefficient, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(UGASCourseHealthAttributeSet, CriticalChance, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(UGASCourseHealthAttributeSet, CriticalDamageMultiplier, COND_None, REPNOTIFY_Always);
 }
 
 void UGASCourseHealthAttributeSet::OnRep_CurrentHealth(const FGameplayAttributeData& OldCurrentHealth)
@@ -158,4 +168,15 @@ void UGASCourseHealthAttributeSet::OnRep_AllDamageHealingCoefficient(
 	const FGameplayAttributeData& OldAllDamageHealingCoefficient)
 {
 	GAMEPLAYATTRIBUTE_REPNOTIFY(UGASCourseHealthAttributeSet, AllDamageHealingCoefficient, OldAllDamageHealingCoefficient);
+}
+
+void UGASCourseHealthAttributeSet::OnRep_CriticalChance(const FGameplayAttributeData& OldCriticalChance)
+{
+	GAMEPLAYATTRIBUTE_REPNOTIFY(UGASCourseHealthAttributeSet, CriticalChance, OldCriticalChance);
+}
+
+void UGASCourseHealthAttributeSet::OnRep_CriticalDamageMultiplier(
+	const FGameplayAttributeData& OldCriticalDamageMultiplier)
+{
+	GAMEPLAYATTRIBUTE_REPNOTIFY(UGASCourseHealthAttributeSet, CriticalDamageMultiplier, OldCriticalDamageMultiplier);
 }

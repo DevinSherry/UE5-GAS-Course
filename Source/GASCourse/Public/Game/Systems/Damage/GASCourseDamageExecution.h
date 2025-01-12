@@ -6,7 +6,11 @@
 #include "GASCourseDamageExecution.generated.h"
 
 /**
- * 
+ * \brief Represents the custom execution calculation for damage in the gameplay ability system.
+ *
+ * This class provides functionality to calculate and apply damage during the execution of a gameplay effect.
+ * It captures relevant attributes necessary for damage computation and processes damage application, taking
+ * into account modifiers, gameplay tags, and any other specified parameters.
  */
 UCLASS()
 class UGASCourseDamageExecution : public UGameplayEffectExecutionCalculation

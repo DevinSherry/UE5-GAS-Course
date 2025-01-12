@@ -27,7 +27,7 @@ public class GASCourse : ModuleRules
 				"CogImgui",
 				"CogInput",
 				"CogWindow",
-				"ImGui"
+				"ImGui",
 			});
 		}
         
