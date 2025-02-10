@@ -64,7 +64,12 @@ enum class EGASCourseAbilitySlotType : uint8
 };
 
 /**
- * 
+ * UGASCourseGameplayAbility
+ *
+ * The base gameplay ability class used by this project. It extends UGameplayAbility
+ * and includes additional features and properties specific to the GASCourse project,
+ * such as support for stackable abilities, custom activation policies, and integration
+ * with the project's player and ability system components.
  */
 UCLASS(Abstract, HideCategories = Input, Meta = (ShortTooltip = "The base gameplay ability class used by this project."))
 class GASCOURSE_API UGASCourseGameplayAbility : public UGameplayAbility
@@ -135,6 +140,9 @@ public:
 
 	void TryActivateAbilityOnSpawn(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec) const;
 
+	UFUNCTION(BlueprintPure, Category = "GASCourse|Ability|Cost")
+	FScalableFloat GetAbilityCost() const { return AbilityCost; }
+
 protected:
 
 	//~UGameplayAbility interface
@@ -150,7 +158,7 @@ protected:
 	virtual void ApplyAbilityTagsToGameplayEffectSpec(FGameplayEffectSpec& Spec, FGameplayAbilitySpec* AbilitySpec) const override;
 	virtual bool DoesAbilitySatisfyTagRequirements(const UAbilitySystemComponent& AbilitySystemComponent, const FGameplayTagContainer* SourceTags, const FGameplayTagContainer* TargetTags, OUT FGameplayTagContainer* OptionalRelevantTags) const override;
 	virtual bool CommitAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, OUT FGameplayTagContainer* OptionalRelevantTags = nullptr) override;
-	virtual void CommitExecute(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo) override;
+	//virtual void CommitExecute(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo) override;
 	virtual void ApplyCooldown(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo) const override;
 	virtual bool CheckCooldown(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, FGameplayTagContainer* OptionalRelevantTags = nullptr) const override;
 	//~End of UGameplayAbility interface
@@ -239,4 +247,13 @@ protected:
 	 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "GASCourse|Ability|Stacking", meta=(EditCondition="bHasAbilityStacks"))
 	FGameplayAttribute CurrentStackAttribute;
+
+	/**
+	 * AbilityCost
+	 *
+	 * Represents the cost associated with activating the ability.
+	 * This value is scalable and can be modified based on gameplay systems or specific conditions.
+	 */
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = Costs)
+	FScalableFloat AbilityCost;
 };

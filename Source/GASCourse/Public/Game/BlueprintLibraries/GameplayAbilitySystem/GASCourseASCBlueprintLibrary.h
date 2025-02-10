@@ -148,7 +148,7 @@ public:
 	 */
 	static bool ApplyDamageToTarget_Internal(AActor* Target, AActor* Instigator, float Damage, const FDamageContext& DamageContext, UGameplayEffect* GameplayEffect);
 
-	static UGameplayEffect* ConstructDamageGameplayEffect(EGameplayEffectDurationType DurationType, const FDamageOverTimeContext& DamageOverTimeContext);
+	static UGameplayEffect* ConstructDamageGameplayEffect(EGameplayEffectDurationType DurationType, const FDamageOverTimeContext& DamageOverTimeContext, float InDamageValue);
 
 	UFUNCTION(BlueprintPure, Category = "GASCourse|AbilitySystem|Damage")
 	static bool FindDamageTypeTagInContainer(const FGameplayTagContainer& InContainer, FGameplayTag& DamageTypeTag);

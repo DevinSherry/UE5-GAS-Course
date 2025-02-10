@@ -68,27 +68,7 @@ bool UGASCourseAimcastGameplayAbility::CheckCost(const FGameplayAbilitySpecHandl
 void UGASCourseAimcastGameplayAbility::ApplyCost(const FGameplayAbilitySpecHandle Handle,
 	const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo) const
 {
-	check(ActorInfo);
-
-	// Used to determine if the ability actually hit a target (as some costs are only spent on successful attempts)
-	auto DetermineIfAbilityHitTarget = [&]()
-	{
-		if (ActorInfo->IsNetAuthority())
-		{
-			if (UGASCourseAbilitySystemComponent* ASC = Cast<UGASCourseAbilitySystemComponent>(ActorInfo->AbilitySystemComponent.Get()))
-			{
-				FGameplayAbilityTargetDataHandle TargetData;
-				ASC->GetAbilityTargetData(Handle, ActivationInfo, TargetData);
-				for (int32 TargetDataIdx = 0; TargetDataIdx < TargetData.Data.Num(); ++TargetDataIdx)
-				{
-					if (UAbilitySystemBlueprintLibrary::TargetDataHasHitResult(TargetData, TargetDataIdx))
-					{
-						Super::ApplyCost(Handle, ActorInfo, ActivationInfo);
-					}
-				}
-			}
-		}
-	};
+	Super::ApplyCost(Handle, ActorInfo, ActivationInfo);
 }
 
 FGameplayEffectContextHandle UGASCourseAimcastGameplayAbility::MakeEffectContext(

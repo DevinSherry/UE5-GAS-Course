@@ -165,13 +165,43 @@ void UGASCourseGameplayAbility::EndAbility(const FGameplayAbilitySpecHandle Hand
 bool UGASCourseGameplayAbility::CheckCost(const FGameplayAbilitySpecHandle Handle,
 	const FGameplayAbilityActorInfo* ActorInfo, FGameplayTagContainer* OptionalRelevantTags) const
 {
-	return Super::CheckCost(Handle, ActorInfo, OptionalRelevantTags);
+	UGameplayEffect* CostGE = GetCostGameplayEffect();
+	if (CostGE)
+	{
+		UAbilitySystemComponent* AbilitySystemComponent = ActorInfo ? ActorInfo->AbilitySystemComponent.Get() : nullptr;
+		if (ensure(AbilitySystemComponent))
+		{
+			if (!AbilitySystemComponent->CanApplyAttributeModifiers(CostGE, GetAbilityLevel(Handle, ActorInfo), MakeEffectContext(Handle, ActorInfo)))
+			{
+				const FGameplayTag& CostTag = UAbilitySystemGlobals::Get().ActivateFailCostTag;
+
+				if (OptionalRelevantTags && CostTag.IsValid())
+				{
+					OptionalRelevantTags->AddTag(CostTag);
+					
+					FGameplayTag EventTag = Event_AbilityActivation_CantAffordCost;
+					FGameplayEventData Payload;
+					Payload.Instigator = GetAvatarActorFromActorInfo();
+					Payload.OptionalObject = this;
+					Payload.EventTag = AbilityActivationFail_CantAffordCost;
+					Payload.Target = GetAvatarActorFromActorInfo();
+					AbilitySystemComponent->HandleGameplayEvent(EventTag, &Payload);
+				}
+				return false;
+			}
+		}
+	}
+	return true;
 }
 
 void UGASCourseGameplayAbility::ApplyCost(const FGameplayAbilitySpecHandle Handle,
 	const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo) const
 {
-	Super::ApplyCost(Handle, ActorInfo, ActivationInfo);
+	UAbilitySystemGlobals& AbilitySystemGlobals = UAbilitySystemGlobals::Get();
+	if (!AbilitySystemGlobals.ShouldIgnoreCosts())
+	{
+		Super::ApplyCost(Handle, ActorInfo, ActivationInfo);
+	}
 }
 
 FGameplayEffectContextHandle UGASCourseGameplayAbility::MakeEffectContext(const FGameplayAbilitySpecHandle Handle,
@@ -298,33 +328,31 @@ bool UGASCourseGameplayAbility::CommitAbility(const FGameplayAbilitySpecHandle H
 	const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo,
 	OUT FGameplayTagContainer* OptionalRelevantTags)
 {
-	OnAbilityCommitDelegate.Broadcast(Super::CommitAbility(Handle, ActorInfo, ActivationInfo, OptionalRelevantTags));
-	return Super::CommitAbility(Handle, ActorInfo, ActivationInfo, OptionalRelevantTags);
-}
-
-void UGASCourseGameplayAbility::CommitExecute(const FGameplayAbilitySpecHandle Handle,
-	const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo)
-{
-	Super::CommitExecute(Handle, ActorInfo, ActivationInfo);
+	bool bCanCommit = Super::CommitAbility(Handle, ActorInfo, ActivationInfo, OptionalRelevantTags);
+	OnAbilityCommitDelegate.Broadcast(bCanCommit);
+	return bCanCommit;
 }
 
 void UGASCourseGameplayAbility::ApplyCooldown(const FGameplayAbilitySpecHandle Handle,
 	const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo) const
 {
-	Super::ApplyCooldown(Handle, ActorInfo, ActivationInfo);
-
-	check(ActorInfo);
-
-	if(ActorInfo->IsNetAuthority() || HasAuthorityOrPredictionKey(ActorInfo, &ActivationInfo))
+	UAbilitySystemGlobals& AbilitySystemGlobals = UAbilitySystemGlobals::Get();
+	if (!AbilitySystemGlobals.ShouldIgnoreCooldowns())
 	{
-		if (const UGameplayEffect* CooldownGE = GetCooldownGameplayEffect())
+		check(ActorInfo);
+		Super::ApplyCooldown(Handle, ActorInfo, ActivationInfo);
+
+		if(ActorInfo->IsNetAuthority() || HasAuthorityOrPredictionKey(ActorInfo, &ActivationInfo))
 		{
-			const FActiveGameplayEffectHandle CooldownActiveGEHandle = ApplyGameplayEffectToOwner(Handle, ActorInfo, ActivationInfo, CooldownGE, GetAbilityLevel(Handle, ActorInfo));
-			if(CooldownActiveGEHandle.WasSuccessfullyApplied())
+			if (const UGameplayEffect* CooldownGE = GetCooldownGameplayEffect())
 			{
-				if(UGASCourseAbilitySystemComponent* ASC = GetGASCourseAbilitySystemComponentFromActorInfo())
+				const FActiveGameplayEffectHandle CooldownActiveGEHandle = ApplyGameplayEffectToOwner(Handle, ActorInfo, ActivationInfo, CooldownGE, GetAbilityLevel(Handle, ActorInfo));
+				if(CooldownActiveGEHandle.WasSuccessfullyApplied())
 				{
-					ASC->WaitForAbilityCooldownEnd(const_cast<UGASCourseGameplayAbility*>(this), CooldownActiveGEHandle);
+					if(UGASCourseAbilitySystemComponent* ASC = GetGASCourseAbilitySystemComponentFromActorInfo())
+					{
+						ASC->WaitForAbilityCooldownEnd(const_cast<UGASCourseGameplayAbility*>(this), CooldownActiveGEHandle);
+					}
 				}
 			}
 		}

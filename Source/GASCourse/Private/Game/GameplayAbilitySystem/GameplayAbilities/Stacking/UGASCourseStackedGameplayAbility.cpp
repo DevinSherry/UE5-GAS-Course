@@ -31,10 +31,16 @@ void UGASCourseStackedGameplayAbility::TryApplyAbilityStacking(EGASCourseStackAp
 	}
 	else
 	{
-		FGameplayEffectSpecHandle StackSpecHandle = MakeOutgoingGameplayEffectSpec(StackDurationEffect, 1.0f);
-		//const FGameplayAbilitySpecHandle AbilityHandle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEffectSpecHandle SpecHandle
-		ActiveStackingEffectHandle = K2_ApplyGameplayEffectSpecToOwner(StackSpecHandle);
-		StackApplicationResults = EGASCourseStackApplicationType::StackSuccess;
+		UAbilitySystemGlobals& AbilitySystemGlobals = UAbilitySystemGlobals::Get();
+		if (!AbilitySystemGlobals.ShouldIgnoreCooldowns())
+		{
+			FGameplayEffectSpecHandle StackSpecHandle = MakeOutgoingGameplayEffectSpec(StackDurationEffect, 1.0f);
+			ActiveStackingEffectHandle = K2_ApplyGameplayEffectSpecToOwner(StackSpecHandle);
+		}
+		else
+		{
+			StackApplicationResults = EGASCourseStackApplicationType::StackSuccess;
+		}
 	}
 }
 

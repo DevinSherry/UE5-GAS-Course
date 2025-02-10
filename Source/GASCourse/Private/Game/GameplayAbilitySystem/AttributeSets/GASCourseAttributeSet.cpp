@@ -6,6 +6,7 @@
 
 UGASCourseAttributeSet::UGASCourseAttributeSet()
 {
+	AbilitySystemSettings = GetDefault<UGASC_AbilitySystemSettings>();
 }
 
 void UGASCourseAttributeSet::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

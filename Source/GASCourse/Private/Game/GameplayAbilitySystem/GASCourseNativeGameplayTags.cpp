@@ -41,6 +41,8 @@ UE_DEFINE_GAMEPLAY_TAG(Status_CanMoveInterrupt, "Status.Movement.CanInterrupt")
 
 UE_DEFINE_GAMEPLAY_TAG(Data_IncomingDamage, "Data.IncomingDamage")
 UE_DEFINE_GAMEPLAY_TAG(Data_IncomingHealing, "Data.IncomingHealing")
+UE_DEFINE_GAMEPLAY_TAG(Data_CachedDamage, "Data.CachedDamage")
+UE_DEFINE_GAMEPLAY_TAG(Data_DamageOverTime, "Data.DamageOverTime")
 UE_DEFINE_GAMEPLAY_TAG(DamageType_Physical, "Damage.Type.Physical")
 UE_DEFINE_GAMEPLAY_TAG(DamageType_Elemental, "Damage.Type.Elemental")
 UE_DEFINE_GAMEPLAY_TAG(DamageType_Elemental_Fire, "Damage.Type.Elemental.Fire")
@@ -54,7 +56,7 @@ UE_DEFINE_GAMEPLAY_TAG(Event_Gameplay_OnDamageDealt, "Event.Gameplay.OnDamageDea
 UE_DEFINE_GAMEPLAY_TAG(Event_Gameplay_OnDamageReceived, "Event.Gameplay.OnDamageReceived")
 UE_DEFINE_GAMEPLAY_TAG(Event_Gameplay_OnHit, "Event.Gameplay.OnHit")
 UE_DEFINE_GAMEPLAY_TAG(Event_Gameplay_OnHealing, "Event.Gameplay.OnHealing")
-UE_DEFINE_GAMEPLAY_TAG(Event_AbilityActivation_Fail, "Event.Ability.Activation.Failure");
+
 
 UE_DEFINE_GAMEPLAY_TAG(Collision_IgnorePawn, "Collision.Ignore.Pawn")
 
@@ -65,6 +67,9 @@ UE_DEFINE_GAMEPLAY_TAG(AbilityActivationFail_CantAffordCost, "Ability.Activation
 UE_DEFINE_GAMEPLAY_TAG(AbilityActivationFail_BlockedByTags, "Ability.Activation.Failure.BlockedByTags")
 UE_DEFINE_GAMEPLAY_TAG(AbilityActivationFail_MissingTags, "Ability.Activation.Failure.MissingTags")
 UE_DEFINE_GAMEPLAY_TAG(AbilityActivationFail_Networking, "Ability.Activation.Failure.Networking")
+
+UE_DEFINE_GAMEPLAY_TAG(Event_AbilityActivation_Fail, "Event.Ability.Activation.Failure");
+UE_DEFINE_GAMEPLAY_TAG(Event_AbilityActivation_CantAffordCost, "Event.Ability.Activation.CantAffordCost");
 
 
 FGASCourseNativeGameplayTags FGASCourseNativeGameplayTags::GameplayTags;

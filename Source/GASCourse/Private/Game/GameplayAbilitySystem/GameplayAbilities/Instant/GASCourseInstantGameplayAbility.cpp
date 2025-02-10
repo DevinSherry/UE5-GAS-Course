@@ -85,12 +85,6 @@ bool UGASCourseInstantGameplayAbility::CommitAbility(const FGameplayAbilitySpecH
 	return Super::CommitAbility(Handle, ActorInfo, ActivationInfo, OptionalRelevantTags);
 }
 
-void UGASCourseInstantGameplayAbility::CommitExecute(const FGameplayAbilitySpecHandle Handle,
-	const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo)
-{
-	Super::CommitExecute(Handle, ActorInfo, ActivationInfo);
-}
-
 void UGASCourseInstantGameplayAbility::ApplyCooldown(const FGameplayAbilitySpecHandle Handle,
 	const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo) const
 {

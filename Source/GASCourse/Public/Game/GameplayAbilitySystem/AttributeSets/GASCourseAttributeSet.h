@@ -4,6 +4,7 @@
 
 #include "AttributeSet.h"
 #include "AbilitySystemComponent.h"
+#include "Game/DeveloperSettings/UGASC_AbilitySystemSettings.h"
 #include "GASCourseAttributeSet.generated.h"
 
 /**
@@ -37,6 +38,7 @@ public:
 	UPROPERTY(BlueprintReadOnly, Category = "Character Base Attributes", ReplicatedUsing=OnRep_TwoAttribute)
 	FGameplayAttributeData TwoAttribute;
 	ATTRIBUTE_ACCESSORS(UGASCourseAttributeSet, TwoAttribute)
+	
 
 protected:
 
@@ -50,5 +52,8 @@ protected:
 	
 	UFUNCTION()
 	virtual void OnRep_TwoAttribute(const FGameplayAttributeData& OldTwoAttribute);
+
+	UPROPERTY()
+	const UGASC_AbilitySystemSettings* AbilitySystemSettings;
 	
 };

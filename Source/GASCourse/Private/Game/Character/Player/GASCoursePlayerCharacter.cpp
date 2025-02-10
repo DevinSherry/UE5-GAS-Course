@@ -88,8 +88,11 @@ void AGASCoursePlayerCharacter::ActivateBufferedInputAbility()
 
 void AGASCoursePlayerCharacter::InitializeCamera()
 {
-	GetCameraBoom()->TargetArmLength = CameraSettingsData->DefaultCameraBoomLength;
-	GetCameraBoom()->SocketOffset = FVector(0.0f,0.0f, CameraSettingsData->DefaultSocketOffsetZ);
+	if (CameraSettingsData)
+	{
+		GetCameraBoom()->TargetArmLength = CameraSettingsData->DefaultCameraBoomLength;
+		GetCameraBoom()->SocketOffset = FVector(0.0f,0.0f, CameraSettingsData->DefaultSocketOffsetZ);
+	}
 }
 
 void AGASCoursePlayerCharacter::OnWindowFocusChanged(bool bIsInFocus)

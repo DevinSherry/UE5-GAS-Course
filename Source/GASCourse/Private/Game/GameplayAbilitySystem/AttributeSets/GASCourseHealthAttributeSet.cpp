@@ -64,6 +64,17 @@ void UGASCourseHealthAttributeSet::PostAttributeChange(const FGameplayAttribute&
 	Super::PostAttributeChange(Attribute, OldValue, NewValue);
 }
 
+void UGASCourseHealthAttributeSet::PostAttributeBaseChange(const FGameplayAttribute& Attribute, float OldValue,
+	float NewValue) const
+{
+	Super::PostAttributeBaseChange(Attribute, OldValue, NewValue);
+
+	if(Attribute == GetCurrentHealthAttribute())
+	{
+		NewValue = FMath::Clamp<float>(NewValue, 0.0f, MaxHealth.GetCurrentValue());
+	}
+}
+
 void UGASCourseHealthAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCallbackData& Data)
 {
 	Super::PostGameplayEffectExecute(Data);
@@ -117,10 +128,6 @@ void UGASCourseHealthAttributeSet::PostGameplayEffectExecute(const FGameplayEffe
 		OnHealingPayload.ContextHandle = Data.EffectSpec.GetContext();
 		OnHealingPayload.EventMagnitude = LocalIncomingHealing;
 		GetOwningAbilitySystemComponent()->HandleGameplayEvent(Event_Gameplay_OnHealing, &OnHealingPayload);
-	}
-	else if (Data.EvaluatedData.Attribute == GetCurrentHealthAttribute())
-	{
-		SetCurrentHealth(FMath::Clamp(GetCurrentHealth(), 0.0f, GetMaxHealth()));
 	}
 }
 

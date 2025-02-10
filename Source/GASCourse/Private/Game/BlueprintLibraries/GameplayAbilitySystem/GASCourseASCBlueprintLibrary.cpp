@@ -13,7 +13,7 @@ bool UGASCourseASCBlueprintLibrary::ApplyDamageToTarget(AActor* Target, AActor* 
 {
 	//Initialize DoTContext to default values to make damage instant.
 	constexpr FDamageOverTimeContext DamageOverTimeContext;
-	if(UGameplayEffect* DamageEffect = ConstructDamageGameplayEffect(EGameplayEffectDurationType::Instant, DamageOverTimeContext))
+	if(UGameplayEffect* DamageEffect = ConstructDamageGameplayEffect(EGameplayEffectDurationType::Instant, DamageOverTimeContext, Damage))
 	{
 		return ApplyDamageToTarget_Internal(Target, Instigator, Damage, DamageContext, DamageEffect);
 	}
@@ -36,7 +36,7 @@ bool UGASCourseASCBlueprintLibrary::ApplyDamageToTargetDataHandle(FGameplayAbili
 bool UGASCourseASCBlueprintLibrary::ApplyDamageOverTimeToTarget(AActor* Target, AActor* Instigator, float Damage,
                                                                 const FDamageContext& DamageContext, const FDamageOverTimeContext& DamageOverTimeContext)
 {
-	UGameplayEffect* DamageEffect = ConstructDamageGameplayEffect(EGameplayEffectDurationType::HasDuration, DamageOverTimeContext);
+	UGameplayEffect* DamageEffect = ConstructDamageGameplayEffect(EGameplayEffectDurationType::HasDuration, DamageOverTimeContext, Damage);
 	return ApplyDamageToTarget_Internal(Target, Instigator, Damage, DamageContext, DamageEffect);
 }
 
@@ -46,7 +46,7 @@ bool UGASCourseASCBlueprintLibrary::ApplyPhysicalDamageToTarget(AActor* Target, 
 	DamageContext.DamageType = DamageType_Physical;
 	DamageContext.HitResult = HitResult;
 	constexpr FDamageOverTimeContext DamageOverTimeContext;
-	UGameplayEffect* DamageEffect = ConstructDamageGameplayEffect(EGameplayEffectDurationType::Instant, DamageOverTimeContext);
+	UGameplayEffect* DamageEffect = ConstructDamageGameplayEffect(EGameplayEffectDurationType::Instant, DamageOverTimeContext, Damage);
 	return ApplyDamageToTarget_Internal(Target, Instigator, Damage, DamageContext, DamageEffect);
 }
 
@@ -64,7 +64,7 @@ bool UGASCourseASCBlueprintLibrary::ApplyFireDamageToTarget(AActor* Target, AAct
 	DamageContext.HitResult = HitResult;
 	
 	constexpr FDamageOverTimeContext DamageOverTimeContext;
-	UGameplayEffect* DamageEffect = ConstructDamageGameplayEffect(EGameplayEffectDurationType::Instant, DamageOverTimeContext);
+	UGameplayEffect* DamageEffect = ConstructDamageGameplayEffect(EGameplayEffectDurationType::Instant, DamageOverTimeContext, Damage);
 	
 	return ApplyDamageToTarget_Internal(Target, Instigator, Damage, DamageContext, DamageEffect);
 }
@@ -112,6 +112,12 @@ bool UGASCourseASCBlueprintLibrary::ApplyDamageToTarget_Internal(AActor* Target,
 				ContextHandle->AddInstigator(Instigator, Instigator);
 				const FGameplayEffectSpecHandle DamageEffectHandle = FGameplayEffectSpecHandle(new FGameplayEffectSpec(DamageEffect, FGameplayEffectContextHandle(ContextHandle), 1.0f));
 				AssignTagSetByCallerMagnitude(DamageEffectHandle, Data_IncomingDamage, Damage);
+
+				//Pass in cache value through tag.
+				if (DamageEffect->DurationPolicy == EGameplayEffectDurationType::HasDuration && DamageEffect->Period.GetValue() > 0.0f)
+				{
+					AddGrantedTags(DamageEffectHandle, FGameplayTagContainer(Data_DamageOverTime));
+				}
 				
 				if(DamageContext.HitResult.bBlockingHit)
 				{
@@ -131,7 +137,7 @@ bool UGASCourseASCBlueprintLibrary::ApplyDamageToTarget_Internal(AActor* Target,
 	return false;
 }
 
-UGameplayEffect* UGASCourseASCBlueprintLibrary::ConstructDamageGameplayEffect(EGameplayEffectDurationType DurationType,  const FDamageOverTimeContext& DamageOverTimeContext)
+UGameplayEffect* UGASCourseASCBlueprintLibrary::ConstructDamageGameplayEffect(EGameplayEffectDurationType DurationType,  const FDamageOverTimeContext& DamageOverTimeContext, float InDamageValue)
 {
 	UGASCourseGameplayEffect* DamageEffect = NewObject<UGASCourseGameplayEffect>(GetTransientPackage());
 	if(DurationType == EGameplayEffectDurationType::Instant)
