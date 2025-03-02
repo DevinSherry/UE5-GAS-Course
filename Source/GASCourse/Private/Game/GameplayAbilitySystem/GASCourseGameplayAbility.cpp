@@ -186,6 +186,9 @@ bool UGASCourseGameplayAbility::CheckCost(const FGameplayAbilitySpecHandle Handl
 					Payload.EventTag = AbilityActivationFail_CantAffordCost;
 					Payload.Target = GetAvatarActorFromActorInfo();
 					AbilitySystemComponent->HandleGameplayEvent(EventTag, &Payload);
+
+					//Haptic feedback for failure.
+					InvokeAbilityFailHapticFeedback();
 				}
 				return false;
 			}
@@ -390,6 +393,9 @@ bool UGASCourseGameplayAbility::CheckCooldown(const FGameplayAbilitySpecHandle H
 						
 						OptionalRelevantTags->AddTag(FailCooldownTag);
 						AbilitySystemComponent->HandleGameplayEvent(EventTag, &Payload);
+
+						//Haptic feedback for failure.
+						InvokeAbilityFailHapticFeedback();
 					}
 
 					// Let the caller know which tags were blocking
@@ -451,5 +457,20 @@ void UGASCourseGameplayAbility::GetStackedAbilityDurationTags(FGameplayTagContai
 	if (const UGameplayEffect* StackDurationGE = StackDurationEffect->GetDefaultObject<UGameplayEffect>())
 	{
 		DurationTags.AppendTags(StackDurationGE->GetGrantedTags());
+	}
+}
+
+void UGASCourseGameplayAbility::InvokeAbilityFailHapticFeedback() const
+{
+	if (const UGASC_AbilitySystemSettings* AbilitySystemSettings = GetDefault<UGASC_AbilitySystemSettings>())
+	{
+		if (AGASCoursePlayerController* PC = GetGASCoursePlayerControllerFromActorInfo())
+		{
+			if (PC->IsLocalPlayerController())
+			{
+				UForceFeedbackEffect* ForceFeedbackEffect = AbilitySystemSettings->HapticFeedback_AbilityActivationFail.Get();
+				PC->ClientPlayForceFeedback(ForceFeedbackEffect);
+			}
+		}
 	}
 }

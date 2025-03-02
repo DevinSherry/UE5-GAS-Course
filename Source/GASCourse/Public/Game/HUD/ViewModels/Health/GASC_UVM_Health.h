@@ -23,8 +23,14 @@ public:
 	UFUNCTION(BlueprintPure, FieldNotify)
 	float GetCurrentHealth() const;
 
+	UFUNCTION(BlueprintPure, FieldNotify)
+	float GetDelayedCurrentHealth() const;
+
 	UFUNCTION(BlueprintCallable)
 	void SetCurrentHealth(const float& NewCurrentHealth);
+	
+	UFUNCTION(BlueprintCallable)
+	void SetDelayedCurrentHealth(const float& NewDelayedCurrentHealth);
 
 	UFUNCTION(BlueprintPure, FieldNotify)
 	float GetMaxHealth() const;
@@ -36,12 +42,18 @@ public:
 	float GetHealthPercentage() const;
 
 	UFUNCTION(BlueprintPure, FieldNotify)
+	float GetDelayedHealthPercentage() const;
+
+	UFUNCTION(BlueprintPure, FieldNotify)
 	FText GetHealthAsDisplay() const;
 
 private:
 
 	UPROPERTY(BlueprintReadOnly, FieldNotify, Setter, Getter,  meta=(AllowPrivateAccess))
 	float CurrentHealth = 0.0f;
+
+	UPROPERTY(BlueprintReadOnly, FieldNotify, Setter, Getter,  meta=(AllowPrivateAccess))
+	float DelayedCurrentHealth = 0.0f;
 
 	UPROPERTY(BlueprintReadOnly, FieldNotify, Setter, Getter,  meta=(AllowPrivateAccess))
 	float MaxHealth = 0.0f;

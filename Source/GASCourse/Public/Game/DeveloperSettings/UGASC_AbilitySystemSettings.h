@@ -31,5 +31,19 @@ public:
 	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "GASCourse|Ability System|Resource")
 	TSubclassOf<UGameplayEffect> PassiveResourceBlocker;
 
+	/**
+	 * HapticFeedback_AbilityActivationFail
+	 *
+	 * Represents the force feedback effect class to be used when an ability activation fails.
+	 * This property is part of the UGASC_AbilitySystemSettings class and is configurable through
+	 * the engine's settings interface. It allows for customization of haptic feedback to enhance
+	 * the player experience by providing tactile feedback in failure scenarios within the ability system.
+	 */
+	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "GASCourse|Ability System|Abilities|Haptic Feedback")
+	TSoftObjectPtr<UForceFeedbackEffect> HapticFeedback_AbilityActivationFail;
+
+	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "GASCourse|Health", meta=(ClampMin="0.0", ClampMax="1.0"))
+	float LowHealthPercentage;
+
 	UGASC_AbilitySystemSettings();
 };

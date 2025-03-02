@@ -256,4 +256,8 @@ protected:
 	 */
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = Costs)
 	FScalableFloat AbilityCost;
+
+private:
+
+	void InvokeAbilityFailHapticFeedback() const;
 };

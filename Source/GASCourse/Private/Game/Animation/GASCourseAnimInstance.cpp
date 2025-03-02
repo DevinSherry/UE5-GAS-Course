@@ -32,14 +32,6 @@ EDataValidationResult UGASCourseAnimInstance::IsDataValid(FDataValidationContext
 void UGASCourseAnimInstance::NativeInitializeAnimation()
 {
 	Super::NativeInitializeAnimation();
-
-	if (const AActor* OwningActor = GetOwningActor())
-	{
-		if (UAbilitySystemComponent* ASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(OwningActor))
-		{
-			InitializeWithAbilitySystem(ASC);
-		}
-	}
 }
 
 void UGASCourseAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
