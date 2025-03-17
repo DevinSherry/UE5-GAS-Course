@@ -13,23 +13,7 @@ public class GASCourse : ModuleRules
         
 		PrivateDependencyModuleNames.AddRange(new[] { "AIModule", "UMG", "Slate", "NetCore", "MotionWarping" });
 		PublicDependencyModuleNames.AddRange(new[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "TargetingSystem", "GameplayAbilities", 
-			"GameplayTasks", "GameplayTags", "ModelViewViewModel", "CogCommon" });
-        
-		if (Target.Configuration != UnrealTargetConfiguration.Shipping)
-		{
-			PublicDependencyModuleNames.AddRange(new[] 
-			{
-				"CogAbility",
-				"CogAI",
-				"CogAll",
-				"CogDebug",
-				"CogEngine",
-				"CogImgui",
-				"CogInput",
-				"CogWindow",
-				"ImGui",
-			});
-		}
+			"GameplayTasks", "GameplayTags", "ModelViewViewModel"});
         
 		if (Target.Type == TargetType.Editor)
 		{

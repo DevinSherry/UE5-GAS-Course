@@ -4,7 +4,6 @@
 
 #include "GASCoursePlayerState.h"
 #include "GameFramework/PlayerController.h"
-#include "CogCommonPossessorInterface.h"
 #include "GASCourse/GASCourseCharacter.h"
 #include "GASCoursePlayerController.generated.h"
 
@@ -12,7 +11,7 @@
  * 
  */
 UCLASS(Config=Game)
-class GASCOURSE_API AGASCoursePlayerController : public APlayerController, public ICogCommonPossessorInterface
+class GASCOURSE_API AGASCoursePlayerController : public APlayerController
 {
 	GENERATED_BODY()
 
@@ -27,12 +26,6 @@ public:
 	void BeginPlay() override;
 
 	void SetupInputComponent() override;
-	
-	UFUNCTION(BlueprintCallable)
-	void SetPossession(APawn* NewPawn) override;
-
-	UFUNCTION(BlueprintCallable)
-	void ResetPossession() override;
 
 	UFUNCTION(BlueprintCallable, Category = "GASCourse|PlayerController")
 	AGASCoursePlayerState* GetGASCoursePlayerState() const;

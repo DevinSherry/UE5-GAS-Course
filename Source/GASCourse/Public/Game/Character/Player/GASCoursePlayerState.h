@@ -8,7 +8,10 @@
 #include "GASCoursePlayerState.generated.h"
 
 /**
- * 
+ * @class AGASCoursePlayerState
+ * @brief Represents the player state in the GAS (Gameplay Ability System) course. It derives from APlayerState and implements the IAbilitySystemInterface.
+ *
+ * This class is responsible for managing the Gameplay Ability System component at the player state level.
  */
 UCLASS()
 class GASCOURSE_API AGASCoursePlayerState : public APlayerState, public IAbilitySystemInterface

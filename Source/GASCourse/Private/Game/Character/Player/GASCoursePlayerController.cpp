@@ -7,21 +7,10 @@
 #include "Kismet/GameplayStatics.h"
 #include "Game/GameplayAbilitySystem/GASCourseNativeGameplayTags.h"
 #include "GameFramework/PlayerInput.h"
-#include "CogCommon.h"
 #include "Abilities/Async/AbilityAsync_WaitGameplayTagCountChanged.h"
-#include "Debug/Cog/CogSampleDefines.h"
-#include "Debug/Cog/CogSampleLogCategories.h"
 #include "Game/Character/Player/GASCoursePlayerCharacter.h"
 #include "Game/Input/GASCourseEnhancedInputComponent.h"
 #include "GASCourse/GASCourseCharacter.h"
-
-
-#if ENABLE_COG
-#include "CogAbilityReplicator.h"
-#include "CogDebugReplicator.h"
-#include "CogEngineReplicator.h"
-#include "Framework/Application/SlateApplication.h"
-#endif //ENABLE_COG
 
 
 AGASCoursePlayerController::AGASCoursePlayerController(const FObjectInitializer& ObjectInitializer)
@@ -49,14 +38,6 @@ void AGASCoursePlayerController::BeginPlayingState()
 void AGASCoursePlayerController::BeginPlay()
 {
 	Super::BeginPlay();
-
-
-#if ENABLE_COG
-	// Spawn the Replicator of each plugin
-	ACogDebugReplicator::Spawn(this);
-	ACogAbilityReplicator::Spawn(this);
-	ACogEngineReplicator::Spawn(this);
-#endif //ENABLE_COG
 }
 
 void AGASCoursePlayerController::SetupInputComponent()
@@ -71,56 +52,6 @@ void AGASCoursePlayerController::SetupInputComponent()
 		EnhancedInputComponent->BindAction(MovementInputAction, ETriggerEvent::Triggered, this, &ThisClass::CanMoveInterrupt);
 	}
 }
-
-void AGASCoursePlayerController::SetPossession(APawn* NewPawn)
-{
-	if (NewPawn == nullptr || GetPawn() == NewPawn)
-    {
-        return;
-    }
-
-    //-------------------------------------------------------------------------------------------
-    // Unplug the current controller so it doesn't conflict with the newly assigned controller
-    //-------------------------------------------------------------------------------------------
-    AController* OldController = NewPawn->GetController();
-    if (OldController != nullptr)
-    {
-        COG_LOG_OBJECT(LogCogPossession, ELogVerbosity::Verbose, this, TEXT("%s unpossess %s"), *GetNameSafe(OldController), *GetNameSafe(NewPawn));
-        OldController->UnPossess();
-    }
-
-    //-------------------------------------------------------------------------------------------
-    // We will need to replug the initial controller of the character we currently control
-    //-------------------------------------------------------------------------------------------
-    AGASCourseCharacter* OldCharacter = Cast<AGASCourseCharacter>(GetPawn());
-
-    //-------------------------------------------------------------------------------------------
-    // Unpossess before possession to prevent a warning
-    //-------------------------------------------------------------------------------------------
-    COG_LOG_OBJECT(LogCogPossession, ELogVerbosity::Verbose, this, TEXT("%s unpossess %s"), *GetNameSafe(this), *GetNameSafe(GetPawn()));
-    UnPossess();
-
-    COG_LOG_OBJECT(LogCogPossession, ELogVerbosity::Verbose, this, TEXT("%s possess %s"), *GetNameSafe(this), *GetNameSafe(NewPawn));
-    Possess(NewPawn);
-
-    //-------------------------------------------------------------------------------------------
-    // Replug the initial controller on the old character. For example, replug the initial
-    // AI controller of an AI when the player finishes controlling it. This needs to be done
-    // after the Possess call.
-    //-------------------------------------------------------------------------------------------
-    if (OldCharacter != nullptr && OldCharacter->InitialController != nullptr && OldCharacter->InitialController != this)
-    {
-        COG_LOG_OBJECT(LogCogPossession, ELogVerbosity::Verbose, this, TEXT("%s possess %s"), *GetNameSafe(OldCharacter->InitialController), *GetNameSafe(OldCharacter));
-        OldCharacter->InitialController->Possess(OldCharacter);
-    }
-
-}
-
-void AGASCoursePlayerController::ResetPossession()
-{
-	SetPossession(InitialPossessedCharacter.Get());
-}
-
 
 AGASCoursePlayerState* AGASCoursePlayerController::GetGASCoursePlayerState() const
 {

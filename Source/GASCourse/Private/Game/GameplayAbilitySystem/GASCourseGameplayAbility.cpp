@@ -70,8 +70,11 @@ AGASCoursePlayerCharacter* UGASCourseGameplayAbility::GetGASCouresPlayerCharacte
 void UGASCourseGameplayAbility::TryActivateAbilityOnSpawn(const FGameplayAbilityActorInfo* ActorInfo,
 	const FGameplayAbilitySpec& Spec) const
 {
+	if (InstancingPolicy == EGameplayAbilityInstancingPolicy::InstancedPerExecution)
+	{
+		return;
+	}
 	const bool bIsPredicting = (Spec.GetPrimaryInstance()->GetCurrentActivationInfo().ActivationMode == EGameplayAbilityActivationMode::Predicting);
-	
 	
 	// Try to activate if activation policy is on spawn.
 	if (ActorInfo && !Spec.IsActive() && !bIsPredicting && (ActivationPolicy == EGASCourseAbilityActivationPolicy::OnSpawn))
@@ -138,6 +141,16 @@ void UGASCourseGameplayAbility::OnGiveAbility(const FGameplayAbilityActorInfo* A
 void UGASCourseGameplayAbility::OnRemoveAbility(const FGameplayAbilityActorInfo* ActorInfo,
 	const FGameplayAbilitySpec& Spec)
 {
+	if (InstancingPolicy == EGameplayAbilityInstancingPolicy::InstancedPerExecution)
+	{
+		if (IsActive())
+		{
+			EndAbility(Spec.Handle, ActorInfo, CurrentActivationInfo, true, false);
+			K2_OnAbilityRemoved();
+			return;
+		}
+	}
+
 	EndAbility(Spec.Handle, ActorInfo, Spec.GetPrimaryInstance()->GetCurrentActivationInfo(), true, false);
 	K2_OnAbilityRemoved();
 	Super::OnRemoveAbility(ActorInfo, Spec);

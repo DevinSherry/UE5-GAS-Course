@@ -23,12 +23,12 @@ float UGASC_UVM_Health::GetDelayedHealthPercentage() const
 {
 	if(MaxHealth != 0.0f)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Current Health: %f | Max Health: %f"), DelayedCurrentHealth, MaxHealth);
+		//UE_LOG(LogTemp, Warning, TEXT("Current Health: %f | Max Health: %f"), DelayedCurrentHealth, MaxHealth);
 		return DelayedCurrentHealth / MaxHealth;
 	}
 	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Max Health == 0.0!"));
+		//UE_LOG(LogTemp, Warning, TEXT("Max Health == 0.0!"));
 		return 0.0f;
 	}
 }
