@@ -11,7 +11,16 @@
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnDurationChanged, FGameplayTag, DurationTag, float, TimeRemaining, float, Duration);
 
 /**
- * 
+ * UAbilityTask_WaitForDurationEffectChange is an abstract class derived from UBlueprintAsyncActionBase.
+ * This class provides functionality to monitor gameplay effects with duration tags, track their changes
+ * over time, and broadcast events when specific conditions are met.
+ *
+ * It handles the following events:
+ * - Notifying when a gameplay effect with specific duration tags starts (OnDurationBegin).
+ * - Notifying when a gameplay effect with specific duration tags ends (OnDurationEnd).
+ * - Periodically broadcasting updates for the remaining time and total duration of a gameplay effect (OnDurationTimeUpdated).
+ *
+ * The primary targets are gameplay effects with duration tags applied to an ability system component (ASC).
  */
 
 UCLASS(Abstract)
