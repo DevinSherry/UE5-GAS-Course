@@ -125,6 +125,10 @@ public:
 	virtual void AcknowledgePossession(AController* NewController);
 
 	virtual void AcknowledgeUnpossession();
+
+	
+	UFUNCTION()
+	virtual bool SimulateInputActionFromBuffer(FGameplayTag InputTag);
 	
 protected:
 

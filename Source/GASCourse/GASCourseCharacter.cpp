@@ -403,6 +403,11 @@ void AGASCourseCharacter::OnRep_ReplicationVarList()
 	}
 }
 
+bool AGASCourseCharacter::SimulateInputActionFromBuffer(FGameplayTag InputTag)
+{
+	return true;
+}
+
 void AGASCourseCharacter::SetCharacterRotation_Client_Implementation(FRotator InRotation)
 {
 	RotateToDirection = InRotation;

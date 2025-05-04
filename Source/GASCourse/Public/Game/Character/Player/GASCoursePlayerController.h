@@ -8,24 +8,34 @@
 #include "GASCoursePlayerController.generated.h"
 
 /**
- * 
+ * @brief A PlayerController class for the GAS Course.
+ *
+ * AGASCoursePlayerController is a custom PlayerController class that integrates various systems,
+ * such as abilities and state trees, to manage player input, HUD creation, damage handling, and gameplay interactions.
  */
 UCLASS(Config=Game)
 class GASCOURSE_API AGASCoursePlayerController : public APlayerController
 {
 	GENERATED_BODY()
 
+	/** State Tree for Player*/
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = StateTree, meta = (AllowPrivateAccess = "true"))
+	class UStateTreeComponent* PlayerStateTreeComponent;
+
+	void InitializeStateTree();
+
+
 public:
 	
 	AGASCoursePlayerController(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 
-	void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
-	void BeginPlayingState() override;
+	virtual void BeginPlayingState() override;
 
-	void BeginPlay() override;
+	virtual void BeginPlay() override;
 
-	void SetupInputComponent() override;
+	virtual void SetupInputComponent() override;
 
 	UFUNCTION(BlueprintCallable, Category = "GASCourse|PlayerController")
 	AGASCoursePlayerState* GetGASCoursePlayerState() const;
@@ -36,25 +46,10 @@ public:
 	virtual void PreProcessInput(const float DeltaTime, const bool bGamePaused) override;
 	/** Method called after processing input */
 	virtual void PostProcessInput(const float DeltaTime, const bool bGamePaused) override;
-	
-	UFUNCTION(Category = "GASCourse|PlayerController|Movement")
-	FORCEINLINE FVector3d GetCachedDestination() const {return CachedDestination;};
-
-	UFUNCTION(Category = "GASCourse|PlayerController|Movement")
-	FORCEINLINE void SetCachedDestination(const FVector3d& NewCachedDestination)
-	{
-		if(NewCachedDestination != GetCachedDestination())
-		{
-			CachedDestination = NewCachedDestination;
-		}
-	}
 
 	virtual void OnPossess(APawn* InPawn) override;
 
 public:
-
-	UFUNCTION(BlueprintGetter)
-	FORCEINLINE bool IsUsingGamepad() {return bUsingGamepad;}
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "GASCourse|HUD")
 	void CreateHUD();
@@ -62,33 +57,20 @@ public:
 	void CreateHUD_Implementation();
 
 	/**
-	 * @brief Structure representing the result of a hit test performed under the mouse cursor.
-	 *
-	 * This structure holds information about the hit result under the mouse cursor, including the location, normal, distance, and other properties of the hit.
-	 * The hit result is typically the result of performing a collision check or a raycast from the cursor position.
-	 *
-	 * @note The structure is decorated with various UPROPERTY attributes to control replication, accessibility, and persistence in Blueprints.
-	 *
-	 * @see FHitResult
-	 */
-	UPROPERTY(Replicated, BlueprintReadOnly, Transient)
-	FHitResult HitResultUnderMouseCursor;
-
-	/**
-	 * \brief Represents the direction of the mouse cursor projected onto the world space.
-	 *
-	 * This variable is used to store the direction of the mouse cursor after it has been deprojected onto the world space.
-	 *
-	 * \details The mouse direction is deprojected onto the world space to determine the direction in which the mouse cursor is pointing in the game world.
-	 * This allows for accurate targeting and interaction between the player and the game environment.
-	 *
-	 * \note This variable is replicated to all clients to ensure consistency across the network.
-	 * It is also marked as BlueprintReadOnly to prevent modification from outside the class.
-	 * Finally, it is marked as Transient to indicate that it is not relevant for serialization.
-	 *
-	 * \see FVector
-	 */
-	UPROPERTY(Replicated, BlueprintReadOnly, Transient)
+ * \brief Represents the direction of the mouse cursor projected onto the world space.
+ *
+ * This variable is used to store the direction of the mouse cursor after it has been deprojected onto the world space.
+ *
+ * \details The mouse direction is deprojected onto the world space to determine the direction in which the mouse cursor is pointing in the game world.
+ * This allows for accurate targeting and interaction between the player and the game environment.
+ *
+ * \note This variable is replicated to all clients to ensure consistency across the network.
+ * It is also marked as BlueprintReadOnly to prevent modification from outside the class.
+ * Finally, it is marked as Transient to indicate that it is not relevant for serialization.
+ *
+ * \see FVector
+ */
+	UPROPERTY(Transient)
 	FVector MouseDirectionDeprojectedToWorld;
 
 	/**
@@ -103,7 +85,7 @@ public:
 	 *
 	 * @see FVector
 	 */
-	UPROPERTY(Replicated, BlueprintReadOnly, Transient)
+	UPROPERTY(Transient)
 	FVector MousePositionDeprojectedToWorld;
 
 	/**
@@ -118,52 +100,7 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TArray<TEnumAsByte<EObjectTypeQuery>> HitResultUnderMouseCursorObjectTypes;
 
-	UPROPERTY(Replicated, BlueprintReadOnly, Transient)
-	FRotator CameraRotation;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
-	UInputAction* MovementInputAction = nullptr;
-
-	/**
-	 * @brief Get the hit result under the mouse cursor.
-	 *
-	 * This function is used to get the hit result under the current position of the mouse cursor.
-	 * It returns the hit result which stores information about the object hit by the mouse cursor.
-	 */
-	UFUNCTION(Client, Reliable, Category="GASCourse|PlayerController|Mouse")
-	void GetHitResultUnderMouseCursor();
-	
-	UFUNCTION(Client, Reliable, Category="GASCourse|PlayerController|Mouse")
-	void GetMousePositionInViewport();
-
-	UFUNCTION(Server, Reliable, Category="GASCourse|PlayerController|Mouse")
-	void UpdateHitResultOnServer(FHitResult InHitResult);
-	
-	UFUNCTION(Server, Reliable, Category="GASCourse|PlayerController|Mouse")
-	void UpdateMousePositionInViewport(FVector InMousePosition, FVector InMouseDirection);
-	
-	UFUNCTION(Server, Reliable, Category= "GASCourse|PlayerController|Gamepad")
-	void GetCameraRotation(FRotator InCameraRotation);
-
-	UFUNCTION(Client, Reliable, Category= "GASCourse|PlayerController|Gamepad")
-	void Client_GetCameraRotation();
-
-	UFUNCTION(Server, Reliable, Category= "GASCourse|PlayerController|Gamepad")
-	void GetIsUsingGamepad(bool bInUsingGamepad);
-
-	UFUNCTION(Client, Reliable, Category= "GASCourse|PlayerController|Gamepad")
-	void Client_GetIsUsingGamepad();
-
-	UFUNCTION(BlueprintCallable, Reliable, Client)
-	void StopMovement_Client();
-
-	UFUNCTION(Reliable, Server)
-	void StopMovement_Server();
-
-	UFUNCTION(Reliable, NetMulticast)
-	void StopMovement_Multicast();
-
-	bool InputKey(const FInputKeyParams& Params) override;
+	virtual bool InputKey(const FInputKeyParams& Params) override;
 
 protected:
 
@@ -174,42 +111,9 @@ protected:
 	
 	void OnDamageDealtCallback(const FGameplayEventData* Payload);
 
-	/**
-	 * @brief Callback method triggered when the count of a gameplay tag changes.
-	 *
-	 * This method is called whenever the count associated with a gameplay tag is updated. It provides information about the gameplay tag and the new count value.
-	 *
-	 * @param Tag The gameplay tag that has been updated.
-	 * @param NewCount The new count value associated with the gameplay tag.
-	 */
-	void RegisterCanMoveInterruptTagCountChanged(const FGameplayTag Tag, int32 NewCount);
-
 	UFUNCTION(BlueprintImplementableEvent)
 	void OnDamageDealt(const FGameplayEventData& Payload);
 
 	UFUNCTION()
-	void CanMoveInterrupt();
-
-	UPROPERTY(Replicated, BlueprintReadOnly, Transient, BlueprintGetter=IsUsingGamepad)
-	bool bUsingGamepad;
-
-	UPROPERTY(Replicated, BlueprintReadOnly, Transient)
-	bool bCanMoveInterrupt = false;
-
-private:
-
-	FVector3d CachedDestination = FVector3d(0.0f,0.0f,0.0f);
-
-
-	//----------------------------------------------------------------------------------------------------------------------
-	// Possession
-	//----------------------------------------------------------------------------------------------------------------------
-
-	UPROPERTY(BlueprintReadonly, meta = (AllowPrivateAccess = "true"))
-	TWeakObjectPtr<AGASCourseCharacter> PossessedCharacter = nullptr;
-
-	UPROPERTY(BlueprintReadonly, meta = (AllowPrivateAccess = "true"))
-	TWeakObjectPtr<AGASCourseCharacter> InitialPossessedCharacter = nullptr;
-
-	
+	void GetMousePositionInViewport();
 };

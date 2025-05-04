@@ -15,7 +15,9 @@
 				"TargetingSystem",
 				"CoreUObject",
 				"AIModule",
-				"DeveloperSettings"
+				"DeveloperSettings",
+				"StateTreeModule",
+				"GameplayStateTreeModule"
 			]
 		}
 	],
@@ -100,6 +102,10 @@
 		},
 		{
 			"Name": "CascadeToNiagaraConverter",
+			"Enabled": true
+		},
+		{
+			"Name": "StateTree",
 			"Enabled": true
 		}
 	]

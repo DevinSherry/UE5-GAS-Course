@@ -23,8 +23,7 @@ class GASCOURSE_API UGASCourseEnhancedInputComponent : public UEnhancedInputComp
 	GENERATED_BODY()
 	
 public:
-
-
+	
 	template<class UserClass, typename FuncType>
 	void BindActionByTag(const UGASCourseInputConfig* InputConfig, const FGameplayTag& InputTag, ETriggerEvent TriggerEvent, UserClass* Object, FuncType Func);
 

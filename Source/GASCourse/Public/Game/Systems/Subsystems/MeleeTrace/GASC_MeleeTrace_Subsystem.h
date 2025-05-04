@@ -3,68 +3,90 @@
 #pragma once
 
 #include "Subsystems/WorldSubsystem.h"
+#include "GASCourse/Public/Game/Systems/Subsystems/MeleeTrace/Shapes/GASC_MeleeShape_Base.h"
 #include "Misc/Guid.h"
+#include "CollisionShape.h"
+#include "Engine/Engine.h"
+#include "Kismet/KismetSystemLibrary.h"
 #include "GASC_MeleeTrace_Subsystem.generated.h"
 
+DECLARE_LOG_CATEGORY_EXTERN(LOG_GASC_MeleeTraceSubsystem, Log, All);
+
 UENUM(BlueprintType)
-enum class ETraceShape : uint8
+enum class EGASC_MeleeTrace_TraceShape : uint8
 {
-	Box     UMETA(DisplayName = "Box"),
-	Capsule UMETA(DisplayName = "Capsule"),
-	Sphere  UMETA(DisplayName = "Sphere"),
-	Line    UMETA(DisplayName = "Line")
+	Box,
+	Capsule,
+	Sphere 
 };
 
+USTRUCT(BlueprintType)
+struct FGASC_MeleeTrace_TraceShapeData : public FTableRowBase
+{
+	GENERATED_USTRUCT_BODY()
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Melee Trace|Shape Data")
+	EGASC_MeleeTrace_TraceShape TraceShape = EGASC_MeleeTrace_TraceShape::Box;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Melee Trace|Shape Data", meta=(EditCondition = "TraceShape == EGASC_MeleeTrace_TraceShape::Sphere"))
+	float SphereRadius = 30.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Melee Trace|Shape Data", meta=(EditCondition = "TraceShape == EGASC_MeleeTrace_TraceShape::Capsule"))
+	float CapsuleRadius = 30.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Melee Trace|Shape Data", meta=(EditCondition = "TraceShape == EGASC_MeleeTrace_TraceShape::Capsule"))
+	float CapsuleHeight = 30.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Melee Trace|Shape Data", meta=(EditCondition = "TraceShape == EGASC_MeleeTrace_TraceShape::Box"))
+	FVector BoxExtent = FVector::Zero();
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Melee Trace|Socket Data")
+	FName StartSocket = FName("WeaponTrace_Start");
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Melee Trace|Socket Data")
+	FName EndSocket = FName("WeaponTrace_End");
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Melee Trace|Socket Data")
+	int32 TraceDensity = 2;
+	
+};
+
+/**
+ * FGASC_MeleeTrace_Subsystem_Data is a data structure used for configuring and handling melee trace functionality.
+ * It encapsulates configuration details required for performing melee traces, including trace shape, trace sockets,
+ * trace density, and runtime metadata such as source mesh component, instigator actor, and collision data.
+ *
+ * This structure serves as the core data exchanged and processed by the melee trace subsystem, enabling precise
+ * collision detection and multi-frame sample tracking during melee interactions.
+ */
 USTRUCT(BlueprintType)
 struct FGASC_MeleeTrace_Subsystem_Data
 {
 	GENERATED_USTRUCT_BODY()
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MeleeTrace")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Instanced, Category = "Melee Trace")
+	TObjectPtr<UGASC_MeleeShape_Base> TraceShape;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Melee Trace")
+	FName TraceSocket_Start = FName("");
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Melee Trace")
+	FName TraceSocket_End = FName("");
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Melee Trace")
+	int32 TraceDensity = 1;
+
+	TWeakObjectPtr<UMeshComponent> SourceMeshComponent = nullptr;
 	AActor* InstigatorActor = nullptr;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MeleeTrace")
-	ETraceShape TraceShape = ETraceShape::Sphere;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MeleeTrace")
-	float TraceRadius = 100.0f;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MeleeTrace")
-	FVector TraceBoxExtent = FVector(0);
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MeleeTrace")
-	float CapsuleHalfHeight = 100.0f;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MeleeTrace")
-	float CapsuleRadius = 100.0f;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MeleeTrace")
-	TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MeleeTrace")
-	FName TraceSocketStart = FName(TEXT(""));
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MeleeTrace")
-	UStaticMeshComponent* WeaponMesh = nullptr;
-
+	FCollisionShape TraceCollisionShape;
+	TArray<FVector> PreviousFrameSamples;
+	TArray<AActor*> HitActors;
+	TArray<AActor*> HitActors_PreviousFrames;
+	TArray<FHitResult> HitResults_PreviousFrames;
+	
 	FGuid TraceId;
-	FVector PreviousPosition = FVector::ZeroVector;
-	FVector CurrentPosition = FVector::ZeroVector;
-	int32 TraceCount = 0;
 
 	FGASC_MeleeTrace_Subsystem_Data() {}
-
-	FGASC_MeleeTrace_Subsystem_Data(AActor* InInstigator, ETraceShape InTraceShape, float InTraceRadius, FVector InTraceBoxExtent, float InCapsuleHalfHeight, float InCapsuleRadius, TArray<EObjectTypeQuery> InObjectTypes, FName InTraceSocketStart)
-		: InstigatorActor(InInstigator)
-		, TraceShape(InTraceShape)
-		, TraceRadius(InTraceRadius)
-		, TraceBoxExtent(InTraceBoxExtent)
-		, CapsuleHalfHeight(InCapsuleHalfHeight)
-		, CapsuleRadius(InCapsuleRadius)
-		, ObjectTypes(InObjectTypes)
-		, TraceSocketStart(InTraceSocketStart)
-	{
-	}
 };
 
 /**
@@ -88,33 +110,95 @@ public:
 
 	virtual void OnWorldBeginPlay(UWorld& InWorld) override;
 
-#if WITH_EDITOR
-	UFUNCTION(BlueprintCallable, Category="GASCourse|MeleeTrace")
-	void InEditor_DrawSphereMeleeTrace(USkeletalMeshComponent* SkeletalMeshComponent, float inRadius, FName inTraceSocketStart);
-#endif // WITH_EDITOR
+	void DrawDebugMeleeTrace(const UObject* WorldContextObject, const FCollisionShape& MeleeTraceShape, const FTransform& Start, const FTransform& End,
+		bool bHit, const TArray<FHitResult>& HitResults);
+
+	void DrawDebugSphereTraceMulti(const UWorld* World,
+		const FVector& Start,
+		const FVector& End,
+		float Radius,
+		EDrawDebugTrace::Type DrawDebugType,
+		bool bHit,
+		const TArray<FHitResult>& Hits,
+		const FLinearColor& TraceColor,
+		const FLinearColor& TraceHitColor,
+		float DrawTime);
+	
+	void DrawDebugSweptSphere(const UWorld* InWorld,
+		FVector const& Start,
+		FVector const& End,
+		float Radius,
+		FColor const& Color,
+		bool bPersistentLines,
+		float LifeTime,
+		uint8 DepthPriority = 0);
+
+	void DrawDebugCapsuleTraceMulti(const UWorld* World,
+	const FVector& Start,
+	const FVector& End,
+	const FQuat& Orientation,
+	float Radius,
+	float HalfHeight,
+	EDrawDebugTrace::Type DrawDebugType,
+	bool bHit,
+	const TArray<FHitResult>& HitResults,
+	const FLinearColor& TraceColor,
+	const FLinearColor& TraceHitColor,
+	float DrawTime);
+
+	void DrawDebugBoxTraceMulti(const UWorld* World,
+	const FVector& Start,
+	const FVector& End,
+	const FRotator& Orientation,
+	const FVector& BoxExtent,
+	EDrawDebugTrace::Type DrawDebugType,
+	bool bHit,
+	const TArray<FHitResult>& HitResults,
+	const FLinearColor& TraceColor,
+	const FLinearColor& TraceHitColor,
+	float DrawTime);
+
+	void DrawDebugSweptBox(const UWorld* InWorld,
+	FVector const& Start,
+	FVector const& End,
+	FRotator const& Orientation,
+	FVector const& HalfSize,
+	FColor const& Color,
+	bool bPersistentLines,
+	float LifeTime,
+	uint8 DepthPriority = 0);
 
 	UFUNCTION(BlueprintCallable, Category="GASCourse|MeleeTrace")
-	void RequestSphereMeleeTrace(AActor* Instigator, float inRadius, FName inTraceSocketStart, TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes, bool bUseWeapon, FGuid TraceId);
+	void RequestShapeMeleeTrace(AActor* Instigator, FGASC_MeleeTrace_Subsystem_Data TraceData, FGuid TraceId);
 
 	UFUNCTION(BlueprintCallable, Category="GASCourse|MeleeTrace")
 	bool IsMeleeTraceInProgress(FGuid TraceId);
 
+	FGASC_MeleeTrace_Subsystem_Data CreateShapeDataFromRow(FGASC_MeleeTrace_TraceShapeData RowData);
+
 	UFUNCTION(BlueprintCallable, Category="GASCourse|MeleeTrace")
 	bool CancelMeleeTrace(FGuid TraceId);
+
+	UFUNCTION()
+	TWeakObjectPtr<UMeshComponent> GetMeshComponent(AActor* Actor, const FName& StartSocketName, const FName& EndSocketName);
 
 	virtual TStatId GetStatId() const override
 	{
 		return GetStatID();
 	}
 
+	static void GetTraceSamples(const UMeshComponent* MeshComponent,
+	int32 TraceDensity,
+	const FName& StartSocketName,
+	const FName& EndSocketName,
+	TArray<FVector>& OutSamples);
+
 private:
 	
 	TArray<FGASC_MeleeTrace_Subsystem_Data> MeleeTraceRequests;
-	FGASC_MeleeTrace_Subsystem_Data* ActiveMeleeTraceRequest;
 
 	void ProcessMeleeTraces(float DeltaTime);
 
-	FVector GetSocketTraceLocationFromMesh(AActor* Instigator, FName TraceStartSocketName, FName TraceEndSocketName) const;
-
-	const float TraceGranularity = 10.0f;
+	FCollisionObjectQueryParams ConfigureCollisionObjectParams(const TArray<TEnumAsByte<EObjectTypeQuery> > & ObjectTypes);
+	
 };

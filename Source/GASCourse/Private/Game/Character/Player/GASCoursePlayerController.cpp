@@ -2,32 +2,28 @@
 
 
 #include "Game/Character/Player/GASCoursePlayerController.h"
-#include "Net/UnrealNetwork.h"
-#include "Blueprint/WidgetLayoutLibrary.h"
-#include "Kismet/GameplayStatics.h"
-#include "Game/GameplayAbilitySystem/GASCourseNativeGameplayTags.h"
-#include "GameFramework/PlayerInput.h"
-#include "Abilities/Async/AbilityAsync_WaitGameplayTagCountChanged.h"
-#include "Game/Character/Player/GASCoursePlayerCharacter.h"
-#include "Game/Input/GASCourseEnhancedInputComponent.h"
-#include "GASCourse/GASCourseCharacter.h"
 
+#include "Blueprint/WidgetLayoutLibrary.h"
+#include "Game/GameplayAbilitySystem/GASCourseNativeGameplayTags.h"
+#include "GASCourse/GASCourseCharacter.h"
+#include "Components/StateTreeComponent.h"
+#include "Kismet/GameplayStatics.h"
 
 AGASCoursePlayerController::AGASCoursePlayerController(const FObjectInitializer& ObjectInitializer)
 {
 	bEnableMouseOverEvents = true;
+	PlayerStateTreeComponent = CreateDefaultSubobject<UStateTreeComponent>(TEXT("StateTreeComponent"));
+}
+
+
+void AGASCoursePlayerController::InitializeStateTree()
+{
+	
 }
 
 void AGASCoursePlayerController::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-	
-	DOREPLIFETIME(AGASCoursePlayerController, HitResultUnderMouseCursor);
-	DOREPLIFETIME(AGASCoursePlayerController, MouseDirectionDeprojectedToWorld);
-	DOREPLIFETIME(AGASCoursePlayerController, MousePositionDeprojectedToWorld);
-	DOREPLIFETIME(AGASCoursePlayerController, CameraRotation);
-	DOREPLIFETIME(AGASCoursePlayerController, bUsingGamepad);
-	DOREPLIFETIME(AGASCoursePlayerController, bCanMoveInterrupt);
 }
 
 void AGASCoursePlayerController::BeginPlayingState()
@@ -43,14 +39,6 @@ void AGASCoursePlayerController::BeginPlay()
 void AGASCoursePlayerController::SetupInputComponent()
 {
 	Super::SetupInputComponent();
-
-	// Set up action bindings
-	if (UGASCourseEnhancedInputComponent* EnhancedInputComponent = CastChecked<UGASCourseEnhancedInputComponent>(InputComponent))
-	{
-		check(EnhancedInputComponent);
-
-		EnhancedInputComponent->BindAction(MovementInputAction, ETriggerEvent::Triggered, this, &ThisClass::CanMoveInterrupt);
-	}
 }
 
 AGASCoursePlayerState* AGASCoursePlayerController::GetGASCoursePlayerState() const
@@ -93,8 +81,14 @@ void AGASCoursePlayerController::OnPossess(APawn* InPawn)
 	if(UGASCourseAbilitySystemComponent* ASC = GetGASCourseAbilitySystemComponent())
 	{
 		ASC->GenericGameplayEventCallbacks.FindOrAdd(Event_Gameplay_OnDamageDealt).AddUObject(this, &AGASCoursePlayerController::OnDamageDealtCallback);
-		ASC->RegisterGameplayTagEvent(Status_CanMoveInterrupt, EGameplayTagEventType::AnyCountChange).AddUObject(this, &AGASCoursePlayerController::RegisterCanMoveInterruptTagCountChanged);
 	}
+	
+	if (PlayerStateTreeComponent)
+	{
+		InitializeStateTree();
+		PlayerStateTreeComponent->StartLogic();
+	}
+
 }
 
 void AGASCoursePlayerController::CreateHUD_Implementation()
@@ -102,95 +96,8 @@ void AGASCoursePlayerController::CreateHUD_Implementation()
 
 }
 
-void AGASCoursePlayerController::GetHitResultUnderMouseCursor_Implementation()
-{
-	GetHitResultUnderCursorForObjects(HitResultUnderMouseCursorObjectTypes, true, HitResultUnderMouseCursor);
-	if(GetLocalRole() != ROLE_Authority)
-	{
-		UpdateHitResultOnServer(HitResultUnderMouseCursor);
-	}
-}
-
-void AGASCoursePlayerController::UpdateHitResultOnServer_Implementation(FHitResult InHitResult)
-{
-	HitResultUnderMouseCursor = InHitResult;
-}
-
-void AGASCoursePlayerController::GetMousePositionInViewport_Implementation()
-{
-	const FVector2D MousePositionInViewport = UWidgetLayoutLibrary::GetMousePositionOnViewport(this);
-	UGameplayStatics::DeprojectScreenToWorld(this, MousePositionInViewport, MousePositionDeprojectedToWorld, MouseDirectionDeprojectedToWorld);
-	if(GetLocalRole() != ROLE_Authority)
-	{
-		UpdateMousePositionInViewport(MousePositionDeprojectedToWorld, MouseDirectionDeprojectedToWorld);
-	}
-}
-
-void AGASCoursePlayerController::UpdateMousePositionInViewport_Implementation(FVector InMousePosition, FVector InMouseDirection)
-{
-	MouseDirectionDeprojectedToWorld = InMouseDirection;
-	MousePositionDeprojectedToWorld = InMousePosition;
-}
-
-void AGASCoursePlayerController::GetCameraRotation_Implementation(FRotator InCameraRotation)
-{
-	CameraRotation = InCameraRotation;
-}
-
-void AGASCoursePlayerController::Client_GetCameraRotation_Implementation()
-{
-	if(PlayerCameraManager)
-	{
-		CameraRotation = PlayerCameraManager->GetCameraRotation();
-		if(GetLocalRole() != ROLE_Authority)
-		{
-			GetCameraRotation(CameraRotation);
-		}
-	}
-}
-
-void AGASCoursePlayerController::GetIsUsingGamepad_Implementation(bool bInUsingGamepad)
-{
-	bUsingGamepad = bInUsingGamepad;
-}
-
-void AGASCoursePlayerController::Client_GetIsUsingGamepad_Implementation()
-{
-	if(GetLocalRole() != ROLE_Authority)
-	{
-		GetIsUsingGamepad(bUsingGamepad);
-	}
-}
-
-void AGASCoursePlayerController::StopMovement_Client_Implementation()
-{
-	StopMovement();
-	if(HasAuthority())
-	{
-		StopMovement();
-	}
-	else
-	{
-		StopMovement_Server();
-	}
-}
-
-void AGASCoursePlayerController::StopMovement_Server_Implementation()
-{
-	StopMovement();
-	StopMovement_Multicast();
-}
-
-void AGASCoursePlayerController::StopMovement_Multicast_Implementation()
-{
-	StopMovement();
-	ForceNetUpdate();
-}
-
 bool AGASCoursePlayerController::InputKey(const FInputKeyParams& Params)
 {
-	bUsingGamepad = Params.IsGamepad();
-	Client_GetIsUsingGamepad();
 	return Super::InputKey(Params);
 }
 
@@ -213,9 +120,7 @@ void AGASCoursePlayerController::OnRep_Pawn()
 void AGASCoursePlayerController::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
-	//GetHitResultUnderMouseCursor();
 	GetMousePositionInViewport();
-	Client_GetCameraRotation();
 }
 
 void AGASCoursePlayerController::OnDamageDealtCallback(const FGameplayEventData* Payload)
@@ -223,27 +128,8 @@ void AGASCoursePlayerController::OnDamageDealtCallback(const FGameplayEventData*
 	OnDamageDealt(*Payload);
 }
 
-void AGASCoursePlayerController::RegisterCanMoveInterruptTagCountChanged(const FGameplayTag Tag, int32 NewCount)
+void AGASCoursePlayerController::GetMousePositionInViewport()
 {
-	bCanMoveInterrupt = static_cast<bool>(NewCount);
-}
-
-void AGASCoursePlayerController::CanMoveInterrupt()
-{
-	if(bCanMoveInterrupt)
-	{
-		if(AGASCoursePlayerCharacter* PlayerCharacter = Cast<AGASCoursePlayerCharacter>(GetPawn()))
-		{
-			UAnimInstance* AnimInstance = PlayerCharacter->GetMesh()->GetAnimInstance();
-			check(AnimInstance);
-			if(UAnimMontage* AnimMontage = AnimInstance->GetCurrentActiveMontage())
-			{
-				if(AnimInstance->IsSlotActive(FName("DefaultSlot")))
-				{
-					const FAlphaBlendArgs& BlendOutArgs = AnimMontage->GetBlendOutArgs();
-					AnimInstance->Montage_StopWithBlendOut(BlendOutArgs, AnimMontage);
-				}
-			}
-		}
-	}
+	const FVector2D MousePositionInViewport = UWidgetLayoutLibrary::GetMousePositionOnViewport(this);
+	UGameplayStatics::DeprojectScreenToWorld(this, MousePositionInViewport, MousePositionDeprojectedToWorld, MouseDirectionDeprojectedToWorld);
 }

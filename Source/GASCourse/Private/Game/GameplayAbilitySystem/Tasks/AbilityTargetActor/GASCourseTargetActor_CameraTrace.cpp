@@ -126,9 +126,11 @@ FHitResult AGASCourseTargetActor_CameraTrace::PerformTrace(AActor* InSourceActor
 	
 	AGASCoursePlayerController* PC = Cast<AGASCoursePlayerController>(OwningAbility->GetCurrentActorInfo()->PlayerController.Get());
 	check(PC);
+
 	
 	FVector TraceStart = PC->MousePositionDeprojectedToWorld;
 	FVector TraceEnd = TraceStart + PC->MouseDirectionDeprojectedToWorld * MaxRange;
+	
 
 	bLastTraceWasGood = false;
 	

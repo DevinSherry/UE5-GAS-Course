@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
 #include "GameplayEffect.h"
 #include "Engine/DeveloperSettings.h"
 #include "UGASC_AbilitySystemSettings.generated.h"
@@ -16,7 +15,7 @@
  * Configurable Properties:
  * - PassiveResourceBlocker: Specifies a gameplay effect class to be used as a passive resource blocker in the ability system.
  */
-UCLASS(Config=Game, defaultconfig, meta = (DisplayName="GAS Course Ability System Globals"))
+UCLASS(Config=Game, defaultconfig, meta = (DisplayName="GASCourse Ability System Settings"))
 class GASCOURSE_API UGASC_AbilitySystemSettings : public UDeveloperSettings
 {
 	GENERATED_BODY()
