@@ -18,8 +18,6 @@ void UGASCourseStatusEffectTable::PostLoad()
 void UGASCourseStatusEffectTable::ApplyGameplayStatusEffect(UAbilitySystemComponent* TargetASC,
 	UAbilitySystemComponent* InstigatorASC, const FGameplayTagContainer& StatusEffectTags)
 {
-	UE_LOG(LogTemp, Warning, TEXT("Tags: %s"), *StatusEffectTags.ToString());
-
 	FGameplayTagEventResponseTableEntry FoundStatusEffectEntry;
 	FGameplayTag FoundStatusTag;
 	if(HasMatchingStatusEffectTag(StatusEffectTags, FoundStatusEffectEntry, FoundStatusTag))

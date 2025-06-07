@@ -2,7 +2,6 @@
 
 
 #include "Game/Character/Projectile/GASCourseProjectile.h"
-#include "Net/UnrealNetwork.h"
 #include "GASCourse/GASCourseCharacter.h"
 #include "Game/Character/Projectile/Components/GASCourseProjectileMovementComp.h"
 #include "Components/SphereComponent.h"
@@ -27,10 +26,72 @@ AGASCourseProjectile::AGASCourseProjectile()
 	ProjectileCollisionComp->SetEnableGravity(false);
 }
 
-void AGASCourseProjectile::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+bool AGASCourseProjectile::CanProjectileRicochet_Implementation()
 {
-	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-	DOREPLIFETIME_CONDITION_NOTIFY(AGASCourseProjectile, TargetActor, COND_None, REPNOTIFY_Always);
+	return false;
+	//return CanProjectileRicochet();
+}
+
+bool AGASCourseProjectile::ApplyDamagetoTargetOnHit_Implementation(AActor* InHitActor, const FHitResult& InHitResult)
+{
+	return true;
+}
+
+bool AGASCourseProjectile::ApplyHealingtoTargetOnHit_Implementation(AActor* InHitActor, const FHitResult& InHitResult)
+{
+	return true;
+}
+
+bool AGASCourseProjectile::IsHitTargetAnAlly_Implementation(AActor* InHitActor)
+{
+	if (InHitActor)
+	{
+		if (AGASCourseCharacter* InstigatorCharacter = Cast<AGASCourseCharacter>(GetInstigator()))
+		{
+			uint8 InstigatorTeamID = InstigatorCharacter->GetGenericTeamId();
+			if (AGASCourseCharacter* HitTargetActorAsCharacter = Cast<AGASCourseCharacter>(InHitActor))
+			{
+				uint8 TargetTeamID = HitTargetActorAsCharacter->GetGenericTeamId();
+				return InstigatorTeamID == TargetTeamID;
+			}
+		}
+	}
+
+	return false;
+}
+
+void AGASCourseProjectile::EventProcessDamageEvent_Implementation(AActor* InHitActor, const FHitResult& InHitResult)
+{
+	if (IsHitTargetAnAlly(InHitActor))
+	{
+		if (bHealsAllies)
+		{
+			ApplyHealingtoTargetOnHit(InHitActor, InHitResult);
+		}
+		if (bCanDamageAllies)
+		{
+			ApplyDamagetoTargetOnHit(InHitActor, InHitResult);
+		}
+	}
+	else
+	{
+		if (bCanHealEnemies)
+		{
+			ApplyHealingtoTargetOnHit(InHitActor, InHitResult);
+		}
+		else
+		{
+			ApplyDamagetoTargetOnHit(InHitActor, InHitResult);
+		}
+	}
+}
+
+void AGASCourseProjectile::OnProjectileHitEvent_Implementation(UPrimitiveComponent* HitComponent, AActor* OtherActor,
+                                                               UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
+{
+	HitTargetActor = OtherActor;
+	HitResult = Hit;
+	EventProcessDamageEvent_Implementation(OtherActor, Hit);
 }
 
 void AGASCourseProjectile::OnProjectileRicochet_Implementation()
@@ -40,23 +101,28 @@ void AGASCourseProjectile::OnProjectileRicochet_Implementation()
 void AGASCourseProjectile::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
                                  FVector NormalImpulse, const FHitResult& Hit)
 {
+	OnProjectileHitEvent(HitComponent, OtherActor, OtherComp, NormalImpulse, Hit);
 	HitTargets.Add(OtherActor);
 
 	ProjectileCollisionComp->IgnoreActorWhenMoving(OtherActor, true);
 	ProjectileCollisionComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	if(UTargetingSubsystem* TargetingSubsystem = UTargetingSubsystem::Get(GetInstigator()->GetWorld()))
+
+	if (bCanRicochet)
 	{
-		FTargetingSourceContext TargetingSourceContext;
-		TargetingSourceContext.InstigatorActor = GetInstigator();
-		TargetingSourceContext.SourceActor = this;
-		TargetingSourceContext.SourceLocation = GetActorLocation();
-		TargetingSourceContext.SourceObject = this;
-		FTargetingRequestDelegate OnCompletedDelegate;
-		OnCompletedDelegate.BindUFunction(this, FName("OnTargetRequestCompleted"));
-		CurrentTargetHandle = UTargetingSubsystem::MakeTargetRequestHandle(RicochetTargetingPreset, TargetingSourceContext);
-		FTargetingAsyncTaskData& AsyncTaskData = FTargetingAsyncTaskData::FindOrAdd(CurrentTargetHandle);
-		AsyncTaskData.bReleaseOnCompletion = true;
-		TargetingSubsystem->StartAsyncTargetingRequestWithHandle(CurrentTargetHandle, OnCompletedDelegate);
+		if(UTargetingSubsystem* TargetingSubsystem = UTargetingSubsystem::Get(GetInstigator()->GetWorld()))
+		{
+			FTargetingSourceContext TargetingSourceContext;
+			TargetingSourceContext.InstigatorActor = GetInstigator();
+			TargetingSourceContext.SourceActor = this;
+			TargetingSourceContext.SourceLocation = GetActorLocation();
+			TargetingSourceContext.SourceObject = this;
+			FTargetingRequestDelegate OnCompletedDelegate;
+			OnCompletedDelegate.BindUFunction(this, FName("OnTargetRequestCompleted"));
+			CurrentTargetHandle = UTargetingSubsystem::MakeTargetRequestHandle(RicochetTargetingPreset, TargetingSourceContext);
+			FTargetingAsyncTaskData& AsyncTaskData = FTargetingAsyncTaskData::FindOrAdd(CurrentTargetHandle);
+			AsyncTaskData.bReleaseOnCompletion = true;
+			TargetingSubsystem->StartAsyncTargetingRequestWithHandle(CurrentTargetHandle, OnCompletedDelegate);
+		}
 	}
 }
 
@@ -152,7 +218,7 @@ void AGASCourseProjectile::BeginPlay()
 	Super::BeginPlay();
 
 	ProjectileCollisionComp->OnComponentHit.AddDynamic(this, &ThisClass::AGASCourseProjectile::OnHit);
-	if(!bCanRicochet)
+	if(!bCanRicochet || !CanProjectileRicochet())
 	{
 		if(AGASCourseCharacter* InstigatorActor = Cast<AGASCourseCharacter>(GetInstigator()))
 		{

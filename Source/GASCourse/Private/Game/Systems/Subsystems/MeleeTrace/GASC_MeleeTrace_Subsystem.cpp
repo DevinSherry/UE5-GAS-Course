@@ -2,7 +2,6 @@
 
 
 #include "Game/Systems/Subsystems/MeleeTrace/GASC_MeleeTrace_Subsystem.h"
-
 #include "AbilitySystemBlueprintLibrary.h"
 #include "Game/Systems/Subsystems/MeleeTrace/Settings/GASC_MeleeSubsystem_Settings.h" 
 #include "KismetTraceUtils.h"
@@ -46,9 +45,10 @@ void UGASC_MeleeTrace_Subsystem::Tick(float DeltaTime)
 	}
 
 	Super::Tick(DeltaTime);
-
-	ProcessMeleeTraces(DeltaTime);
-	
+	if (MeleeTraceRequests.Num() > 0)
+	{
+		ProcessMeleeTraces(DeltaTime);
+	}
 }
 
 void UGASC_MeleeTrace_Subsystem::Initialize(FSubsystemCollectionBase& Collection)
@@ -457,6 +457,7 @@ void UGASC_MeleeTrace_Subsystem::ProcessMeleeTraces(float DeltaTime)
 	const bool bShouldDrawDebug = GASCourse_MeleeSubSystemCVars::CvarEnableMeleeTracesDebug.GetValueOnGameThread();
 	const UGASC_MeleeSubsystem_Settings* MeleeTraceSettings = GetDefault<UGASC_MeleeSubsystem_Settings>();
 	check(MeleeTraceSettings);
+	
 
 	FCollisionQueryParams QueryParams;
 	QueryParams.bReturnPhysicalMaterial = true;
@@ -530,7 +531,9 @@ void UGASC_MeleeTrace_Subsystem::ProcessMeleeTraces(float DeltaTime)
 				FGameplayEventData OnHitPayload;
 				OnHitPayload.Instigator = InstigatorCharacter;
 				OnHitPayload.Target = Hit.GetActor();
-				OnHitPayload.TargetData = UAbilitySystemBlueprintLibrary::AbilityTargetDataFromHitResult(Hit);
+				FGameplayAbilityTargetData_SingleTargetHit* TargetDataHit = new FGameplayAbilityTargetData_SingleTargetHit(Hit);
+
+				OnHitPayload.TargetData.Add(TargetDataHit);
 				InstigatorCharacter->GetAbilitySystemComponent()->HandleGameplayEvent(Event_Gameplay_OnHit, &OnHitPayload);
 			}
 		}

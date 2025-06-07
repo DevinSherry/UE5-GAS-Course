@@ -58,17 +58,30 @@ void UGASCourseHealthAttributeSet::PreAttributeChange(const FGameplayAttribute& 
 	
 }
 
+void UGASCourseHealthAttributeSet::PreAttributeBaseChange(const FGameplayAttribute& Attribute, float& NewValue) const
+{
+	Super::PreAttributeBaseChange(Attribute, NewValue);
+	if(Attribute == GetCurrentHealthAttribute())
+	{
+		NewValue = FMath::Clamp<float>(NewValue, 0.0f, MaxHealth.GetCurrentValue());
+	}
+}
+
 void UGASCourseHealthAttributeSet::PostAttributeChange(const FGameplayAttribute& Attribute, float OldValue,
-	float NewValue)
+                                                       float NewValue)
 {
 	Super::PostAttributeChange(Attribute, OldValue, NewValue);
+	if(Attribute == GetCurrentHealthAttribute())
+	{
+		NewValue = FMath::Clamp<float>(NewValue, 0.0f, MaxHealth.GetCurrentValue());
+	}
+	
 }
 
 void UGASCourseHealthAttributeSet::PostAttributeBaseChange(const FGameplayAttribute& Attribute, float OldValue,
 	float NewValue) const
 {
 	Super::PostAttributeBaseChange(Attribute, OldValue, NewValue);
-
 	if(Attribute == GetCurrentHealthAttribute())
 	{
 		NewValue = FMath::Clamp<float>(NewValue, 0.0f, MaxHealth.GetCurrentValue());

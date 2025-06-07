@@ -23,10 +23,18 @@ class UStateTreeTask_GASCMeleeAbility_InstanceData : public UObject
 {
 	GENERATED_BODY()
 
+	~UStateTreeTask_GASCMeleeAbility_InstanceData();
+
 public:
 
 	UFUNCTION()
-	void OnMeleeAbilityEnd(const FAbilityEndedData& EndData);
+	void OnMeleeAbilityEnd(const FAbilityEndedData& EndData);\
+
+	UFUNCTION()
+	void OnMeleeAbilityFailed(const UGameplayAbility* InAbility, const FGameplayTagContainer& FailTags);
+
+	UFUNCTION()
+	void OnMeleeAbilityActivated(UGameplayAbility* InAbility);
 
 	UPROPERTY(EditAnywhere, Category = Parameter)
 	FGASC_MeleeAbilityTaskInstanceData MeleeData;
@@ -67,7 +75,6 @@ struct FStateTreeTask_GASCMeleeAbility : public FStateTreeTaskCommonBase
 	virtual EStateTreeRunStatus EnterState(FStateTreeExecutionContext& Context, const FStateTreeTransitionResult& Transition) const override;
 	virtual void ExitState(FStateTreeExecutionContext& Context, const FStateTreeTransitionResult& Transition) const override;
 	virtual EStateTreeRunStatus Tick(FStateTreeExecutionContext& Context, const float DeltaTime) const override;
-	virtual EDataValidationResult Compile(FStateTreeDataView InstanceDataView, TArray<FText>& ValidationMessages) override;
 
 	virtual void TriggerTransitions(FStateTreeExecutionContext& Context) const override;
 

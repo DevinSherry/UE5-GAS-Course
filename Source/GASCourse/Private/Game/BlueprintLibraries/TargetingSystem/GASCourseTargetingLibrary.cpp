@@ -3,6 +3,8 @@
 
 #include "Game/BlueprintLibraries/TargetingSystem/GASCourseTargetingLibrary.h"
 
+#include "GASCourse/GASCourseCharacter.h"
+
 
 void UGASCourseTargetingLibrary::GetBestTargetFromHandle(FTargetingRequestHandle TargetingHandle, AActor* &Target, bool &bTargetFound)
 {
@@ -32,4 +34,15 @@ void UGASCourseTargetingLibrary::GetBestTargetFromHandle(FTargetingRequestHandle
 			Target = Targets.Last();
 		}
 	}
+}
+
+bool UGASCourseTargetingLibrary::AreActorsOnSameTeam(AActor* InActor1, AActor* InActor2)
+{
+	AGASCourseCharacter* InstigatorCharacter = Cast<AGASCourseCharacter>(InActor1);
+	uint8 InstigatorTeamID = InstigatorCharacter->GetGenericTeamId();
+
+	AGASCourseCharacter* TargetCharacter = Cast<AGASCourseCharacter>(InActor2);
+	uint8 TargetTeamID = TargetCharacter->GetGenericTeamId();
+
+	return InstigatorTeamID == TargetTeamID;
 }

@@ -19,7 +19,8 @@ UE_DEFINE_GAMEPLAY_TAG(InputTag_EquipmentAbilityTwo, "Input.NativeAction.Ability
 UE_DEFINE_GAMEPLAY_TAG(InputTag_MovementAbility, "Input.NativeAction.Ability.Movement")
 UE_DEFINE_GAMEPLAY_TAG(InputTag_ConfirmTargetData, "Input.NativeAction.ConfirmTargeting")
 UE_DEFINE_GAMEPLAY_TAG(InputTag_CancelTargetData, "Input.NativeAction.CancelTargeting")
-UE_DEFINE_GAMEPLAY_TAG(InputTag_ToggleStance, "Input.NativeAction.ToggleStance")
+UE_DEFINE_GAMEPLAY_TAG(InputTag_ToggleStance, "Input.NativeAction.Stance.Magic")
+UE_DEFINE_GAMEPLAY_TAG(InputTag_BlockStance, "Input.NativeAction.Stance.Block")
 
 UE_DEFINE_GAMEPLAY_TAG(InputTag_MoveCamera, "Input.NativeAction.Camera.Movement")
 UE_DEFINE_GAMEPLAY_TAG(InputTag_RecenterCamera, "Input.NativeAction.Camera.Recenter")
@@ -50,6 +51,7 @@ UE_DEFINE_GAMEPLAY_TAG(DamageType_Elemental_Fire, "Damage.Type.Elemental.Fire")
 UE_DEFINE_GAMEPLAY_TAG(DamageType_Status, "Damage.Type.Status")
 UE_DEFINE_GAMEPLAY_TAG(DamageType_Status_Burn, "Damage.Type.Status.Burn")
 UE_DEFINE_GAMEPLAY_TAG(DamageType_Critical, "Damage.Type.Critical")
+UE_DEFINE_GAMEPLAY_TAG(DamageType_Healing, "Damage.Type.Healing")
 
 UE_DEFINE_GAMEPLAY_TAG(Event_OnDeath, "Event.Gameplay.OnDeath")
 UE_DEFINE_GAMEPLAY_TAG(Event_OnStatusDeath, "Event.Gameplay.Status.OnDeath")
@@ -57,6 +59,7 @@ UE_DEFINE_GAMEPLAY_TAG(Event_Gameplay_OnDamageDealt, "Event.Gameplay.OnDamageDea
 UE_DEFINE_GAMEPLAY_TAG(Event_Gameplay_OnDamageReceived, "Event.Gameplay.OnDamageReceived")
 UE_DEFINE_GAMEPLAY_TAG(Event_Gameplay_OnHit, "Event.Gameplay.OnHit")
 UE_DEFINE_GAMEPLAY_TAG(Event_Gameplay_OnHealing, "Event.Gameplay.OnHealing")
+UE_DEFINE_GAMEPLAY_TAG(Event_Gameplay_OnTargetHealed, "Event.Gameplay.OnTargetHealed")
 
 
 UE_DEFINE_GAMEPLAY_TAG(Collision_IgnorePawn, "Collision.Ignore.Pawn")

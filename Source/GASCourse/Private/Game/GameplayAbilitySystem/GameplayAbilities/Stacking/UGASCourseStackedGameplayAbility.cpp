@@ -4,6 +4,7 @@
 #include "Game/GameplayAbilitySystem/GameplayAbilities/Stacking/UGASCourseStackedGameplayAbility.h"
 #include "AbilitySystemBlueprintLibrary.h"
 #include "AbilitySystemGlobals.h"
+#include "Game/GameplayAbilitySystem/GASCourseNativeGameplayTags.h"
 #include "Game/GameplayAbilitySystem/AttributeSets/GASC_AbilityStacksAttributeSet.h"
 
 UGASCourseStackedGameplayAbility::UGASCourseStackedGameplayAbility(const FObjectInitializer& ObjectInitializer)
@@ -58,17 +59,33 @@ bool UGASCourseStackedGameplayAbility::CanActivateAbility(const FGameplayAbility
 	bool bHasStackAttribute = false;
 	if (!ActorInfo->AvatarActor.IsValid())
 	{
-		Super::CanActivateAbility(Handle, ActorInfo, SourceTags, TargetTags, OptionalRelevantTags);
+		return false;
 	}
 	
 	float CurrentStackAttributeValue = UAbilitySystemBlueprintLibrary::GetFloatAttribute(ActorInfo->AvatarActor.Get(),
 		CurrentStackAttribute, bHasStackAttribute);
 	if (CurrentStackAttributeValue == 0.0f)
 	{
-		//TODO: Add call for ability activation fail?
+		const FGameplayTag& FailCostTag = UAbilitySystemGlobals::Get().ActivateFailCostTag;
+		if (FailCostTag.IsValid())
+		{
+			FGameplayTag EventTag = Event_AbilityActivation_CantAffordCost;
+			FGameplayEventData Payload;
+			Payload.Instigator = GetAvatarActorFromActorInfo();
+			Payload.OptionalObject = this;
+			Payload.EventTag = AbilityActivationFail_CantAffordCost;
+			Payload.Target = GetAvatarActorFromActorInfo();
+						
+			OptionalRelevantTags->AddTag(FailCostTag);
+			GetAbilitySystemComponentFromActorInfo()->HandleGameplayEvent(EventTag, &Payload);
+
+			//Haptic feedback for failure.
+			InvokeAbilityFailHapticFeedback();
+		}
 	}
 	
-	return (bHasStackAttribute && CurrentStackAttributeValue > 0.0f);
+	return (bHasStackAttribute && CurrentStackAttributeValue > 0.0f &&
+		Super::CanActivateAbility(Handle, ActorInfo, SourceTags, TargetTags, OptionalRelevantTags));
 }
 
 void UGASCourseStackedGameplayAbility::InitializeStackCountAttributes()

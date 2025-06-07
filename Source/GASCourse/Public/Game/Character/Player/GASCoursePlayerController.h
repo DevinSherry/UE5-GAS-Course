@@ -7,6 +7,8 @@
 #include "GASCourse/GASCourseCharacter.h"
 #include "GASCoursePlayerController.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnDamageDealt, const FGameplayEventData&, Payload);
+
 /**
  * @brief A PlayerController class for the GAS Course.
  *
@@ -48,6 +50,12 @@ public:
 	virtual void PostProcessInput(const float DeltaTime, const bool bGamePaused) override;
 
 	virtual void OnPossess(APawn* InPawn) override;
+
+	UFUNCTION(BlueprintCallable, Category = "GASCourse|PlayerController")
+	void OnDamageDealtCallback(const FGameplayEventData& Payload);
+	
+	UPROPERTY(BlueprintAssignable, Category="Events")
+	FOnDamageDealt OnDamageDealtDelegate;
 
 public:
 
@@ -100,7 +108,7 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TArray<TEnumAsByte<EObjectTypeQuery>> HitResultUnderMouseCursorObjectTypes;
 
-	virtual bool InputKey(const FInputKeyParams& Params) override;
+	virtual bool InputKey(const FInputKeyEventArgs& Params) override;
 
 protected:
 
@@ -108,8 +116,6 @@ protected:
 	virtual void OnRep_Pawn() override;
 
 	virtual void Tick(float DeltaSeconds) override;
-	
-	void OnDamageDealtCallback(const FGameplayEventData* Payload);
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void OnDamageDealt(const FGameplayEventData& Payload);

@@ -2,7 +2,6 @@
 
 
 #include "Game/BlueprintLibraries/GameplayAbilitySystem/GASCourseASCBlueprintLibrary.h"
-#include "AbilitySystemLog.h"
 #include "AbilitySystemGlobals.h"
 #include "Game/GameplayAbilitySystem/GASCourseAbilitySystemComponent.h"
 #include "Game/Systems/Damage/GASCourseDamageExecution.h"
@@ -12,31 +11,143 @@
 bool UGASCourseASCBlueprintLibrary::ApplyDamageToTarget(AActor* Target, AActor* Instigator, float Damage, const FDamageContext& DamageContext)
 {
 	//Initialize DoTContext to default values to make damage instant.
-	constexpr FDamageOverTimeContext DamageOverTimeContext;
-	if(UGameplayEffect* DamageEffect = ConstructDamageGameplayEffect(EGameplayEffectDurationType::Instant, DamageOverTimeContext, Damage))
+	constexpr FEffectOverTimeContext EffectOverTimeContext;
+	if(UGameplayEffect* DamageEffect = ConstructDamageGameplayEffect(EGameplayEffectDurationType::Instant, EffectOverTimeContext))
 	{
 		return ApplyDamageToTarget_Internal(Target, Instigator, Damage, DamageContext, DamageEffect);
 	}
 	return false;
 }
 
-bool UGASCourseASCBlueprintLibrary::ApplyDamageToTargetDataHandle(FGameplayAbilityTargetDataHandle TargetHandle,
-	AActor* Instigator, float Damage, const FDamageContext& DamageContext)
+bool UGASCourseASCBlueprintLibrary::ApplyDamageToTargetDataHandle(FGameplayAbilityTargetDataHandle TargetHandle, AActor* Instigator, float Damage,
+	FDamageContext DamageContext)
 {
 	TArray<AActor*> Targets = GetAllActorsFromTargetData(TargetHandle);
 	bool bDamageApplied = false;
-	
-	for(AActor* Target: Targets)
+
+	for (int32 TargetIdx = 0; TargetIdx < Targets.Num(); ++TargetIdx)
 	{
-		bDamageApplied = ApplyDamageToTarget(Target, Instigator, Damage, DamageContext);
+		if (!DamageContext.HitResult.bBlockingHit)
+		{
+			DamageContext.HitResult = GetHitResultFromTargetData(TargetHandle, TargetIdx);
+		}
+		bDamageApplied = ApplyDamageToTarget(Targets[TargetIdx], Instigator, Damage, DamageContext);
 	}
+
 	return bDamageApplied;
 }
 
-bool UGASCourseASCBlueprintLibrary::ApplyDamageOverTimeToTarget(AActor* Target, AActor* Instigator, float Damage,
-                                                                const FDamageContext& DamageContext, const FDamageOverTimeContext& DamageOverTimeContext)
+bool UGASCourseASCBlueprintLibrary::ApplyHealingToTarget_Internal(AActor* Target, AActor* Instigator, float InHealing,
+	UGameplayEffect* GameplayEffect, FEffectOverTimeContext EffectOverTimeContext)
 {
-	UGameplayEffect* DamageEffect = ConstructDamageGameplayEffect(EGameplayEffectDurationType::HasDuration, DamageOverTimeContext, Damage);
+	if(!Instigator || !Target)
+	{
+		return false;
+	}
+
+	if(AGASCoursePlayerState* InstigatorPlayerState = Cast<AGASCoursePlayerState>(Instigator))
+	{
+		Instigator = InstigatorPlayerState->GetPawn();
+	}
+
+	if(AGASCoursePlayerState* TargetPlayerState = Cast<AGASCoursePlayerState>(Target))
+	{
+		Target = TargetPlayerState->GetPawn();
+	}
+	
+	TSubclassOf<UGameplayEffectExecutionCalculation> HealingCalculationClass;
+	if (const UGASC_AbilitySystemSettings* AbilitySystemSettings = GetDefault<UGASC_AbilitySystemSettings>())
+	{
+		HealingCalculationClass = AbilitySystemSettings->HealingExecution;
+		if (!HealingCalculationClass)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Damage Calculation is not valid!"));
+			return false;
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Ability System Settings is not valid!"));
+		return false;
+	}
+	
+	if(AGASCourseCharacter* TargetCharacter = Cast<AGASCourseCharacter>(Target))
+	{
+		if(AGASCourseCharacter* InstigatorCharacter = Cast<AGASCourseCharacter>(Instigator))
+		{
+			UGASCourseAbilitySystemComponent* TargetASC = TargetCharacter->GetAbilitySystemComponent();
+			check(TargetASC);
+
+			UGASCourseAbilitySystemComponent* InstigatorASC = InstigatorCharacter->GetAbilitySystemComponent();
+			check(InstigatorASC);
+			
+			if(UGASCourseGameplayEffect* HealingEffect = Cast<UGASCourseGameplayEffect>(GameplayEffect))
+			{
+				FGameplayEffectExecutionDefinition HealingExecutionDefinition;
+				HealingExecutionDefinition.CalculationClass = HealingCalculationClass;
+				HealingEffect->Executions.Emplace(HealingExecutionDefinition);
+				if (HealingExecutionDefinition.CalculationClass)
+				{
+					FGameplayEffectContext* ContextHandle = UAbilitySystemGlobals::Get().AllocGameplayEffectContext();
+					ContextHandle->AddInstigator(Instigator, Instigator);
+					const FGameplayEffectSpecHandle HealingEffectHandle = FGameplayEffectSpecHandle(new FGameplayEffectSpec(HealingEffect, FGameplayEffectContextHandle(ContextHandle), 1.0f));
+
+					//Pass in cache value through tag.
+					if (HealingEffect->DurationPolicy == EGameplayEffectDurationType::HasDuration && HealingEffect->Period.GetValue() > 0.0f && EffectOverTimeContext.bApplyValueOverTotalDuration)
+					{
+						float EffectDuration = HealingEffectHandle.Data->GetDuration();
+						float EffectPeriod = HealingEffectHandle.Data->GetPeriod();
+						InHealing /= (EffectDuration / EffectPeriod);
+					}
+
+					AssignTagSetByCallerMagnitude(HealingEffectHandle, Data_IncomingHealing, InHealing);
+
+					InstigatorASC->ApplyGameplayEffectSpecToTarget(*HealingEffectHandle.Data.Get(), TargetASC);
+					return true;
+				}
+			}
+		}
+	}
+
+	return false;
+}
+
+bool UGASCourseASCBlueprintLibrary::ApplyHealingToTargetDataHandle(FGameplayAbilityTargetDataHandle TargetHandle,
+                                                                   AActor* Instigator, float InHealing)
+{
+	TArray<AActor*> Targets = GetAllActorsFromTargetData(TargetHandle);
+	bool bHealingApplied = false;
+
+	for (int32 TargetIdx = 0; TargetIdx < Targets.Num(); ++TargetIdx)
+	{
+		bHealingApplied = ApplyHealingToTarget(Targets[TargetIdx], Instigator, InHealing);
+	}
+
+	return bHealingApplied;
+}
+
+bool UGASCourseASCBlueprintLibrary::ApplyHealingToTarget(AActor* Target, AActor* Instigator, float InHealing)
+{
+	//Initialize DoTContext to default values to make damage instant.
+	constexpr FEffectOverTimeContext EffectOverTimeContext;
+	if(UGameplayEffect* HealingEffect = ConstructHealingGameplayEffect(EGameplayEffectDurationType::Instant, EffectOverTimeContext))
+	{
+		return ApplyHealingToTarget_Internal(Target, Instigator, InHealing, HealingEffect, EffectOverTimeContext);
+	}
+	return false;
+}
+
+bool UGASCourseASCBlueprintLibrary::ApplyHealingOverTimeToTarget(AActor* Target, AActor* Instigator, float InHealing,
+	const FEffectOverTimeContext& EffectOverTimeContext)
+{
+	UGameplayEffect* HealingEffect = ConstructHealingGameplayEffect(EGameplayEffectDurationType::HasDuration, EffectOverTimeContext);
+	return ApplyHealingToTarget_Internal(Target, Instigator, InHealing, HealingEffect, EffectOverTimeContext);
+}
+
+bool UGASCourseASCBlueprintLibrary::ApplyDamageOverTimeToTarget(AActor* Target, AActor* Instigator, float Damage, const FDamageContext& DamageContext,
+                                                                const FEffectOverTimeContext& EffectOverTimeContext)
+{
+	UGameplayEffect* DamageEffect = ConstructDamageGameplayEffect(EGameplayEffectDurationType::HasDuration, EffectOverTimeContext);
 	return ApplyDamageToTarget_Internal(Target, Instigator, Damage, DamageContext, DamageEffect);
 }
 
@@ -45,8 +156,8 @@ bool UGASCourseASCBlueprintLibrary::ApplyPhysicalDamageToTarget(AActor* Target, 
 {
 	DamageContext.DamageType = DamageType_Physical;
 	DamageContext.HitResult = HitResult;
-	constexpr FDamageOverTimeContext DamageOverTimeContext;
-	UGameplayEffect* DamageEffect = ConstructDamageGameplayEffect(EGameplayEffectDurationType::Instant, DamageOverTimeContext, Damage);
+	constexpr FEffectOverTimeContext EffectOverTimeContext;
+	UGameplayEffect* DamageEffect = ConstructDamageGameplayEffect(EGameplayEffectDurationType::Instant, EffectOverTimeContext);
 	return ApplyDamageToTarget_Internal(Target, Instigator, Damage, DamageContext, DamageEffect);
 }
 
@@ -63,8 +174,8 @@ bool UGASCourseASCBlueprintLibrary::ApplyFireDamageToTarget(AActor* Target, AAct
 	}
 	DamageContext.HitResult = HitResult;
 	
-	constexpr FDamageOverTimeContext DamageOverTimeContext;
-	UGameplayEffect* DamageEffect = ConstructDamageGameplayEffect(EGameplayEffectDurationType::Instant, DamageOverTimeContext, Damage);
+	constexpr FEffectOverTimeContext EffectOverTimeContext;
+	UGameplayEffect* DamageEffect = ConstructDamageGameplayEffect(EGameplayEffectDurationType::Instant, EffectOverTimeContext);
 	
 	return ApplyDamageToTarget_Internal(Target, Instigator, Damage, DamageContext, DamageEffect);
 }
@@ -86,8 +197,23 @@ bool UGASCourseASCBlueprintLibrary::ApplyDamageToTarget_Internal(AActor* Target,
 	{
 		Target = TargetPlayerState->GetPawn();
 	}
-
-	//TODO: Add check to verify ability system component + consider damage/health interface for Non-GAS actors
+	
+	TSubclassOf<UGameplayEffectExecutionCalculation> DamageCalculationClass;
+	if (const UGASC_AbilitySystemSettings* AbilitySystemSettings = GetDefault<UGASC_AbilitySystemSettings>())
+	{
+		DamageCalculationClass = AbilitySystemSettings->DamageExecution;
+		if (!DamageCalculationClass)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Damage Calculation is not valid!"));
+			return false;
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Ability System Settings is not valid!"));
+		return false;
+	}
+	
 	if(AGASCourseCharacter* TargetCharacter = Cast<AGASCourseCharacter>(Target))
 	{
 		if(AGASCourseCharacter* InstigatorCharacter = Cast<AGASCourseCharacter>(Instigator))
@@ -97,47 +223,71 @@ bool UGASCourseASCBlueprintLibrary::ApplyDamageToTarget_Internal(AActor* Target,
 
 			UGASCourseAbilitySystemComponent* InstigatorASC = InstigatorCharacter->GetAbilitySystemComponent();
 			check(InstigatorASC);
-
+			
 			if(UGASCourseGameplayEffect* DamageEffect = Cast<UGASCourseGameplayEffect>(GameplayEffect))
 			{
 				FGameplayEffectExecutionDefinition DamageExecutionDefinition;
-				DamageExecutionDefinition.CalculationClass = LoadClass<UGASCourseDamageExecution>(Instigator, TEXT("/Game/GASCourse/Game/Systems/Damage/DamageExecution_Base.DamageExecution_Base_C"));
+				DamageExecutionDefinition.CalculationClass = DamageCalculationClass;
 				DamageEffect->Executions.Emplace(DamageExecutionDefinition);
 				if (DamageExecutionDefinition.CalculationClass)
 				{
-					UE_LOG(LogTemp, Warning, TEXT("Damage Calculation: %s"), *DamageExecutionDefinition.CalculationClass->GetName());
-				}
-				UE_LOG(LogTemp, Warning, TEXT("Damage Calculation is not valid!"));
-				FGameplayEffectContext* ContextHandle = UAbilitySystemGlobals::Get().AllocGameplayEffectContext();
-				ContextHandle->AddInstigator(Instigator, Instigator);
-				const FGameplayEffectSpecHandle DamageEffectHandle = FGameplayEffectSpecHandle(new FGameplayEffectSpec(DamageEffect, FGameplayEffectContextHandle(ContextHandle), 1.0f));
-				AssignTagSetByCallerMagnitude(DamageEffectHandle, Data_IncomingDamage, Damage);
+					FGameplayEffectContext* ContextHandle = UAbilitySystemGlobals::Get().AllocGameplayEffectContext();
+					ContextHandle->AddInstigator(Instigator, Instigator);
+					const FGameplayEffectSpecHandle DamageEffectHandle = FGameplayEffectSpecHandle(new FGameplayEffectSpec(DamageEffect, FGameplayEffectContextHandle(ContextHandle), 1.0f));
+					AssignTagSetByCallerMagnitude(DamageEffectHandle, Data_IncomingDamage, Damage);
 
-				//Pass in cache value through tag.
-				if (DamageEffect->DurationPolicy == EGameplayEffectDurationType::HasDuration && DamageEffect->Period.GetValue() > 0.0f)
-				{
-					AddGrantedTags(DamageEffectHandle, FGameplayTagContainer(Data_DamageOverTime));
-				}
+					//Pass in cache value through tag.
+					if (DamageEffect->DurationPolicy == EGameplayEffectDurationType::HasDuration && DamageEffect->Period.GetValue() > 0.0f)
+					{
+						AddGrantedTags(DamageEffectHandle, FGameplayTagContainer(Data_DamageOverTime));
+					}
 				
-				if(DamageContext.HitResult.bBlockingHit)
-				{
-					ContextHandle->AddHitResult(DamageContext.HitResult);
-				}
+					if(DamageContext.HitResult.bBlockingHit)
+					{
+						ContextHandle->AddHitResult(DamageContext.HitResult);
+					}
 
-				AddGrantedTags(DamageEffectHandle, DamageContext.GrantedTags);
-				AddGrantedTag(DamageEffectHandle, DamageContext.DamageType);
+					AddGrantedTags(DamageEffectHandle, DamageContext.GrantedTags);
+					AddGrantedTag(DamageEffectHandle, DamageContext.DamageType);
 
-				InstigatorASC->ApplyGameplayEffectSpecToTarget(*DamageEffectHandle.Data.Get(), TargetASC);
+					InstigatorASC->ApplyGameplayEffectSpecToTarget(*DamageEffectHandle.Data.Get(), TargetASC);
 				
-				return true;
+					return true;
+				}
 			}
 		}
 	}
 
 	return false;
 }
+UGameplayEffect* UGASCourseASCBlueprintLibrary::ConstructHealingGameplayEffect(EGameplayEffectDurationType DurationType,
+	const FEffectOverTimeContext& EffectOverTimeContext)
+{
+	UGASCourseGameplayEffect* HealingEffect = NewObject<UGASCourseGameplayEffect>(GetTransientPackage());
+	if(DurationType == EGameplayEffectDurationType::Instant)
+	{
+		HealingEffect->DurationPolicy = EGameplayEffectDurationType::Instant;
+	}
+	else
+	{
+		HealingEffect->DurationPolicy = EGameplayEffectDurationType::HasDuration;
+	}
 
-UGameplayEffect* UGASCourseASCBlueprintLibrary::ConstructDamageGameplayEffect(EGameplayEffectDurationType DurationType,  const FDamageOverTimeContext& DamageOverTimeContext, float InDamageValue)
+	//EffectOverTimeContext should specify FScalableFloat for duration parameter.
+	FScalableFloat Duration;
+	Duration.Value = EffectOverTimeContext.EffectDuration;
+	HealingEffect->DurationMagnitude = FGameplayEffectModifierMagnitude(Duration);
+
+	//EffectOverTimeContext should specify FScalableFloat for period parameter.
+	FScalableFloat Period;
+	Period.Value = EffectOverTimeContext.EffectPeriod;
+	HealingEffect->Period = Period;
+	HealingEffect->bExecutePeriodicEffectOnApplication = EffectOverTimeContext.bApplyEffectOnApplication;
+	
+	return HealingEffect;
+}
+
+UGameplayEffect* UGASCourseASCBlueprintLibrary::ConstructDamageGameplayEffect(EGameplayEffectDurationType DurationType,  const FEffectOverTimeContext& EffectOverTimeContext)
 {
 	UGASCourseGameplayEffect* DamageEffect = NewObject<UGASCourseGameplayEffect>(GetTransientPackage());
 	if(DurationType == EGameplayEffectDurationType::Instant)
@@ -151,14 +301,14 @@ UGameplayEffect* UGASCourseASCBlueprintLibrary::ConstructDamageGameplayEffect(EG
 
 	//DamageOverTimeContext should specify FScalableFloat for duration parameter.
 	FScalableFloat Duration;
-	Duration.Value = DamageOverTimeContext.DamageDuration;
+	Duration.Value = EffectOverTimeContext.EffectDuration;
 	DamageEffect->DurationMagnitude = FGameplayEffectModifierMagnitude(Duration);
 
 	//DamageOverTimeContext should specify FScalableFloat for period parameter.
 	FScalableFloat Period;
-	Period.Value = DamageOverTimeContext.DamagePeriod;
+	Period.Value = EffectOverTimeContext.EffectPeriod;
 	DamageEffect->Period = Period;
-	DamageEffect->bExecutePeriodicEffectOnApplication = DamageOverTimeContext.bApplyDamageOnApplication;
+	DamageEffect->bExecutePeriodicEffectOnApplication = EffectOverTimeContext.bApplyEffectOnApplication;
 	
 	return DamageEffect;
 }

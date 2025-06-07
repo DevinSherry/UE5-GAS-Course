@@ -200,6 +200,7 @@ void AGASCoursePlayerCharacter::Input_AbilityInputTagPressed(FGameplayTag InputT
 	{
 		if(ASC->HasMatchingGameplayTag(Status_Block_AbilityInput))
 		{
+			UE_LOG(LogTemp, Warning, TEXT(""));
 			return;
 		}
 		if(!InputTag.IsValid())

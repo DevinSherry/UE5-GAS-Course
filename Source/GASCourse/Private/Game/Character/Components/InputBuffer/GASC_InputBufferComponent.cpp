@@ -12,8 +12,6 @@
 #include "Game/GameplayAbilitySystem/GASCourseAbilitySystemComponent.h"
 #include "GASCourse/GASCourseCharacter.h"
 
-//TODO: Redo events to return input action
-
 DEFINE_LOG_CATEGORY(LOG_GASC_InputBufferComponent);
 
 static FString INPUT_BUFFER_COMPONENT_NAME;

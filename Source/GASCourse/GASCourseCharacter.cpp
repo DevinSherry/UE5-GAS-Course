@@ -117,6 +117,16 @@ void AGASCourseCharacter::AcknowledgeUnpossession()
 {
 }
 
+FGenericTeamId AGASCourseCharacter::GetGenericTeamId() const
+{
+	return FGenericTeamId(TeamID);
+}
+
+void AGASCourseCharacter::SetTeamID(uint8 NewTeamID)
+{
+	TeamID = NewTeamID;
+}
+
 void AGASCourseCharacter::InitializeAbilitySystem(UGASCourseAbilitySystemComponent* InASC)
 {
 	if(GetLocalRole() != ROLE_Authority || !InASC)
@@ -383,12 +393,11 @@ void AGASCourseCharacter::PossessedBy(AController* NewController)
 
 void AGASCourseCharacter::OnRep_ReplicationVarList()
 {
-	
 	UGASCourseAbilitySystemComponent* ASC = GetAbilitySystemComponent();
 	if (ASC)
 	{
 		// Update ASC client version of RepAnimMontageInfo
-		ASC->SetNumericAttributeBase(UGASCourseCharBaseAttributeSet::GetMovementSpeedAttribute(), ReplicationVarList.AttributeOne);
+		ASC->SetNumericAttributeBase(UGASCourseCharBaseAttributeSet::GetMovementSpeedMultiplierAttribute(), ReplicationVarList.AttributeOne);
 		ASC->SetNumericAttributeBase(UGASCourseCharBaseAttributeSet::GetCrouchSpeedAttribute(), ReplicationVarList.AttributeTwo);
 
 		// Here you should add the tags to the simulated proxies ie.:

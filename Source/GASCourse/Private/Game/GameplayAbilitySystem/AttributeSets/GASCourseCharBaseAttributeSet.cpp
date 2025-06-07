@@ -2,7 +2,6 @@
 
 
 #include "Game/GameplayAbilitySystem/AttributeSets/GASCourseCharBaseAttributeSet.h"
-
 #include "GameplayEffectExtension.h"
 #include "Game/Character/Player/GASCoursePlayerState.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -40,10 +39,6 @@ void UGASCourseCharBaseAttributeSet::PostAttributeChange(const FGameplayAttribut
 	{
 		return;
 	}
-	if(Attribute == GetMovementSpeedAttribute())
-	{
-		OwnerCharacter->GetCharacterMovement()->MaxWalkSpeed = NewValue;
-	}
 
 	if(Attribute == GetAirControlOverrideAttribute())
 	{
@@ -60,15 +55,15 @@ void UGASCourseCharBaseAttributeSet::GetLifetimeReplicatedProps(TArray<FLifetime
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	
-	DOREPLIFETIME_CONDITION_NOTIFY(UGASCourseCharBaseAttributeSet, MovementSpeed, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(UGASCourseCharBaseAttributeSet, MovementSpeedMultiplier, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(UGASCourseCharBaseAttributeSet, CrouchSpeed, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(UGASCourseCharBaseAttributeSet, JumpZVelocityOverride, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(UGASCourseCharBaseAttributeSet, AirControlOverride, COND_None, REPNOTIFY_Always);
 }
 
-void UGASCourseCharBaseAttributeSet::OnRep_MovementSpeed(const FGameplayAttributeData& OldMovementSpeed)
+void UGASCourseCharBaseAttributeSet::OnRep_MovementSpeedMultiplier(const FGameplayAttributeData& OldMovementSpeedMultiplier)
 {
-	GAMEPLAYATTRIBUTE_REPNOTIFY(UGASCourseCharBaseAttributeSet, MovementSpeed, OldMovementSpeed);
+	GAMEPLAYATTRIBUTE_REPNOTIFY(UGASCourseCharBaseAttributeSet, MovementSpeedMultiplier, OldMovementSpeedMultiplier);
 }
 
 void UGASCourseCharBaseAttributeSet::OnRep_CrouchSpeed(const FGameplayAttributeData& OldCrouchSpeed)

@@ -7,6 +7,9 @@
 #include "Game/GameplayAbilitySystem/GASCourseNativeGameplayTags.h"
 #include "GameplayEffect.h"
 #include "GameplayEffectTypes.h"
+#include "GameFramework/CharacterMovementComponent.h"
+
+DEFINE_LOG_CATEGORY(LOG_GASC_GameplayAbility);
 
 UGASCourseGameplayAbility::UGASCourseGameplayAbility(const FObjectInitializer& ObjectInitializer)
 {
@@ -271,7 +274,7 @@ bool UGASCourseGameplayAbility::DoesAbilitySatisfyTagRequirements(const UAbility
 		
 		AbilitySystemComponentTags.Reset();
 		AbilitySystemComponent.GetOwnedGameplayTags(AbilitySystemComponentTags);
-
+		
 		if (AbilitySystemComponentTags.HasAny(AllBlockedTags))
 		{
 			if (OptionalRelevantTags && AbilitySystemComponentTags.HasTag(Status_Death))
@@ -471,6 +474,31 @@ void UGASCourseGameplayAbility::GetStackedAbilityDurationTags(FGameplayTagContai
 	{
 		DurationTags.AppendTags(StackDurationGE->GetGrantedTags());
 	}
+}
+
+FVector UGASCourseGameplayAbility::GetInputDirection() const
+{
+	const AGASCoursePlayerCharacter* OwningPlayerCharacter = GetGASCouresPlayerCharacterFromActorInfo();
+	if (!OwningPlayerCharacter)
+	{
+		UE_LOG(LOG_GASC_GameplayAbility, Warning, TEXT("Invalid Player Character Owner: %s. Returning FVector(0.0) for input direction"),
+			*GetPathNameSafe(this));
+		return FVector::ZeroVector;
+	}
+	const UCharacterMovementComponent* CharacterMovementComponent = Cast<UCharacterMovementComponent>(GetActorInfo().MovementComponent);
+	if (!CharacterMovementComponent)
+	{
+		UE_LOG(LOG_GASC_GameplayAbility, Warning, TEXT("Invalid Character Movement Component: %s. Returning FVector(0.0) for input direction"),
+	*GetPathNameSafe(this));
+		return FVector::ZeroVector;
+	}
+	if (CharacterMovementComponent->GetLastInputVector().GetSafeNormal().IsNearlyZero())
+	{
+		UE_LOG(LOG_GASC_GameplayAbility, Log, TEXT("Input Vector Nearly 0.0f %s. Returning owning character forward direction instead."),
+			*GetPathNameSafe(this));
+		return OwningPlayerCharacter->GetActorForwardVector().GetSafeNormal();
+	}
+	return CharacterMovementComponent->GetLastInputVector().GetSafeNormal();
 }
 
 void UGASCourseGameplayAbility::InvokeAbilityFailHapticFeedback() const

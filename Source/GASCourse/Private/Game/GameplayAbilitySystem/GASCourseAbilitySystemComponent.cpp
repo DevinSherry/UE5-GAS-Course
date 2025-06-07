@@ -272,7 +272,6 @@ void UGASCourseAbilitySystemComponent::ProcessAbilityInput(float DeltaTime, bool
 	for (const FGameplayAbilitySpecHandle& AbilitySpecHandle : AbilitiesToActivate)
 	{
 		TryActivateAbility(AbilitySpecHandle);
-		UE_LOG(LogTemp, Warning, TEXT("TRY ACTIVATE ABILITY"));
 	}
 
 	//

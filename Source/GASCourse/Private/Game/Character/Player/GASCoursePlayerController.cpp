@@ -3,6 +3,7 @@
 
 #include "Game/Character/Player/GASCoursePlayerController.h"
 
+#include "AbilitySystemBlueprintLibrary.h"
 #include "Blueprint/WidgetLayoutLibrary.h"
 #include "Game/GameplayAbilitySystem/GASCourseNativeGameplayTags.h"
 #include "GASCourse/GASCourseCharacter.h"
@@ -77,18 +78,12 @@ void AGASCoursePlayerController::OnPossess(APawn* InPawn)
 		// Init ASC with PS (Owner) and our new Pawn (AvatarActor)
 		PS->GetAbilitySystemComponent()->InitAbilityActorInfo(PS, InPawn);
 	}
-
-	if(UGASCourseAbilitySystemComponent* ASC = GetGASCourseAbilitySystemComponent())
-	{
-		ASC->GenericGameplayEventCallbacks.FindOrAdd(Event_Gameplay_OnDamageDealt).AddUObject(this, &AGASCoursePlayerController::OnDamageDealtCallback);
-	}
 	
 	if (PlayerStateTreeComponent)
 	{
 		InitializeStateTree();
 		PlayerStateTreeComponent->StartLogic();
 	}
-
 }
 
 void AGASCoursePlayerController::CreateHUD_Implementation()
@@ -96,7 +91,7 @@ void AGASCoursePlayerController::CreateHUD_Implementation()
 
 }
 
-bool AGASCoursePlayerController::InputKey(const FInputKeyParams& Params)
+bool AGASCoursePlayerController::InputKey(const FInputKeyEventArgs& Params)
 {
 	return Super::InputKey(Params);
 }
@@ -123,9 +118,10 @@ void AGASCoursePlayerController::Tick(float DeltaSeconds)
 	GetMousePositionInViewport();
 }
 
-void AGASCoursePlayerController::OnDamageDealtCallback(const FGameplayEventData* Payload)
+void AGASCoursePlayerController::OnDamageDealtCallback(const FGameplayEventData& Payload)
 {
-	OnDamageDealt(*Payload);
+	OnDamageDealt(Payload);
+	OnDamageDealtDelegate.Broadcast(Payload);
 }
 
 void AGASCoursePlayerController::GetMousePositionInViewport()

@@ -40,7 +40,6 @@ UGASCourseDamageExecution::UGASCourseDamageExecution()
 void UGASCourseDamageExecution::Execute_Implementation(const FGameplayEffectCustomExecutionParameters& ExecutionParams,
 	FGameplayEffectCustomExecutionOutput& OutExecutionOutput) const
 {
-	
 	UGASCourseAbilitySystemComponent* TargetAbilitySystemComponent = Cast<UGASCourseAbilitySystemComponent>(ExecutionParams.GetTargetAbilitySystemComponent());
 	UGASCourseAbilitySystemComponent* SourceAbilitySystemComponent = Cast<UGASCourseAbilitySystemComponent>(ExecutionParams.GetSourceAbilitySystemComponent());
 
@@ -56,6 +55,17 @@ void UGASCourseDamageExecution::Execute_Implementation(const FGameplayEffectCust
 	FAggregatorEvaluateParameters EvaluationParameters;
 	EvaluationParameters.SourceTags = SourceTags;
 	EvaluationParameters.TargetTags = TargetTags;
+	
+	TSubclassOf<UGameplayEffectExecutionCalculation> HealingCalculationClass;
+	if (const UGASC_AbilitySystemSettings* AbilitySystemSettings = GetDefault<UGASC_AbilitySystemSettings>())
+	{
+		HealingCalculationClass = AbilitySystemSettings->HealingExecution;
+		if (!HealingCalculationClass)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Health Calculation is not valid!"));
+			return;
+		}
+	}
 
 	bool bUsingCachedDamage = false;
 	bool bCriticalHit = false;
@@ -66,12 +76,14 @@ void UGASCourseDamageExecution::Execute_Implementation(const FGameplayEffectCust
 
 	if (Spec->DynamicGrantedTags.HasTagExact(Data_DamageOverTime))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Damage Over Time"));
-		float CachedDamage = Spec->GetSetByCallerMagnitude(Data_CachedDamage);
+		float CachedDamage = 0.0f;
+		if (Spec->SetByCallerTagMagnitudes.Find(Data_CachedDamage))
+		{
+			CachedDamage = Spec->GetSetByCallerMagnitude(Data_CachedDamage);
+		}
 		if (CachedDamage > 0.0f)
 		{
 			Damage = CachedDamage;
-			UE_LOG(LogTemp, Warning, TEXT("Using Cached Damage"));
 			// Set the Target's damage meta attribute
 			OutExecutionOutput.AddOutputModifier(FGameplayModifierEvaluatedData(DamageStatics().IncomingDamageProperty, EGameplayModOp::Additive, Damage));
 			bUsingCachedDamage = true;
@@ -111,7 +123,7 @@ void UGASCourseDamageExecution::Execute_Implementation(const FGameplayEffectCust
 	if(UGASCourseGameplayEffect* HealingEffect = Cast<UGASCourseGameplayEffect>(IncomingHealingGameplayEffect))
 	{
 		FGameplayEffectExecutionDefinition HealingExecutionDefinition;
-		HealingExecutionDefinition.CalculationClass = LoadClass<UGASCourseHealingExecution>(SourceActor, TEXT("/Game/GASCourse/Game/Systems/Healing/HealingExecution_Base.HealingExecution_Base_C"));
+		HealingExecutionDefinition.CalculationClass = HealingCalculationClass; //LoadClass<UGASCourseHealingExecution>(SourceActor, TEXT("/Game/GASCourse/Game/Systems/Healing/HealingExecution_Base.HealingExecution_Base_C"));
 		if(HealingExecutionDefinition.CalculationClass)
 		{
 			HealingEffect->Executions.Emplace(HealingExecutionDefinition);

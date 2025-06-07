@@ -3,6 +3,7 @@
 #pragma once
 
 #include "AbilitySystemInterface.h"
+#include "GenericTeamAgentInterface.h"
 #include "GameFramework/Character.h"
 #include "InputActionValue.h"
 #include "MotionWarpingComponent.h"
@@ -97,7 +98,7 @@ public:
 
 
 UCLASS(config=Game)
-class AGASCourseCharacter : public ACharacter, public IAbilitySystemInterface, public IGCAbilitySystemReplicationProxyInterface
+class AGASCourseCharacter : public ACharacter, public IAbilitySystemInterface, public IGCAbilitySystemReplicationProxyInterface, public IGenericTeamAgentInterface
 //public ICogCommonDebugFilteredActorInterface
 {
 	GENERATED_BODY()
@@ -126,6 +127,10 @@ public:
 
 	virtual void AcknowledgeUnpossession();
 
+	virtual FGenericTeamId GetGenericTeamId() const override;
+
+	UFUNCTION(BlueprintCallable, Category = "GASCourse|Character|Team")
+	void SetTeamID(uint8 NewTeamID);
 	
 	UFUNCTION()
 	virtual bool SimulateInputActionFromBuffer(FGameplayTag InputTag);
@@ -136,6 +141,9 @@ protected:
 
 	UPROPERTY()
 	AController* InitialController = nullptr;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GASCourse|Character|Team")
+	uint8 TeamID;
 
 	/** Called for movement input */
 	virtual void Move(const FInputActionValue& Value);

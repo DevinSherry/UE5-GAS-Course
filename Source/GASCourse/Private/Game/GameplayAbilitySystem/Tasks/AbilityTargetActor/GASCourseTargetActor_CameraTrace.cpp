@@ -157,7 +157,6 @@ FHitResult AGASCourseTargetActor_CameraTrace::PerformTrace(AActor* InSourceActor
 	{
 		LocalReticleActor->SetIsTargetValid(bLastTraceWasGood);
 		LocalReticleActor->SetActorLocation(TraceEnd);
-		UE_LOG(LogTemp, Warning, TEXT("%s"), *TraceEnd.ToString());
 		LocalReticleActor->SetActorScale3D(ReticleParams.AOEScale);
 		FRotator LocalReticleRot = ReturnHitResult.Normal.Rotation();
 		LocalReticleActor->SetActorRotation(LocalReticleRot);

@@ -35,9 +35,9 @@ public:
 
 public:
 	
-	UPROPERTY(BlueprintReadOnly, Category = "Character Base Attributes", ReplicatedUsing=OnRep_MovementSpeed)
-	FGameplayAttributeData MovementSpeed;
-	ATTRIBUTE_ACCESSORS(UGASCourseCharBaseAttributeSet, MovementSpeed)
+	UPROPERTY(BlueprintReadOnly, Category = "Character Base Attributes", ReplicatedUsing=OnRep_MovementSpeedMultiplier)
+	FGameplayAttributeData MovementSpeedMultiplier = 1.0f;
+	ATTRIBUTE_ACCESSORS(UGASCourseCharBaseAttributeSet, MovementSpeedMultiplier)
 
 	UPROPERTY(BlueprintReadOnly, Category = "Character Base Attributes", ReplicatedUsing=OnRep_CrouchSpeed)
 	FGameplayAttributeData CrouchSpeed;
@@ -54,7 +54,7 @@ public:
 protected:
 	
 	UFUNCTION()
-	virtual void OnRep_MovementSpeed(const FGameplayAttributeData& OldMovementSpeed);
+	virtual void OnRep_MovementSpeedMultiplier(const FGameplayAttributeData& OldMovementSpeedMultiplier);
 	
 	UFUNCTION()
 	virtual void OnRep_CrouchSpeed(const FGameplayAttributeData& OldCrouchSpeed);

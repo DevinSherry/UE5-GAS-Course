@@ -2,15 +2,41 @@
 
 
 #include "Game/StateTree/Tasks/GASC_StateTreeTask_MeleeAbility.h"
-
 #include "AbilitySystemBlueprintLibrary.h"
 #include "StateTreeExecutionContext.h"
+
+
+UStateTreeTask_GASCMeleeAbility_InstanceData::~UStateTreeTask_GASCMeleeAbility_InstanceData()
+{
+	if (MeleeAbilityRef)
+	{
+		MeleeAbilityRef->MarkAsGarbage();
+		MeleeAbilityRef = nullptr;
+	}
+}
 
 void UStateTreeTask_GASCMeleeAbility_InstanceData::OnMeleeAbilityEnd(const FAbilityEndedData& EndData)
 {
 	if (EndData.AbilitySpecHandle == MeleeAbilitySpecHandle)
 	{
 		bMeleeAbilityActive = false;
+	}
+}
+
+void UStateTreeTask_GASCMeleeAbility_InstanceData::OnMeleeAbilityFailed(const UGameplayAbility* InAbility,
+	const FGameplayTagContainer& FailTags)
+{
+	if (InAbility->GetCurrentAbilitySpec()->Handle == MeleeAbilitySpec.Handle)
+	{
+		bMeleeAbilityActive = false;
+	}
+}
+
+void UStateTreeTask_GASCMeleeAbility_InstanceData::OnMeleeAbilityActivated(UGameplayAbility* InAbility)
+{
+	if (InAbility->GetCurrentAbilitySpec()->Handle == MeleeAbilitySpec.Handle)
+	{
+		bMeleeAbilityActive = true;
 	}
 }
 
@@ -31,8 +57,10 @@ EStateTreeRunStatus UStateTreeTask_GASCMeleeAbility_InstanceData::OnEnterState(
 				if (UAbilitySystemComponent* ASC = OwningCharacter->GetAbilitySystemComponent())
 				{
 					MeleeAbilityRef->MeleeAbilityData = MeleeData.MeleeData;
+					
 					ASC->OnAbilityEnded.AddUObject(this, &UStateTreeTask_GASCMeleeAbility_InstanceData::OnMeleeAbilityEnd);
-
+					ASC->AbilityFailedCallbacks.AddUObject(this, &UStateTreeTask_GASCMeleeAbility_InstanceData::OnMeleeAbilityFailed);
+					ASC->AbilityActivatedCallbacks.AddUObject(this, &UStateTreeTask_GASCMeleeAbility_InstanceData::OnMeleeAbilityActivated);
 					MeleeAbilitySpec = FGameplayAbilitySpec(
 					MeleeData.MeleeGameplayAbilityClass,
 					1,
@@ -42,7 +70,6 @@ EStateTreeRunStatus UStateTreeTask_GASCMeleeAbility_InstanceData::OnEnterState(
 					MeleeAbilitySpecHandle = ASC->GiveAbilityAndActivateOnce(MeleeAbilitySpec);
 					
 					bMeleeAbilityGranted = true;
-					bMeleeAbilityActive = true;
 					return EStateTreeRunStatus::Running;
 				}
 			}
@@ -53,15 +80,29 @@ EStateTreeRunStatus UStateTreeTask_GASCMeleeAbility_InstanceData::OnEnterState(
 
 void UStateTreeTask_GASCMeleeAbility_InstanceData::OnExitState(const FStateTreeExecutionContext& Context)
 {
-	if (APlayerController* PC = Cast<APlayerController>(Context.GetOwner()))
+	if (bMeleeAbilityGranted)  // Only cleanup if we actually granted the ability
 	{
-		if (AGASCourseCharacter* OwningCharacter = Cast<AGASCourseCharacter>(PC->GetPawn()))
+		if (APlayerController* PC = Cast<APlayerController>(Context.GetOwner()))
 		{
-			if (UAbilitySystemComponent* ASC = OwningCharacter->GetAbilitySystemComponent())
+			if (AGASCourseCharacter* OwningCharacter = Cast<AGASCourseCharacter>(PC->GetPawn()))
 			{
-				ASC->ClearAbility(MeleeAbilitySpecHandle);
+				if (UAbilitySystemComponent* ASC = OwningCharacter->GetAbilitySystemComponent())
+				{
+					if (MeleeAbilitySpecHandle.IsValid())
+					{
+						ASC->ClearAbility(MeleeAbilitySpecHandle);
+					}
+				}
 			}
 		}
+        
+		if (MeleeAbilityRef)
+		{
+			MeleeAbilityRef->MarkAsGarbage();
+			MeleeAbilityRef = nullptr;
+		}
+        
+		bMeleeAbilityGranted = false;
 	}
 }
 
@@ -70,8 +111,7 @@ EStateTreeRunStatus UStateTreeTask_GASCMeleeAbility_InstanceData::OnTick(const F
 {
 	if (bMeleeAbilityGranted && !bMeleeAbilityActive)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Melee Ability not granted or active"));
-		return EStateTreeRunStatus::Succeeded;
+		return EStateTreeRunStatus::Failed;
 	}
 	
 	return EStateTreeRunStatus::Running;
@@ -83,7 +123,7 @@ FStateTreeTask_GASCMeleeAbility::FStateTreeTask_GASCMeleeAbility()
 }
 
 EStateTreeRunStatus FStateTreeTask_GASCMeleeAbility::EnterState(FStateTreeExecutionContext& Context,
-	const FStateTreeTransitionResult& Transition) const
+                                                                const FStateTreeTransitionResult& Transition) const
 {
 	UInstanceDataType* InstanceData = Context.GetInstanceDataPtr<UInstanceDataType>(*this);
 	check(InstanceData);
@@ -99,17 +139,6 @@ void FStateTreeTask_GASCMeleeAbility::ExitState(FStateTreeExecutionContext& Cont
 	check(InstanceData);
 	
 	InstanceData->OnExitState(Context);
-
-	if (APlayerController* PC = Cast<APlayerController>(Context.GetOwner()))
-	{
-		if (AGASCourseCharacter* OwningCharacter = Cast<AGASCourseCharacter>(PC->GetPawn()))
-		{
-			if (UAbilitySystemComponent* ASC = OwningCharacter->GetAbilitySystemComponent())
-			{
-				ASC->ClearAbility(InstanceData->MeleeAbilitySpecHandle);
-			}
-		}
-	}
 }
 
 void FStateTreeTask_GASCMeleeAbility::TriggerTransitions(FStateTreeExecutionContext& Context) const
@@ -118,19 +147,6 @@ void FStateTreeTask_GASCMeleeAbility::TriggerTransitions(FStateTreeExecutionCont
 
 	UInstanceDataType* InstanceData = Context.GetInstanceDataPtr<UInstanceDataType>(*this);
 	check(InstanceData);
-	/*
-	
-	if (APlayerController* PC = Cast<APlayerController>(Context.GetOwner()))
-	{
-		if (AGASCourseCharacter* OwningCharacter = Cast<AGASCourseCharacter>(PC->GetPawn()))
-		{
-			if (UAbilitySystemComponent* ASC = OwningCharacter->GetAbilitySystemComponent())
-			{
-				ASC->ClearAbility(InstanceData->MeleeAbilitySpecHandle);
-			}
-		}
-	}
-	*/
 }
 
 EStateTreeRunStatus FStateTreeTask_GASCMeleeAbility::Tick(FStateTreeExecutionContext& Context,
@@ -140,12 +156,6 @@ EStateTreeRunStatus FStateTreeTask_GASCMeleeAbility::Tick(FStateTreeExecutionCon
 	check(InstanceData);
 	
 	return InstanceData->OnTick(Context, DeltaTime);
-}
-
-EDataValidationResult FStateTreeTask_GASCMeleeAbility::Compile(FStateTreeDataView InstanceDataView,
-	TArray<FText>& ValidationMessages)
-{
-	return FStateTreeTaskCommonBase::Compile(InstanceDataView, ValidationMessages);
 }
 
 #if WITH_EDITOR

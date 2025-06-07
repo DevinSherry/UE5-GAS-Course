@@ -18,6 +18,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category="GASCourse|Targeting")
 	static void GetBestTargetFromHandle(FTargetingRequestHandle TargetingHandle, AActor* &Target, bool &bTargetFound);
+
+	UFUNCTION(BlueprintCallable, Category="GASCourse|Targeting")
+	static bool AreActorsOnSameTeam(AActor* InActor1, AActor* InActor2);
 	
 	
 };

@@ -72,7 +72,6 @@ void UGASC_MeleeTrace_NotifyState::NotifyTick(USkeletalMeshComponent* MeshComp, 
 #if WITH_EDITOR
 	if (!DebugMeshComponent.IsValid())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("DebugMeshComponent is not valid, exit."));
 		return;
 	}
 	if (GEditor)

@@ -21,35 +21,46 @@ EStateTreeRunStatus FStateTreeTask_GASCInputListener::EnterState(FStateTreeExecu
 		FInstanceDataType& InstanceData = Context.GetInstanceData(*this);
 		if (APlayerController* PC = Cast<APlayerController>(Context.GetOwner()))
 		{
-			AGASCoursePlayerCharacter* PlayerCharacter = Cast<AGASCoursePlayerCharacter>(PC->GetPawn());
-			if (UGASC_InputBufferComponent* InputBuffer = PlayerCharacter->GetInputBufferComponent())
+			if (AGASCoursePlayerCharacter* PlayerCharacter = Cast<AGASCoursePlayerCharacter>(PC->GetPawn()))
 			{
-				if (UEnhancedInputComponent* InputComponent = Cast<UEnhancedInputComponent>(PC->InputComponent))
+				if (UGASC_InputBufferComponent* InputBuffer = PlayerCharacter->GetInputBufferComponent())
 				{
-					if (UStateTreeComponent* ST = PC->GetComponentByClass<UStateTreeComponent>())
+					if (UEnhancedInputComponent* InputComponent = Cast<UEnhancedInputComponent>(PC->InputComponent))
 					{
-						for (FEnhancedInputListenerData InputData : InstanceData.InputListeners)
+						if (UStateTreeComponent* ST = PC->GetComponentByClass<UStateTreeComponent>())
 						{
-							FEnhancedInputActionEventBinding* TriggeredEventBinding = &InputComponent->BindActionValueLambda(InputData.InputAction, ETriggerEvent::Triggered, [this, ST, InputData](const FInputActionValue& Value)
+							for (FEnhancedInputListenerData InputData : InstanceData.InputListeners)
 							{
-								ST->SendStateTreeEvent(InputData.TriggeredEventGameplayTag);
-							});
+								FEnhancedInputActionEventBinding* TriggeredEventBinding = &InputComponent->BindActionValueLambda(InputData.InputAction, ETriggerEvent::Triggered, [this, ST, InputData, InputBuffer](const FInputActionValue& Value)
+								{
+									if (!InputBuffer->IsInputBufferOpen() && InputData.TriggeredEventGameplayTag.IsValid())
+									{
+										ST->SendStateTreeEvent(InputData.TriggeredEventGameplayTag);
+									}
+								});
 
-							InstanceData.InputActionBindings.Add(TriggeredEventBinding);
+								InstanceData.InputActionBindings.Add(TriggeredEventBinding);
 
-							FEnhancedInputActionEventBinding* CompletedEventBinding = &InputComponent->BindActionValueLambda(InputData.InputAction, ETriggerEvent::Completed, [this, ST, InputData](const FInputActionValue& Value)
-							{
-								ST->SendStateTreeEvent(InputData.CompletedGameplayTag);
-							});
+								FEnhancedInputActionEventBinding* CompletedEventBinding = &InputComponent->BindActionValueLambda(InputData.InputAction, ETriggerEvent::Completed, [this, ST, InputData, InputBuffer](const FInputActionValue& Value)
+								{
+									if (!InputBuffer->IsInputBufferOpen() && InputData.CompletedGameplayTag.IsValid())
+									{
+										ST->SendStateTreeEvent(InputData.CompletedGameplayTag);
+									}
+								});
 
-							InstanceData.InputActionBindings.Add(CompletedEventBinding);
+								InstanceData.InputActionBindings.Add(CompletedEventBinding);
 
-							FEnhancedInputActionEventBinding* CanceledEventBinding = &InputComponent->BindActionValueLambda(InputData.InputAction, ETriggerEvent::Canceled, [this, ST, InputData](const FInputActionValue& Value)
-							{
-								ST->SendStateTreeEvent(InputData.CanceledGameplayTag);
-							});
+								FEnhancedInputActionEventBinding* CanceledEventBinding = &InputComponent->BindActionValueLambda(InputData.InputAction, ETriggerEvent::Canceled, [this, ST, InputData, InputBuffer](const FInputActionValue& Value)
+								{
+									if (!InputBuffer->IsInputBufferOpen() && InputData.CanceledGameplayTag.IsValid())
+									{
+										ST->SendStateTreeEvent(InputData.CanceledGameplayTag);
+									}
+								});
 
-							InstanceData.InputActionBindings.Add(CanceledEventBinding);
+								InstanceData.InputActionBindings.Add(CanceledEventBinding);
+							}
 						}
 					}
 				}
@@ -88,6 +99,7 @@ EStateTreeRunStatus FStateTreeTask_GASCInputListener::Tick(FStateTreeExecutionCo
 	return FStateTreeTaskCommonBase::Tick(Context, DeltaTime);
 }
 
+/*
 EDataValidationResult FStateTreeTask_GASCInputListener::Compile(FStateTreeDataView InstanceDataView,
 	TArray<FText>& ValidationMessages)
 {
@@ -116,6 +128,8 @@ EDataValidationResult FStateTreeTask_GASCInputListener::Compile(FStateTreeDataVi
 	}
 	return Super::Compile(InstanceDataView, ValidationMessages);
 }
+
+*/
 
 #if WITH_EDITOR
 FText FStateTreeTask_GASCInputListener::GetDescription(const FGuid& ID, FStateTreeDataView InstanceDataView,

@@ -2,12 +2,15 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
 #include "GameplayEffectExecutionCalculation.h"
 #include "GASCourseHealingExecution.generated.h"
 
 /**
- * 
+ * \class UGASCourseHealingExecution
+ * \brief Handles the execution for custom healing gameplay effects.
+ *
+ * This class is responsible for implementing the logic required to calculate and apply healing effects during execution of gameplay effects.
+ * It captures relevant attributes associated with healing coefficients, current, and maximum health, and uses them in its calculations to apply healing.
  */
 UCLASS()
 class GASCOURSE_API UGASCourseHealingExecution : public UGameplayEffectExecutionCalculation

@@ -4,13 +4,17 @@
 
 #include "GameplayTagContainer.h"
 #include "Engine/DataAsset.h"
-#include "GASCourseDamageTypeColor.generated.h"
+#include "GASCourseDamageTypeUIData.generated.h"
 
 /**
- * 
+ * @brief UGASCourseDamageTypeColor is a Data Asset used to map damage types to corresponding colors.
+ *
+ * This class serves as a container for associating damage types, represented by FGameplayTag objects,
+ * with specific colors represented by FLinearColor objects. It is designed to be utilized for visual representation
+ * of damage types within the game, such as coloring text or UI elements based on the type of damage.
  */
 UCLASS(BlueprintType)
-class GASCOURSE_API UGASCourseDamageTypeColor : public UDataAsset
+class GASCOURSE_API UGASCourseDamageTypeUIData : public UDataAsset
 {
 	GENERATED_BODY()
 
@@ -35,5 +39,21 @@ public:
 
 	UFUNCTION(BlueprintPure,  Category = "GASCourse|Damage", meta=(Categories="Damage.Type"))
 	FLinearColor GetDamageTypeColor(FGameplayTag DamageType);
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GASCourse|Damage")
+	FLinearColor CriticalDamageColor = FLinearColor::Red;
+
+	/**
+	 * @brief Contains the localized text representing critical damage in the game.
+	 *
+	 * This variable is an editable and blueprint-accessible FText used to display text
+	 * for scenarios involving critical damage. The default value is localized to "Critical"
+	 * and can be configured or localized for different languages and regions.
+	 *
+	 * Designed for use in UI or gameplay feedback to indicate critical damage events,
+	 * providing consistent and customizable text representation within the game.
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GASCourse|Damage")
+	FText CriticalDamageText = NSLOCTEXT("GASCourse", "CriticalDamageText", "Critical");
 	
 };

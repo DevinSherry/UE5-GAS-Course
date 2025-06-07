@@ -6,7 +6,12 @@
 #include "GASCourseNPC_Base.generated.h"
 
 /**
- * 
+ * @class AGASCourseNPC_Base
+ * @brief Base class for Non-Playable Characters (NPCs) in the GASCourse project.
+ *
+ * This class inherits from AGASCourseCharacter and provides functionality for NPCs
+ * specific to the GASCourse infrastructure. It includes overridden behavior for
+ * possession, replication, and lifecycle management.
  */
 UCLASS()
 class GASCOURSE_API AGASCourseNPC_Base : public AGASCourseCharacter

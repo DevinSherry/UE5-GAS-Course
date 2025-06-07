@@ -1,6 +1,6 @@
 {
 	"FileVersion": 3,
-	"EngineAssociation": "{084CCED9-4E61-BE87-2FC3-04BC5828A876}",
+	"EngineAssociation": "{5B526FCD-4902-98ED-0B4A-DF9CB8908DB8}",
 	"Category": "",
 	"Description": "",
 	"Modules": [
@@ -17,7 +17,8 @@
 				"AIModule",
 				"DeveloperSettings",
 				"StateTreeModule",
-				"GameplayStateTreeModule"
+				"GameplayStateTreeModule",
+				"UMG"
 			]
 		}
 	],
@@ -108,5 +109,9 @@
 			"Name": "StateTree",
 			"Enabled": true
 		}
+	],
+	"TargetPlatforms": [
+		"Windows",
+		"Mac"
 	]
 }

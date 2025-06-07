@@ -38,21 +38,39 @@ public:
  *
  *  @remark This structure is blueprintable.
  */
-USTRUCT(blueprintable)
-struct FDamageOverTimeContext
+USTRUCT(Blueprintable)
+struct FEffectOverTimeContext
 {
 	GENERATED_USTRUCT_BODY()
 
 public:
-
+	/** Defines the interval, in seconds, at which a periodic gameplay effect is applied.
+	 *  A negative value indicates that the effect is not periodic and will not execute
+	 *  at intervals. If set to a valid positive value, the effect will trigger periodically
+	 *  with the specified time gap.
+	 */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float DamagePeriod = -1.0f;
+	float EffectPeriod = -1.0f;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta=(Categories="Damage.Type"))
-	float DamageDuration = -1.0f;
+	/** Specifies the total duration, in seconds, for which a gameplay effect remains active.
+	 *  A negative value indicates that the effect has an indefinite duration or does not execute over a specific time period.
+	 *  If set to a positive value, the effect will be active for the specified time span.
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float EffectDuration = -1.0f;
 
+	/** Indicates whether a gameplay effect should be applied immediately upon its activation.
+	 *  If true, the effect will execute its logic as soon as it is activated, in addition to any periodic or duration-based execution.
+	 *  If false, the effect will only execute based on its periodic or duration settings, if applicable.
+	 */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite )
-	bool bApplyDamageOnApplication = true;
+	bool bApplyEffectOnApplication = true;
+
+	/** Determines whether a value should be distributed evenly over the total duration of the effect.
+	 *  If true, the value will be applied proportionally throughout the entire duration, rather than at discrete intervals.
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite )
+	bool bApplyValueOverTotalDuration = false;
 };
 
 /**
@@ -65,6 +83,11 @@ class GASCOURSE_API UGASCourseASCBlueprintLibrary : public UAbilitySystemBluepri
 	GENERATED_BODY()
 
 public:
+
+	/*
+	UFUNCTION(BlueprintCallable, Category = "GASCourse|AbilitySystem|AreaOfEffect")
+	static bool ApplyAreaOfEffect(AActor* Instigator, class UGASC_AreaOfEffectData* AreaOfEffectData, const FVector& AreaCenter);
+	*/
 	
 	/**
 	 * Applies damage to the specified target actor using the specified instigator actor, damage amount, and damage context.
@@ -90,7 +113,61 @@ public:
 	 * @return True if the damage was successfully applied to at least one target, false otherwise.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "GASCourse|AbilitySystem|Damage")
-	static bool ApplyDamageToTargetDataHandle(FGameplayAbilityTargetDataHandle TargetHandle, AActor* Instigator, float Damage, const FDamageContext& DamageContext);
+	static bool ApplyDamageToTargetDataHandle(FGameplayAbilityTargetDataHandle TargetHandle, AActor* Instigator, float Damage, FDamageContext DamageContext);
+
+	/** Applies a healing effect to a target actor internally.
+	 *  This function processes the application of healing by validating the target and instigator,
+	 *  retrieving and preparing the necessary healing execution settings from the gameplay mechanics,
+	 *  and ensuring the proper ability system components are set for both the target and instigator.
+	 *  Healing is applied through specified gameplay effects, which may include over-time contexts
+	 *  defined by the execution parameters.
+	 *
+	 *  @param Target The actor to which healing will be applied.
+	 *  @param Instigator The actor responsible for initiating the healing effect.
+	 *  @param InHealing The numerical value of healing to be applied.
+	 *  @param GameplayEffect The gameplay effect object that defines the specifics of the healing logic.
+	 *  @param EffectOverTimeContext Context information for handling healing that occurs over a period of time.
+	 *  @return True if healing was successfully applied, false otherwise.
+	 */
+	static bool ApplyHealingToTarget_Internal(AActor* Target, AActor* Instigator, float InHealing, UGameplayEffect* GameplayEffect, FEffectOverTimeContext EffectOverTimeContext);
+
+	/** Applies healing to all targets specified in the given TargetDataHandle.
+	 *  This function allows healing to be applied to multiple targets while including
+	 *  the actor initiating the healing and the amount of healing to be applied.
+	 *
+	 *  @param TargetHandle The handle containing data about the targets to apply healing to.
+	 *  @param Instigator The actor responsible for instigating the healing action.
+	 *  @param InHealing The amount of healing to be applied to the targets.
+	 *  @return True if the healing was successfully applied, false otherwise.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "GASCourse|AbilitySystem|Healing")
+	static bool ApplyHealingToTargetDataHandle(FGameplayAbilityTargetDataHandle TargetHandle, AActor* Instigator, float InHealing);
+
+	/** Applies healing to a target actor.
+	 *  This method allows applying a specified amount of healing to the target actor,
+	 *  originating from a specified instigator. It uses an internally constructed
+	 *  healing gameplay effect to handle the application of healing.
+	 *
+	 *  @param Target The actor that will receive the healing.
+	 *  @param Instigator The actor responsible for performing the healing.
+	 *  @param InHealing The amount of healing to apply to the target.
+	 *  @return Returns true if the healing was successfully applied; otherwise, false.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "GASCourse|AbilitySystem|Healing")
+	static bool ApplyHealingToTarget(AActor* Target, AActor* Instigator, float InHealing);
+
+	/** Applies a healing effect over time to the specified target.
+	 *  This function triggers a healing effect that is applied incrementally over a duration,
+	 *  based on the provided healing amount and effect context.
+	 *
+	 *  @param Target The actor to which the healing effect will be applied.
+	 *  @param Instigator The actor responsible for triggering the healing effect.
+	 *  @param InHealing The total amount of healing to apply over time.
+	 *  @param EffectOverTimeContext The context defining the details of the healing effect, including duration and other parameters.
+	 *  @return True if the healing effect was successfully applied, false otherwise.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "GASCourse|AbilitySystem|Damage")
+	static bool ApplyHealingOverTimeToTarget(AActor* Target, AActor* Instigator, float InHealing, const FEffectOverTimeContext& EffectOverTimeContext);
 
 	/**
 	 * Applies damage over time to a target actor.
@@ -99,12 +176,12 @@ public:
 	 * @param Instigator                  The actor that caused the damage over time.
 	 * @param Damage                      The amount of damage to apply over time.
 	 * @param DamageContext               The context of the damage being applied.
-	 * @param DamageOverTimeContext       The context of the damage over time being applied.
+	 * @param EffectOverTimeContext       The context of the damage over time being applied.
 	 *
 	 * @return                            Returns true if the damage over time was successfully applied, false otherwise.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "GASCourse|AbilitySystem|Damage")
-	static bool ApplyDamageOverTimeToTarget(AActor* Target, AActor* Instigator, float Damage, const FDamageContext& DamageContext, const FDamageOverTimeContext& DamageOverTimeContext);
+	static bool ApplyDamageOverTimeToTarget(AActor* Target, AActor* Instigator, float Damage, const FDamageContext& DamageContext, const FEffectOverTimeContext& EffectOverTimeContext);
 
 	/**
 	 * Applies physical damage to the specified target.
@@ -148,7 +225,9 @@ public:
 	 */
 	static bool ApplyDamageToTarget_Internal(AActor* Target, AActor* Instigator, float Damage, const FDamageContext& DamageContext, UGameplayEffect* GameplayEffect);
 
-	static UGameplayEffect* ConstructDamageGameplayEffect(EGameplayEffectDurationType DurationType, const FDamageOverTimeContext& DamageOverTimeContext, float InDamageValue);
+	static UGameplayEffect* ConstructDamageGameplayEffect(EGameplayEffectDurationType DurationType, const FEffectOverTimeContext& EffectOverTimeContext);
+
+	static UGameplayEffect* ConstructHealingGameplayEffect(EGameplayEffectDurationType DurationType, const FEffectOverTimeContext& EffectOverTimeContext);
 
 	UFUNCTION(BlueprintPure, Category = "GASCourse|AbilitySystem|Damage")
 	static bool FindDamageTypeTagInContainer(const FGameplayTagContainer& InContainer, FGameplayTag& DamageTypeTag);

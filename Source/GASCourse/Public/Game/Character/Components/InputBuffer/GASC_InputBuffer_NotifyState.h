@@ -7,6 +7,9 @@
 #include "GASC_InputBuffer_NotifyState.generated.h"
 
 /**
+ * UGASC_InputBuffer_NotifyState is an animation notify state class used to handle input buffering mechanics
+ * during animation sequences. This class enables gameplay mechanics to open and close input buffering
+ * based on animation notify states.
  */
 UCLASS()
 class GASCOURSE_API UGASC_InputBuffer_NotifyState : public UAnimNotifyState

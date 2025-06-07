@@ -4,6 +4,7 @@
 
 #include "GameplayEffect.h"
 #include "Engine/DeveloperSettings.h"
+#include "Game/Systems/Damage/Data/GASCourseDamageTypeUIData.h"
 #include "UGASC_AbilitySystemSettings.generated.h"
 
 /**
@@ -43,6 +44,36 @@ public:
 
 	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "GASCourse|Health", meta=(ClampMin="0.0", ClampMax="1.0"))
 	float LowHealthPercentage;
+
+	/**
+	 * DamageExecution
+	 *
+	 * Represents a configurable gameplay effect execution calculation class used for determining damage in the ability system.
+	 * This property allows customization of the damage calculation logic by specifying a custom subclass of UGameplayEffectExecutionCalculation.
+	 */
+	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "GASCourse|Damage")
+	TSubclassOf<UGameplayEffectExecutionCalculation> DamageExecution;
+
+	/**
+	 * HealingExecution
+	 *
+	 * Represents a configurable gameplay effect execution calculation class used for determining healing in the ability system.
+	 * This property allows customization of the healing calculation logic by specifying a custom subclass of UGameplayEffectExecutionCalculation.
+	 */
+	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "GASCourse|Health")
+	TSubclassOf<UGameplayEffectExecutionCalculation> HealingExecution;
+
+	/**
+	 * DamageTypeUIData
+	 *
+	 * Represents a configurable UI data asset associated with damage type specifics in the GASCourse framework.
+	 * This property provides the ability to visually or contextually categorize damage types through associated UI data.
+	 * It enables customization of how damage types are represented in the user interface.
+	 */
+	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "GASCourse|Damage")
+	TSoftObjectPtr<UGASCourseDamageTypeUIData> DamageTypeUIData;
+
+	static const UGASC_AbilitySystemSettings* Get() {return GetDefault<UGASC_AbilitySystemSettings>();}
 
 	UGASC_AbilitySystemSettings();
 };

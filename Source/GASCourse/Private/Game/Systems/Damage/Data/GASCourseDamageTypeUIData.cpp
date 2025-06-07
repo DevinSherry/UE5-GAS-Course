@@ -1,9 +1,9 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Game/Systems/Damage/Data/GASCourseDamageTypeColor.h"
+#include "Game/Systems/Damage/Data/GASCourseDamageTypeUIData.h"
 
-FLinearColor UGASCourseDamageTypeColor::GetDamageTypeColor(FGameplayTag DamageType)
+FLinearColor UGASCourseDamageTypeUIData::GetDamageTypeColor(FGameplayTag DamageType)
 {
 	if(DamageType.IsValid())
 	{

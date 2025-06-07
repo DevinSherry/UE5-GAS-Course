@@ -13,6 +13,7 @@
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FGASCourseAbilityCommitSignature, bool, CommitAbility);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FGASCourseAbilityCooldownCommitSignature);
 
+DECLARE_LOG_CATEGORY_EXTERN(LOG_GASC_GameplayAbility, Log, All);
 
 /**
  * EGASCourseAbilityActivationPolicy
@@ -143,6 +144,9 @@ public:
 	UFUNCTION(BlueprintPure, Category = "GASCourse|Ability|Cost")
 	FScalableFloat GetAbilityCost() const { return AbilityCost; }
 
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "GASCourse|Ability|Input", Meta = (DisplayName = "Get Input Direction"))
+	virtual FVector GetInputDirection() const;
+
 protected:
 
 	//~UGameplayAbility interface
@@ -257,7 +261,13 @@ protected:
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = Costs)
 	FScalableFloat AbilityCost;
 
-private:
-
+	/**
+	 * InvokeAbilityFailHapticFeedback
+	 *
+	 * Plays a haptic feedback effect on the player's controller when an ability activation fails,
+	 * if the player is the local controller and the corresponding settings are configured.
+	 */
+	UFUNCTION()
 	void InvokeAbilityFailHapticFeedback() const;
+	
 };

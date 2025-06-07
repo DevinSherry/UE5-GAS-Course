@@ -11,13 +11,19 @@ struct FMeleeAbilityData
 	GENERATED_USTRUCT_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category= "Melee Ability Data")
-	FGameplayTag MeleeAbilityAnimationTag;
+	FGameplayTagContainer MeleeAbilityAnimationTag;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category= "Melee Ability Data")
 	float MinWarpDistance = 0.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category= "Melee Ability Data")
 	float NoTargetWarpDistance = 0.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category= "Melee Ability Data")
+	FName MeleeWarpTranslationTargetName = FName("MeleeMotionWarpTranslation");
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category= "Melee Ability Data")
+	FName MeleeWarpRotationTargetName = FName("MeleeMotionWarpRotation");
 
 };
 
@@ -43,5 +49,18 @@ public:
 	FMeleeAbilityData MeleeAbilityData;
 
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
+	virtual void OnGiveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec) override;
+	virtual void EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled) override;
+
+	UFUNCTION(BlueprintCallable, Category= "Melee Ability")
+	void RemoveMeleeMotionWarpTargets();
+	
+protected:
+
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category= "Components")
+	UMotionWarpingComponent* MotionWarpingComponent = nullptr;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category= "Events")
+	FGameplayTagContainer AnimationGameplayEvents;
 	
 };
