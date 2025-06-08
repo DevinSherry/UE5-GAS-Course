@@ -2,6 +2,6 @@
 <project version="4">
   <component name="VcsDirectoryMappings">
     <mapping directory="" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/../UnrealEngine-release" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../UE" vcs="Git" />
   </component>
 </project>
